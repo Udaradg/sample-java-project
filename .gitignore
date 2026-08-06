@@ -65,3 +65,7 @@ application-local.yml
 !**/*wrapper*.jar
 hs_err_pid*
 replay_pid*
+
+### Architect agent (code-cartographer / graph-forge / blueprint-scribe) ###
+node_modules/
+/.architect/
