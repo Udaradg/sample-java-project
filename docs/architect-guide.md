@@ -10,8 +10,41 @@ This repo includes a custom Copilot agent, **Architect**, that documents the cod
 | `.github/skills/code-cartographer/` | Parses every `pom.xml` + `.java` file into `.architect/artifacts.json` |
 | `.github/skills/graph-forge/` | Loads those artifacts into a Neo4j graph database |
 | `.github/skills/blueprint-scribe/` | Writes `docs/architecture.md` from the artifacts (+ live Neo4j stats if available) |
+| `.github/agents/root-cause-analyst.agent.md` | A second agent that consumes the outputs above to diagnose a reported issue |
+| `.github/skills/root-cause-analyst/` | Gathers evidence for one issue and writes `docs/root-cause/root_cause_<issue_id>.md` |
+| `.github/agents/blast-radius-analyst.agent.md` | A third agent that measures how far each diagnosed defect reaches |
+| `.github/skills/blast-radius-analyst/` | Measures reach and writes `docs/blast-radius/blast_radius_<issue_id>.md` |
 
 Each skill folder is self-contained (its own `package.json`) so it can be copied or moved independently.
+
+## Diagnosing an issue, then sizing it
+
+Once the architecture docs and the graph exist, two further agents run on top of them, in order:
+
+1. **Root Cause Analyst** — reads every issue in [`docs/issues/`](./issues/) and writes one
+   `root_cause_<issue_id>.md` to [`docs/root-cause/`](./root-cause/), explaining *why* each defect
+   exists. Add issues to `docs/issues/` yourself (format in
+   [`docs/issues/README.md`](./issues/README.md)); the agent never authors them.
+   See [`.github/skills/root-cause-analyst/SKILL.md`](../.github/skills/root-cause-analyst/SKILL.md).
+2. **Blast Radius Analyst** — reads every root cause report and writes one
+   `blast_radius_<issue_id>.md` to [`docs/blast-radius/`](./blast-radius/), showing *how far* each
+   defect reaches: which services and endpoints break, which degrade, and who feels it, with
+   diagrams aimed at a non-engineer.
+   See [`.github/skills/blast-radius-analyst/SKILL.md`](../.github/skills/blast-radius-analyst/SKILL.md).
+
+The full chain, end to end:
+
+```
+source  →  code-cartographer  →  graph-forge  →  blueprint-scribe  →  docs/architecture.md
+                                                                      docs/function-reference.md
+                                                                              │
+docs/issues/  ─────────────────→  root-cause-analyst  ────────────────────────┤
+                                          │                                   │
+                                          ↓                                   │
+                                  docs/root-cause/  →  blast-radius-analyst  ←┘
+                                                              ↓
+                                                      docs/blast-radius/
+```
 
 ## Prerequisites
 
