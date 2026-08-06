@@ -15,7 +15,7 @@ Reads Java source across the workspace and turns it into structured, queryable d
 ## How It Works
 - Discovers every Maven module by finding `pom.xml` files, parsing `groupId`/`artifactId`/`version`/`packaging` and `<dependencies>`
 - Parses every `src/main/java/**/*.java` file into a real AST using `tree-sitter` (Java grammar), not regex — so nested generics, annotations with arguments, inheritance, and overloaded methods are captured correctly
-- Extracts per type: package, kind (`class`/`interface`/`enum`/`record`), annotations (with arguments), `extends`/`implements`, fields (name + type + annotations), methods (name, return type, params, annotations)
+- Extracts per type: package, kind (`class`/`interface`/`enum`/`record`), source line range, annotations (with arguments), `extends`/`implements`, fields (name + type + annotations), methods (name, return type, params, annotations, call sites for Graph Forge's function-level call graph, source line range, and the exact method source text for Blueprint Scribe's function reference doc)
 
 ## Procedure
 1. Install dependencies once: `cd .github/skills/code-cartographer && npm install`

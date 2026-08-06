@@ -33,6 +33,7 @@ Turns the static `artifacts.json` produced by [code-cartographer](../code-cartog
 | `Type -[:HAS_METHOD]-> Method` | Method ownership |
 | `Type -[:EXPOSES]-> Endpoint` | REST endpoint exposed by a controller |
 | `Type -[:USES]-> Type` | Best-effort: a field's type references another known type (dependency signal) |
+| `Method -[:CALLS]-> Method` | Best-effort call graph: resolves same-class calls, field-based calls (`this.foo.bar()`/`foo.bar()`), and static calls on a known type, by matching method name (call sites don't carry static argument types, so overload resolution is name-based only) |
 
 ## Procedure
 1. Ensure `.architect/artifacts.json` exists (run Code Cartographer first).
@@ -52,6 +53,14 @@ RETURN t.name, e.method, e.path;
 // Fan-in: most-depended-upon types
 MATCH (t:Type)<-[:USES]-(other)
 RETURN t.name, count(other) AS dependents ORDER BY dependents DESC;
+
+// Function-level call graph for a controller endpoint
+MATCH p=(c:Type {name: 'EmployeeSchedulerController'})-[:HAS_METHOD]->(:Method)-[:CALLS*1..4]->(:Method)
+RETURN p;
+
+// Most-called methods (fan-in at function level)
+MATCH (m:Method)<-[:CALLS]-(caller)
+RETURN m.name, count(caller) AS callers ORDER BY callers DESC;
 ```
 
 ## Notes

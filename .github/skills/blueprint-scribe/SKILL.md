@@ -12,7 +12,8 @@ Writes the human-readable deliverable: `docs/architecture.md`. Combines the stat
 - The user asks for "a markdown doc about the code", "document the architecture", or "ideas about the codebase"
 - As the final step of the full pipeline: Code Cartographer → Graph Forge → Blueprint Scribe
 
-## What It Produces (`docs/architecture.md`)
+## What It Produces
+**`docs/architecture.md`** — the high-level overview:
 - Module table (packaging, key Spring dependencies)
 - Mermaid service map (module → config-server / discovery-service edges, inferred from dependency names)
 - Heuristic type breakdown per module (Controller / Service / Repository / Entity / DTO / Configuration / Exception / Other)
@@ -21,13 +22,18 @@ Writes the human-readable deliverable: `docs/architecture.md`. Combines the stat
 - Live Neo4j node/relationship counts, if `graph-forge/.env` is configured and reachable
 - A short "Ideas & Observations" narrative section
 
+**`docs/function-reference.md`** — the deep-dive companion, one entry per method across the whole workspace:
+- Exact signature, file + line range, annotations, REST mapping (if any)
+- Resolved **Calls** / **Called by** (function-level call graph, same heuristic as Graph Forge's `CALLS` edges — no live Neo4j required, computed straight from `artifacts.json`)
+- The exact method source code, for diagnosing issues without re-opening every file
+
 ## Procedure
 1. Ensure `.architect/artifacts.json` exists (run Code Cartographer first).
 2. Install dependencies: `cd .github/skills/blueprint-scribe && npm install`
-3. Run: `npm run docs` (or `node scripts/generate-docs.js`)
-4. Open [docs/architecture.md](../../../docs/architecture.md) and share a short summary with the user rather than pasting the whole file into chat.
+3. Run: `npm run docs` for the overview, `npm run function-ref` for the per-method deep-dive, or `npm run all` for both.
+4. Open [docs/architecture.md](../../../docs/architecture.md) / [docs/function-reference.md](../../../docs/function-reference.md) and share a short summary with the user rather than pasting the whole file into chat.
 
-See [generate-docs.js](./scripts/generate-docs.js) for implementation details.
+See [generate-docs.js](./scripts/generate-docs.js) and [generate-function-reference.js](./scripts/generate-function-reference.js) for implementation details.
 
 ## Notes
 - Self-contained folder (own `package.json`) — can be moved independently

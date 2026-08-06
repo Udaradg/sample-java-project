@@ -160,6 +160,58 @@ async function main() {
       { rows: methodRows }
     ));
 
+    // Method-level call graph: resolve method_invocation call sites captured by
+    // Code Cartographer into CALLS edges between Method nodes (same-class calls,
+    // field-based calls, and static calls on a known type — best-effort by name).
+    const methodsByType = new Map(); // typeId -> name -> [methodId, ...]
+    for (const row of methodRows) {
+      const byName = methodsByType.get(row.typeId) || new Map();
+      const list = byName.get(row.name) || [];
+      list.push(row.methodId);
+      byName.set(row.name, list);
+      methodsByType.set(row.typeId, byName);
+    }
+    const fieldTypeByType = new Map(); // typeId -> fieldName -> targetTypeId
+    for (const t of types) {
+      const byField = new Map();
+      for (const f of t.fields || []) {
+        const targetId = nameToId.get(simpleName(f.type));
+        if (targetId) byField.set(f.name, targetId);
+      }
+      fieldTypeByType.set(t.id, byField);
+    }
+
+    const callRows = [];
+    for (const t of types) {
+      for (const meth of t.methods) {
+        const paramSig = (meth.params || []).map((p) => p.type).join(',');
+        const fromId = `${t.id}#${meth.name}(${paramSig})`;
+        for (const call of meth.calls || []) {
+          if (!call.name) continue;
+          let targetTypeId = null;
+          if (call.receiverKind === 'none' || call.receiverKind === 'this') {
+            targetTypeId = t.id;
+          } else if (call.receiverKind === 'identifier' || call.receiverKind === 'this-field') {
+            targetTypeId = fieldTypeByType.get(t.id)?.get(call.receiverName) || nameToId.get(call.receiverName) || null;
+          }
+          if (!targetTypeId) continue; // 'other' receivers or unresolved externals are skipped
+          const candidates = methodsByType.get(targetTypeId)?.get(call.name) || [];
+          for (const toId of candidates) {
+            callRows.push({ fromId, toId });
+          }
+        }
+      }
+    }
+    await session.executeWrite((tx) => tx.run(
+      `
+      UNWIND $rows AS r
+      MATCH (from:Method {id: r.fromId})
+      MATCH (to:Method {id: r.toId})
+      MERGE (from)-[:CALLS]->(to)
+      `,
+      { rows: callRows }
+    ));
+
     // REST endpoints derived from method + class-level mapping annotations.
     const endpointRows = [];
     for (const t of types) {
@@ -210,7 +262,7 @@ async function main() {
       { rows: usesRows }
     ));
 
-    console.log(`Graph Forge: loaded ${modules.length} module(s), ${types.length} type(s), ${inheritanceRows.length} inheritance edge(s), ${endpointRows.length} endpoint(s), ${usesRows.length} uses edge(s) into Neo4j.`);
+    console.log(`Graph Forge: loaded ${modules.length} module(s), ${types.length} type(s), ${inheritanceRows.length} inheritance edge(s), ${endpointRows.length} endpoint(s), ${usesRows.length} uses edge(s), ${callRows.length} method-call edge(s) into Neo4j.`);
   } finally {
     await session.close();
     await driver.close();

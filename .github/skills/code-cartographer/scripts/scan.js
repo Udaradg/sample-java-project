@@ -118,10 +118,52 @@ function typeTextOf(fieldNode) {
   return types.filter((c) => c.type.endsWith('type_identifier') || c.type === 'generic_type' || c.type === 'scoped_type_identifier').map((c) => c.text);
 }
 
+// Walks every descendant of `node` (depth-first) invoking `visit` on each.
+function walk(node, visit) {
+  visit(node);
+  for (const child of node.children) walk(child, visit);
+}
+
+// Collects method_invocation call sites within a method/constructor body, along
+// with a best-effort description of the receiver so Graph Forge can resolve
+// same-class calls, field-based calls (`this.foo.bar()`), and static calls.
+function collectCalls(bodyNode) {
+  const calls = [];
+  walk(bodyNode, (node) => {
+    if (node.type !== 'method_invocation') return;
+    const nameNode = node.childForFieldName('name');
+    const objectNode = node.childForFieldName('object');
+    let receiverKind = 'none'; // bare call, e.g. helper() -> same class
+    let receiverName = null;
+    if (objectNode) {
+      if (objectNode.type === 'identifier') {
+        receiverKind = 'identifier'; // e.g. schedulerService.getAllEmployees()
+        receiverName = objectNode.text;
+      } else if (objectNode.type === 'field_access') {
+        const fieldNode = objectNode.childForFieldName('field');
+        const innerObject = objectNode.childForFieldName('object');
+        if (innerObject && innerObject.type === 'this' && fieldNode) {
+          receiverKind = 'this-field'; // e.g. this.schedulerService.getAllEmployees()
+          receiverName = fieldNode.text;
+        } else {
+          receiverKind = 'other';
+        }
+      } else if (objectNode.type === 'this') {
+        receiverKind = 'this'; // e.g. this.helper()
+      } else {
+        receiverKind = 'other'; // chained/complex expression, not resolvable
+      }
+    }
+    calls.push({ name: nameNode ? nameNode.text : null, receiverKind, receiverName });
+  });
+  return calls;
+}
+
 function parseMethod(node) {
   const nameNode = node.childForFieldName('name');
   const typeNode = node.childForFieldName('type');
   const paramsNode = node.childForFieldName('parameters');
+  const bodyNode = node.childForFieldName('body');
   const params = paramsNode
     ? paramsNode.children
         .filter((c) => c.type === 'formal_parameter' || c.type === 'spread_parameter')
@@ -138,6 +180,10 @@ function parseMethod(node) {
     returnType: textOf(typeNode),
     params,
     annotations: collectAnnotations(modifiersOf(node)),
+    calls: bodyNode ? collectCalls(bodyNode) : [],
+    startLine: node.startPosition.row + 1,
+    endLine: node.endPosition.row + 1,
+    source: node.text,
   };
 }
 
@@ -180,6 +226,8 @@ function parseType(node, kind, ctx) {
     module: ctx.moduleName,
     package: ctx.packageName,
     file: ctx.relFile,
+    startLine: node.startPosition.row + 1,
+    endLine: node.endPosition.row + 1,
     annotations,
     extends: typeTextOf(superclassField),
     implements: [...typeTextOf(interfacesField), ...typeTextOf(extendsInterfaces)],
