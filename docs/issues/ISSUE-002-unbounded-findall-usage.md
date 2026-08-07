@@ -16,8 +16,8 @@ affected_symbols:
   - EmployeeSchedulerController.getAllEmployees
   - EmployeeReportController.exportToExcel
 affected_files:
-  - sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java
-  - report-service/src/main/java/com/virtusa/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
+  - sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java
+  - report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
 entry_points:
   - GET /api/v1/employee
   - GET /api/v1/export
@@ -37,8 +37,8 @@ single request can force a service to materialise every employee document at onc
 
 | # | Service | Call site | Repository call | Reached from |
 |---|---|---|---|---|
-| 1 | `sheduler-service` | [EmployeeSchedulerServiceImpl.java:18](../../sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java#L18) | `employeeSchedulerRepository.findAll()` | `GET /api/v1/employee` (public) and the Women's Day cron job |
-| 2 | `report-service` | [EmployeeReportServiceImpl.java:40](../../report-service/src/main/java/com/virtusa/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java#L40) | `employeeReportRepository.findAll()` | `GET /api/v1/export` (public) |
+| 1 | `sheduler-service` | [EmployeeSchedulerServiceImpl.java:18](../../sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java#L18) | `employeeSchedulerRepository.findAll()` | `GET /api/v1/employee` (public) and the Women's Day cron job |
+| 2 | `report-service` | [EmployeeReportServiceImpl.java:40](../../report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java#L40) | `employeeReportRepository.findAll()` | `GET /api/v1/export` (public) |
 
 Both repositories extend `MongoRepository`, so `findAll()` issues an unfiltered collection scan and
 returns a fully materialised `List` before any application code runs.

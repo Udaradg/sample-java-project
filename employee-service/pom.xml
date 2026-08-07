@@ -8,7 +8,7 @@
 		<version>2.7.12</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.virtusa.vihanga</groupId>
+	<groupId>com.aura.vihanga</groupId>
 	<artifactId>employee-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
@@ -144,11 +144,11 @@
 						</executions>
 						<configuration>
 							<excludes>
-								<exclude>com/virtusa/vihanga/employeeservice/dto/**</exclude>
-								<exclude>com/virtusa/vihanga/employeeservice/model/**</exclude>
-								<exclude>com/virtusa/vihanga/employeeservice/util/**</exclude>
-								<exclude>com/virtusa/vihanga/employeeservice/config/**</exclude>
-								<exclude>com/virtusa/vihanga/employeeservice/utill/**</exclude>
+								<exclude>com/aura/vihanga/employeeservice/dto/**</exclude>
+								<exclude>com/aura/vihanga/employeeservice/model/**</exclude>
+								<exclude>com/aura/vihanga/employeeservice/util/**</exclude>
+								<exclude>com/aura/vihanga/employeeservice/config/**</exclude>
+								<exclude>com/aura/vihanga/employeeservice/utill/**</exclude>
 							</excludes>
 						</configuration>
 					</plugin>

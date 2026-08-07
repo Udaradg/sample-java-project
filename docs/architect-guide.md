@@ -51,7 +51,7 @@ docs/issues/  ─────────────────→  root-cause
 - **Node.js** 18+ (`node -v` to check)
 - **npm** — on Windows PowerShell, use `npm.cmd install` if plain `npm install` is blocked by execution policy
 - **A Neo4j instance** — only required for the Graph Forge step. Options:
-  - A free [Neo4j Aura](https://neo4j.com/cloud/aura/) instance (recommended — no local install)
+  - A free [Neo4j aura](https://neo4j.com/cloud/aura/) instance (recommended — no local install)
   - A local instance via Docker: `docker run -d -p 7687:7687 -p 7474:7474 -e NEO4J_AUTH=neo4j/<password> neo4j:5`
   - Skip this step entirely — Code Cartographer and Blueprint Scribe work without Neo4j (the doc just omits the "Live Graph Snapshot" section)
 
@@ -87,7 +87,7 @@ cd ../blueprint-scribe; node scripts/generate-docs.js
 
 - `.architect/artifacts.json` — intermediate scan data, gitignored (local cache, regenerate anytime with the scan script)
 - `docs/architecture.md` — the shareable Markdown document, **not** gitignored — commit it when you want to update the team's view of the architecture
-- The Neo4j graph itself — browse/query it directly in your Neo4j instance (Aura console or `neo4j://localhost:7474` for local Docker) using Cypher, e.g.:
+- The Neo4j graph itself — browse/query it directly in your Neo4j instance (aura console or `neo4j://localhost:7474` for local Docker) using Cypher, e.g.:
   ```cypher
   MATCH (m:Module)-[:CONTAINS]->(t:Type) RETURN m.name, count(t);
   ```

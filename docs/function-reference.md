@@ -9,13 +9,13 @@ This document is a deep-dive companion to [architecture.md](./architecture.md): 
 ## Module: `configuaration-server`
 
 ### `ConfiguarationServerApplication` (class, Other)
-- **File**: `configuaration-server/src/main/java/com/virtusa/vihanga/configuarationserver/ConfiguarationServerApplication.java` (lines 8-17)
-- **Package**: `com.virtusa.vihanga.configuarationserver`
+- **File**: `configuaration-server/src/main/java/com/aura/vihanga/configuarationserver/ConfiguarationServerApplication.java` (lines 8-17)
+- **Package**: `com.aura.vihanga.configuarationserver`
 - **Annotations**: @SpringBootApplication, @EnableEurekaClient, @EnableConfigServer
 
 #### `ConfiguarationServerApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `configuaration-server/src/main/java/com/virtusa/vihanga/configuarationserver/ConfiguarationServerApplication.java` (lines 13-15)
+- **Location**: `configuaration-server/src/main/java/com/aura/vihanga/configuarationserver/ConfiguarationServerApplication.java` (lines 13-15)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -29,13 +29,13 @@ public static void main(String[] args) {
 ## Module: `department-service`
 
 ### `DepartmentServiceApplication` (class, Other)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/DepartmentServiceApplication.java` (lines 7-15)
-- **Package**: `com.virtusa.vihanga.departmentservice`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/DepartmentServiceApplication.java` (lines 7-15)
+- **Package**: `com.aura.vihanga.departmentservice`
 - **Annotations**: @SpringBootApplication, @EnableEurekaClient
 
 #### `DepartmentServiceApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/DepartmentServiceApplication.java` (lines 11-13)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/DepartmentServiceApplication.java` (lines 11-13)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -46,14 +46,14 @@ public static void main(String[] args) {
 ```
 
 ### `DepartmentController` (class, Controller)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java` (lines 15-45)
-- **Package**: `com.virtusa.vihanga.departmentservice.controller`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java` (lines 15-45)
+- **Package**: `com.aura.vihanga.departmentservice.controller`
 - **Annotations**: @RestController, @RequestMapping("api/v1"), @Slf4j
 - **Fields**: `DepartmentService departmentService`
 
 #### `DepartmentController.createDepartment()`
 - **Signature**: `ResponseEntity<StandardResponse> createDepartment(Department department)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java` (lines 23-32)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java` (lines 23-32)
 - **Annotations**: @PostMapping("department")
 - **REST endpoint**: `POST /api/v1/department`
 - **Calls**: `DepartmentController.createDepartment()` ⚠️ self-call — check for unintended recursion
@@ -75,7 +75,7 @@ public static void main(String[] args) {
 
 #### `DepartmentController.getDepartment()`
 - **Signature**: `DepartmentResponse getDepartment(String departmentId)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java` (lines 34-37)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java` (lines 34-37)
 - **Annotations**: @GetMapping("department/{id}")
 - **REST endpoint**: `GET /api/v1/department/{id}`
 - **Calls**: `DepartmentService.getDepartment()`
@@ -91,7 +91,7 @@ public static void main(String[] args) {
 
 #### `DepartmentController.getAllDepartments()`
 - **Signature**: `List<DepartmentResponse> getAllDepartments(double minSalary)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java` (lines 39-44)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java` (lines 39-44)
 - **Annotations**: @GetMapping("department/salary/{minSalary}")
 - **REST endpoint**: `GET /api/v1/department/salary/{minSalary}`
 - **Calls**: `DepartmentService.getAllDepartments()`
@@ -107,30 +107,30 @@ public static void main(String[] args) {
 ```
 
 ### `DepartmentResponse` (class, DTO)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/dto/DepartmentResponse.java` (lines 8-16)
-- **Package**: `com.virtusa.vihanga.departmentservice.dto`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/dto/DepartmentResponse.java` (lines 8-16)
+- **Package**: `com.aura.vihanga.departmentservice.dto`
 - **Annotations**: @Data, @NoArgsConstructor, @AllArgsConstructor, @Builder
 - **Fields**: `String departmentId`, `String departmentName`, `double salary`
 
 _No methods._
 
 ### `Department` (class, Entity/Document)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/model/Department.java` (lines 10-20)
-- **Package**: `com.virtusa.vihanga.departmentservice.model`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/model/Department.java` (lines 10-20)
+- **Package**: `com.aura.vihanga.departmentservice.model`
 - **Annotations**: @Document("department"), @Data, @NoArgsConstructor, @AllArgsConstructor, @Builder
 - **Fields**: `String departmentId`, `String departmentName`, `double salary`
 
 _No methods._
 
 ### `DepartmentRepository` (interface, Repository)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/repository/DepartmentRepository.java` (lines 9-12)
-- **Package**: `com.virtusa.vihanga.departmentservice.repository`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/repository/DepartmentRepository.java` (lines 9-12)
+- **Package**: `com.aura.vihanga.departmentservice.repository`
 - **Annotations**: @Repository
 - **Implements**: MongoRepository<Department, String>
 
 #### `DepartmentRepository.findBySalaryGreaterThan()`
 - **Signature**: `List<Department> findBySalaryGreaterThan(double minSalary)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/repository/DepartmentRepository.java` (lines 11-11)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/repository/DepartmentRepository.java` (lines 11-11)
 - **Calls**: _none resolved_
 - **Called by**: `DepartmentServiceImpl.getAllDepartments()`
 
@@ -139,12 +139,12 @@ List<Department> findBySalaryGreaterThan(double minSalary);
 ```
 
 ### `DepartmentService` (interface, Service)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/DepartmentService.java` (lines 8-12)
-- **Package**: `com.virtusa.vihanga.departmentservice.service`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/DepartmentService.java` (lines 8-12)
+- **Package**: `com.aura.vihanga.departmentservice.service`
 
 #### `DepartmentService.getDepartment()`
 - **Signature**: `DepartmentResponse getDepartment(String departmentId)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/DepartmentService.java` (lines 9-9)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/DepartmentService.java` (lines 9-9)
 - **Calls**: _none resolved_
 - **Called by**: `DepartmentController.getDepartment()`
 
@@ -155,7 +155,7 @@ DepartmentResponse getDepartment(String departmentId);
 
 #### `DepartmentService.createDepartment()`
 - **Signature**: `DepartmentResponse createDepartment(Department department)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/DepartmentService.java` (lines 10-10)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/DepartmentService.java` (lines 10-10)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -166,7 +166,7 @@ DepartmentResponse createDepartment(Department department);
 
 #### `DepartmentService.getAllDepartments()`
 - **Signature**: `List<DepartmentResponse> getAllDepartments(double minSalary)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/DepartmentService.java` (lines 11-11)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/DepartmentService.java` (lines 11-11)
 - **Calls**: _none resolved_
 - **Called by**: `DepartmentController.getAllDepartments()`
 
@@ -175,15 +175,15 @@ List<DepartmentResponse> getAllDepartments(double minSalary);
 ```
 
 ### `DepartmentServiceImpl` (class, Service)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 17-60)
-- **Package**: `com.virtusa.vihanga.departmentservice.service.implementation`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 17-60)
+- **Package**: `com.aura.vihanga.departmentservice.service.implementation`
 - **Annotations**: @Service, @Slf4j
 - **Implements**: DepartmentService
 - **Fields**: `DepartmentRepository departmentRepository`
 
 #### `DepartmentServiceImpl.createDepartment()`
 - **Signature**: `DepartmentResponse createDepartment(Department department)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 24-34)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 24-34)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -205,7 +205,7 @@ List<DepartmentResponse> getAllDepartments(double minSalary);
 
 #### `DepartmentServiceImpl.getAllDepartments()`
 - **Signature**: `List<DepartmentResponse> getAllDepartments(double minSalary)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 36-43)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 36-43)
 - **Annotations**: @Override
 - **Calls**: `DepartmentRepository.findBySalaryGreaterThan()`
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -224,7 +224,7 @@ List<DepartmentResponse> getAllDepartments(double minSalary);
 
 #### `DepartmentServiceImpl.getDepartment()`
 - **Signature**: `DepartmentResponse getDepartment(String departmentId)`
-- **Location**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 45-57)
+- **Location**: `department-service/src/main/java/com/aura/vihanga/departmentservice/service/implementation/DepartmentServiceImpl.java` (lines 45-57)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -246,8 +246,8 @@ List<DepartmentResponse> getAllDepartments(double minSalary);
 ```
 
 ### `StandardResponse` (class, Other)
-- **File**: `department-service/src/main/java/com/virtusa/vihanga/departmentservice/utill/StandardResponse.java` (lines 7-14)
-- **Package**: `com.virtusa.vihanga.departmentservice.utill`
+- **File**: `department-service/src/main/java/com/aura/vihanga/departmentservice/utill/StandardResponse.java` (lines 7-14)
+- **Package**: `com.aura.vihanga.departmentservice.utill`
 - **Annotations**: @NoArgsConstructor, @AllArgsConstructor, @Data
 - **Fields**: `int code`, `String message`, `Object data`
 
@@ -257,13 +257,13 @@ _No methods._
 ## Module: `discovery-service`
 
 ### `DiscoveryServiceApplication` (class, Other)
-- **File**: `discovery-service/src/main/java/com/virtusa/vihanga/discoveryservice/DiscoveryServiceApplication.java` (lines 7-15)
-- **Package**: `com.virtusa.vihanga.discoveryservice`
+- **File**: `discovery-service/src/main/java/com/aura/vihanga/discoveryservice/DiscoveryServiceApplication.java` (lines 7-15)
+- **Package**: `com.aura.vihanga.discoveryservice`
 - **Annotations**: @SpringBootApplication, @EnableEurekaServer
 
 #### `DiscoveryServiceApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `discovery-service/src/main/java/com/virtusa/vihanga/discoveryservice/DiscoveryServiceApplication.java` (lines 11-13)
+- **Location**: `discovery-service/src/main/java/com/aura/vihanga/discoveryservice/DiscoveryServiceApplication.java` (lines 11-13)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -277,14 +277,14 @@ public static void main(String[] args) {
 ## Module: `employee-service`
 
 ### `EmployeeServiceApplication` (class, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 9-22)
-- **Package**: `com.virtusa.vihanga.employeeservice`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 9-22)
+- **Package**: `com.aura.vihanga.employeeservice`
 - **Annotations**: @SpringBootApplication, @EnableEurekaClient
 - **Extends**: SpringBootServletInitializer
 
 #### `EmployeeServiceApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 13-15)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 13-15)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -297,7 +297,7 @@ public static void main(String[] args) {
 
 #### `EmployeeServiceApplication.configure()`
 - **Signature**: `SpringApplicationBuilder configure(SpringApplicationBuilder builder)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 17-20)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/EmployeeServiceApplication.java` (lines 17-20)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -310,14 +310,14 @@ public static void main(String[] args) {
 ```
 
 ### `EmployeeAdvice` (class, Exception Handler)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 15-30)
-- **Package**: `com.virtusa.vihanga.employeeservice.advice`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 15-30)
+- **Package**: `com.aura.vihanga.employeeservice.advice`
 - **Annotations**: @RestControllerAdvice
 - **Extends**: ResponseEntityExceptionHandler
 
 #### `EmployeeAdvice.handleHttpRequestMethodNotSupported()`
 - **Signature**: `ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 17-22)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 17-22)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -334,7 +334,7 @@ public static void main(String[] args) {
 
 #### `EmployeeAdvice.handleEmployeeNotFoundException()`
 - **Signature**: `ResponseEntity<StandardResponse> handleEmployeeNotFoundException(EmployeeNotFoundException employeeNotFoundException)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 24-29)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/advice/EmployeeAdvice.java` (lines 24-29)
 - **Annotations**: @ExceptionHandler("EmployeeNotFoundException.class")
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -349,14 +349,14 @@ public static void main(String[] args) {
 ```
 
 ### `DepartmentUrlConfiguration` (class, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/config/DepartmentUrlConfiguration.java` (lines 7-16)
-- **Package**: `com.virtusa.vihanga.employeeservice.config`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/config/DepartmentUrlConfiguration.java` (lines 7-16)
+- **Package**: `com.aura.vihanga.employeeservice.config`
 - **Annotations**: @Component
 - **Fields**: `Environment environment`
 
 #### `DepartmentUrlConfiguration.getDepartmentByIdUrl()`
 - **Signature**: `String getDepartmentByIdUrl()`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/config/DepartmentUrlConfiguration.java` (lines 13-15)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/config/DepartmentUrlConfiguration.java` (lines 13-15)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeServiceImpl.getEmployeeSalary()`
 
@@ -367,13 +367,13 @@ public String getDepartmentByIdUrl() {
 ```
 
 ### `WebClientConfig` (class, Configuration)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/config/WebClientConfig.java` (lines 9-17)
-- **Package**: `com.virtusa.vihanga.employeeservice.config`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/config/WebClientConfig.java` (lines 9-17)
+- **Package**: `com.aura.vihanga.employeeservice.config`
 - **Annotations**: @Configuration
 
 #### `WebClientConfig.webClient()`
 - **Signature**: `WebClient.Builder webClient()`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/config/WebClientConfig.java` (lines 11-16)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/config/WebClientConfig.java` (lines 11-16)
 - **Annotations**: @Lazy("true"), @Bean, @LoadBalanced
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -388,14 +388,14 @@ public String getDepartmentByIdUrl() {
 ```
 
 ### `EmployeeController` (class, Controller)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 22-78)
-- **Package**: `com.virtusa.vihanga.employeeservice.controller`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 22-78)
+- **Package**: `com.aura.vihanga.employeeservice.controller`
 - **Annotations**: @RestController, @RequestMapping("api/v1"), @Slf4j
 - **Fields**: `EmployeeService employeeService`
 
 #### `EmployeeController.createEmployee()`
 - **Signature**: `ResponseEntity<StandardResponse> createEmployee(Employee employee)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 30-38)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 30-38)
 - **Annotations**: @PostMapping("employee")
 - **REST endpoint**: `POST /api/v1/employee`
 - **Calls**: `EmployeeService.createEmployee()`
@@ -416,7 +416,7 @@ public String getDepartmentByIdUrl() {
 
 #### `EmployeeController.uploadEmployee()`
 - **Signature**: `ResponseEntity<StandardResponse> uploadEmployee(MultipartFile multipartFile)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 40-47)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 40-47)
 - **Annotations**: @PostMapping("employee/excelUpload")
 - **REST endpoint**: `POST /api/v1/employee/excelUpload`
 - **Calls**: `EmployeeService.uploadEmployee()`
@@ -436,7 +436,7 @@ public String getDepartmentByIdUrl() {
 
 #### `EmployeeController.getEmployee()`
 - **Signature**: `ResponseEntity<StandardResponse> getEmployee(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 49-57)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 49-57)
 - **Annotations**: @GetMapping("employee/{id}")
 - **REST endpoint**: `GET /api/v1/employee/{id}`
 - **Calls**: `EmployeeService.getEmployee()`
@@ -457,7 +457,7 @@ public String getDepartmentByIdUrl() {
 
 #### `EmployeeController.getEmployeeSalary()`
 - **Signature**: `CompletableFuture<ResponseEntity<StandardResponse>> getEmployeeSalary(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 59-70)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 59-70)
 - **Annotations**: @GetMapping("employee/salary/{id}"), @CircuitBreaker(name = "employee", fallbackMethod = "fallBackMethodEmployee"), @TimeLimiter(name = "employee"), @Retry(name = "employee")
 - **REST endpoint**: `GET /api/v1/employee/salary/{id}`
 - **Calls**: `EmployeeService.getEmployeeSalary()`
@@ -481,7 +481,7 @@ public String getDepartmentByIdUrl() {
 
 #### `EmployeeController.fallBackMethodEmployee()`
 - **Signature**: `CompletableFuture<ResponseEntity<StandardResponse>> fallBackMethodEmployee(String employeeId, RuntimeException runtimeException)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/controller/EmployeeController.java` (lines 72-77)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java` (lines 72-77)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -495,37 +495,37 @@ public CompletableFuture<ResponseEntity<StandardResponse>> fallBackMethodEmploye
 ```
 
 ### `DepartmentResponse` (class, DTO)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/dto/DepartmentResponse.java` (lines 8-16)
-- **Package**: `com.virtusa.vihanga.employeeservice.dto`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/dto/DepartmentResponse.java` (lines 8-16)
+- **Package**: `com.aura.vihanga.employeeservice.dto`
 - **Annotations**: @Data, @NoArgsConstructor, @AllArgsConstructor, @Builder
 - **Fields**: `String departmentId`, `String departmentName`, `String salary`
 
 _No methods._
 
 ### `EmployeeResponse` (class, DTO)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/dto/EmployeeResponse.java` (lines 10-22)
-- **Package**: `com.virtusa.vihanga.employeeservice.dto`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/dto/EmployeeResponse.java` (lines 10-22)
+- **Package**: `com.aura.vihanga.employeeservice.dto`
 - **Annotations**: @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String department`, `String phoneNo`, `String address`, `GenderType gender`, `EmployeeType employeeType`
 
 _No methods._
 
 ### `EmployeeSalaryResponse` (class, DTO)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/dto/EmployeeSalaryResponse.java` (lines 8-17)
-- **Package**: `com.virtusa.vihanga.employeeservice.dto`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/dto/EmployeeSalaryResponse.java` (lines 8-17)
+- **Package**: `com.aura.vihanga.employeeservice.dto`
 - **Annotations**: @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String departmentName`, `String salary`
 
 _No methods._
 
 ### `EmployeeNotFoundException` (class, Exception)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 3-23)
-- **Package**: `com.virtusa.vihanga.employeeservice.exception`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 3-23)
+- **Package**: `com.aura.vihanga.employeeservice.exception`
 - **Extends**: Exception
 
 #### `EmployeeNotFoundException.EmployeeNotFoundException()`
 - **Signature**: `void EmployeeNotFoundException()`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 4-6)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 4-6)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -538,7 +538,7 @@ public EmployeeNotFoundException() {
 
 #### `EmployeeNotFoundException.EmployeeNotFoundException()`
 - **Signature**: `void EmployeeNotFoundException(String message)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 8-10)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 8-10)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -551,7 +551,7 @@ public EmployeeNotFoundException(String message) {
 
 #### `EmployeeNotFoundException.EmployeeNotFoundException()`
 - **Signature**: `void EmployeeNotFoundException(String message, Throwable cause)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 12-14)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 12-14)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -564,7 +564,7 @@ public EmployeeNotFoundException(String message, Throwable cause) {
 
 #### `EmployeeNotFoundException.EmployeeNotFoundException()`
 - **Signature**: `void EmployeeNotFoundException(Throwable cause)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 16-18)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 16-18)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -577,7 +577,7 @@ public EmployeeNotFoundException(Throwable cause) {
 
 #### `EmployeeNotFoundException.EmployeeNotFoundException()`
 - **Signature**: `void EmployeeNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 20-22)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/exception/EmployeeNotFoundException.java` (lines 20-22)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -588,28 +588,28 @@ protected EmployeeNotFoundException(String message, Throwable cause, boolean ena
 ```
 
 ### `Employee` (class, Entity/Document)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/model/Employee.java` (lines 12-26)
-- **Package**: `com.virtusa.vihanga.employeeservice.model`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/model/Employee.java` (lines 12-26)
+- **Package**: `com.aura.vihanga.employeeservice.model`
 - **Annotations**: @Document("employee"), @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String department`, `String phoneNo`, `String address`, `GenderType gender`, `EmployeeType employeeType`
 
 _No methods._
 
 ### `EmployeeRepository` (interface, Repository)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/repository/EmployeeRepository.java` (lines 7-9)
-- **Package**: `com.virtusa.vihanga.employeeservice.repository`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeRepository.java` (lines 7-9)
+- **Package**: `com.aura.vihanga.employeeservice.repository`
 - **Annotations**: @Repository
 - **Implements**: MongoRepository<Employee, String>
 
 _No methods._
 
 ### `EmployeeService` (interface, Service)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/EmployeeService.java` (lines 12-20)
-- **Package**: `com.virtusa.vihanga.employeeservice.service`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/EmployeeService.java` (lines 12-20)
+- **Package**: `com.aura.vihanga.employeeservice.service`
 
 #### `EmployeeService.createEmployee()`
 - **Signature**: `EmployeeResponse createEmployee(Employee employee)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/EmployeeService.java` (lines 13-13)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/EmployeeService.java` (lines 13-13)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeController.createEmployee()`
 
@@ -620,7 +620,7 @@ EmployeeResponse createEmployee(Employee employee);
 
 #### `EmployeeService.getEmployee()`
 - **Signature**: `EmployeeResponse getEmployee(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/EmployeeService.java` (lines 15-15)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/EmployeeService.java` (lines 15-15)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeController.getEmployee()`
 
@@ -631,7 +631,7 @@ EmployeeResponse getEmployee(String employeeId) throws EmployeeNotFoundException
 
 #### `EmployeeService.getEmployeeSalary()`
 - **Signature**: `EmployeeSalaryResponse getEmployeeSalary(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/EmployeeService.java` (lines 17-17)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/EmployeeService.java` (lines 17-17)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeController.getEmployeeSalary()`
 
@@ -642,7 +642,7 @@ EmployeeSalaryResponse getEmployeeSalary(String employeeId) throws EmployeeNotFo
 
 #### `EmployeeService.uploadEmployee()`
 - **Signature**: `void uploadEmployee(MultipartFile multipartFile)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/EmployeeService.java` (lines 19-19)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/EmployeeService.java` (lines 19-19)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeController.uploadEmployee()`
 
@@ -651,15 +651,15 @@ void uploadEmployee(MultipartFile multipartFile) throws IOException;
 ```
 
 ### `EmployeeServiceImpl` (class, Service)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 22-112)
-- **Package**: `com.virtusa.vihanga.employeeservice.service.implementation`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 22-112)
+- **Package**: `com.aura.vihanga.employeeservice.service.implementation`
 - **Annotations**: @Service, @Slf4j
 - **Implements**: EmployeeService
 - **Fields**: `EmployeeRepository employeeRepository`, `WebClient.Builder builder`, `DepartmentUrlConfiguration departmentUrlConfiguration`
 
 #### `EmployeeServiceImpl.createEmployee()`
 - **Signature**: `EmployeeResponse createEmployee(Employee employee)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 35-51)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 35-51)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -687,7 +687,7 @@ void uploadEmployee(MultipartFile multipartFile) throws IOException;
 
 #### `EmployeeServiceImpl.getEmployee()`
 - **Signature**: `EmployeeResponse getEmployee(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 53-80)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 53-80)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeServiceImpl.getEmployeeSalary()`
@@ -726,7 +726,7 @@ void uploadEmployee(MultipartFile multipartFile) throws IOException;
 
 #### `EmployeeServiceImpl.getEmployeeSalary()`
 - **Signature**: `EmployeeSalaryResponse getEmployeeSalary(String employeeId)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 82-102)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 82-102)
 - **Annotations**: @Override
 - **Calls**: `EmployeeServiceImpl.getEmployee()`, `DepartmentUrlConfiguration.getDepartmentByIdUrl()`
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -758,7 +758,7 @@ void uploadEmployee(MultipartFile multipartFile) throws IOException;
 
 #### `EmployeeServiceImpl.uploadEmployee()`
 - **Signature**: `void uploadEmployee(MultipartFile multipartFile)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 104-111)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java` (lines 104-111)
 - **Annotations**: @Override
 - **Calls**: `ExcelUploadImpl.isValidExcelFile()`, `ExcelUploadImpl.getEmployeeDataFromExcel()`
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -775,13 +775,13 @@ void uploadEmployee(MultipartFile multipartFile) throws IOException;
 ```
 
 ### `ExcelUploadImpl` (class, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 19-65)
-- **Package**: `com.virtusa.vihanga.employeeservice.service.implementation`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 19-65)
+- **Package**: `com.aura.vihanga.employeeservice.service.implementation`
 - **Annotations**: @Slf4j
 
 #### `ExcelUploadImpl.isValidExcelFile()`
 - **Signature**: `boolean isValidExcelFile(MultipartFile multipartFile)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 22-25)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 22-25)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeServiceImpl.uploadEmployee()`
 
@@ -795,7 +795,7 @@ public static boolean isValidExcelFile(MultipartFile multipartFile) {
 
 #### `ExcelUploadImpl.getEmployeeDataFromExcel()`
 - **Signature**: `List<Employee> getEmployeeDataFromExcel(MultipartFile multipartFile)`
-- **Location**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 27-64)
+- **Location**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java` (lines 27-64)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeServiceImpl.uploadEmployee()`
 
@@ -841,20 +841,20 @@ public static List<Employee> getEmployeeDataFromExcel(MultipartFile multipartFil
 ```
 
 ### `EmployeeType` (enum, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/utill/EmployeeType.java` (lines 3-6)
-- **Package**: `com.virtusa.vihanga.employeeservice.utill`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/utill/EmployeeType.java` (lines 3-6)
+- **Package**: `com.aura.vihanga.employeeservice.utill`
 
 _No methods._
 
 ### `GenderType` (enum, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/utill/GenderType.java` (lines 3-7)
-- **Package**: `com.virtusa.vihanga.employeeservice.utill`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/utill/GenderType.java` (lines 3-7)
+- **Package**: `com.aura.vihanga.employeeservice.utill`
 
 _No methods._
 
 ### `StandardResponse` (class, Other)
-- **File**: `employee-service/src/main/java/com/virtusa/vihanga/employeeservice/utill/StandardResponse.java` (lines 8-16)
-- **Package**: `com.virtusa.vihanga.employeeservice.utill`
+- **File**: `employee-service/src/main/java/com/aura/vihanga/employeeservice/utill/StandardResponse.java` (lines 8-16)
+- **Package**: `com.aura.vihanga.employeeservice.utill`
 - **Annotations**: @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `int code`, `String message`, `Object data`
 
@@ -864,13 +864,13 @@ _No methods._
 ## Module: `report-service`
 
 ### `ReportServiceApplication` (class, Other)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/ReportServiceApplication.java` (lines 7-15)
-- **Package**: `com.virtusa.vihanga.reportservice`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/ReportServiceApplication.java` (lines 7-15)
+- **Package**: `com.aura.vihanga.reportservice`
 - **Annotations**: @SpringBootApplication, @EnableEurekaClient
 
 #### `ReportServiceApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/ReportServiceApplication.java` (lines 11-13)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/ReportServiceApplication.java` (lines 11-13)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -881,14 +881,14 @@ public static void main(String[] args) {
 ```
 
 ### `DepartmentConfigUrl` (class, Other)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/config/DepartmentConfigUrl.java` (lines 7-16)
-- **Package**: `com.virtusa.vihanga.reportservice.config`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/config/DepartmentConfigUrl.java` (lines 7-16)
+- **Package**: `com.aura.vihanga.reportservice.config`
 - **Annotations**: @Component
 - **Fields**: `Environment environment`
 
 #### `DepartmentConfigUrl.getDepartmentUrl()`
 - **Signature**: `String getDepartmentUrl()`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/config/DepartmentConfigUrl.java` (lines 13-15)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/config/DepartmentConfigUrl.java` (lines 13-15)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeReportServiceImpl.getEmployees()`
 
@@ -899,13 +899,13 @@ public String getDepartmentUrl() {
 ```
 
 ### `WebClientConfig` (class, Configuration)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/config/WebClientConfig.java` (lines 9-16)
-- **Package**: `com.virtusa.vihanga.reportservice.config`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/config/WebClientConfig.java` (lines 9-16)
+- **Package**: `com.aura.vihanga.reportservice.config`
 - **Annotations**: @Configuration
 
 #### `WebClientConfig.webClientBuilder()`
 - **Signature**: `WebClient.Builder webClientBuilder()`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/config/WebClientConfig.java` (lines 11-15)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/config/WebClientConfig.java` (lines 11-15)
 - **Annotations**: @Bean, @LoadBalanced
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -919,14 +919,14 @@ public String getDepartmentUrl() {
 ```
 
 ### `EmployeeReportController` (class, Controller)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/controller/EmployeeReportController.java` (lines 17-40)
-- **Package**: `com.virtusa.vihanga.reportservice.controller`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java` (lines 17-40)
+- **Package**: `com.aura.vihanga.reportservice.controller`
 - **Annotations**: @RestController, @RequestMapping("api/v1"), @Slf4j
 - **Fields**: `EmployeeReportService reportService`
 
 #### `EmployeeReportController.exportToExcel()`
 - **Signature**: `void exportToExcel(HttpServletResponse response)`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/controller/EmployeeReportController.java` (lines 25-39)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java` (lines 25-39)
 - **Annotations**: @GetMapping("export")
 - **REST endpoint**: `GET /api/v1/export`
 - **Calls**: `EmployeeReportService.getEmployees()`, `EmployeeReportService.generateExcelFile()`
@@ -951,44 +951,44 @@ public String getDepartmentUrl() {
 ```
 
 ### `DepartmentResponse` (class, DTO)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/dto/DepartmentResponse.java` (lines 8-16)
-- **Package**: `com.virtusa.vihanga.reportservice.dto`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/dto/DepartmentResponse.java` (lines 8-16)
+- **Package**: `com.aura.vihanga.reportservice.dto`
 - **Annotations**: @Data, @NoArgsConstructor, @AllArgsConstructor, @Builder
 - **Fields**: `String departmentId`, `String departmentName`, `String salary`
 
 _No methods._
 
 ### `EmployeeResponse` (class, DTO)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/dto/EmployeeResponse.java` (lines 3-4)
-- **Package**: `com.virtusa.vihanga.reportservice.dto`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/dto/EmployeeResponse.java` (lines 3-4)
+- **Package**: `com.aura.vihanga.reportservice.dto`
 
 _No methods._
 
 ### `EmployeeSalaryResponse` (class, DTO)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/dto/EmployeeSalaryResponse.java` (lines 8-17)
-- **Package**: `com.virtusa.vihanga.reportservice.dto`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/dto/EmployeeSalaryResponse.java` (lines 8-17)
+- **Package**: `com.aura.vihanga.reportservice.dto`
 - **Annotations**: @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String departmentName`, `String salary`
 
 _No methods._
 
 ### `Employee` (class, Entity/Document)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/entity/Employee.java` (lines 12-26)
-- **Package**: `com.virtusa.vihanga.reportservice.entity`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/entity/Employee.java` (lines 12-26)
+- **Package**: `com.aura.vihanga.reportservice.entity`
 - **Annotations**: @Document("employee"), @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String department`, `String phoneNo`, `String address`, `GenderType gender`, `EmployeeType employeeType`
 
 _No methods._
 
 ### `EmployeeReportRepository` (interface, Repository)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/repository/EmployeeReportRepository.java` (lines 7-10)
-- **Package**: `com.virtusa.vihanga.reportservice.repository`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/repository/EmployeeReportRepository.java` (lines 7-10)
+- **Package**: `com.aura.vihanga.reportservice.repository`
 - **Annotations**: @Repository
 - **Implements**: MongoRepository<Employee, String>
 
 #### `EmployeeReportRepository.findByDepartment()`
 - **Signature**: `List<Employee> findByDepartment(String department)`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/repository/EmployeeReportRepository.java` (lines 9-9)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/repository/EmployeeReportRepository.java` (lines 9-9)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -997,12 +997,12 @@ List<Employee> findByDepartment(String department);
 ```
 
 ### `EmployeeReportService` (interface, Service)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/EmployeeReportService.java` (lines 10-14)
-- **Package**: `com.virtusa.vihanga.reportservice.service`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java` (lines 10-14)
+- **Package**: `com.aura.vihanga.reportservice.service`
 
 #### `EmployeeReportService.getEmployees()`
 - **Signature**: `List<EmployeeSalaryResponse> getEmployees()`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/EmployeeReportService.java` (lines 11-11)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java` (lines 11-11)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeReportController.exportToExcel()`
 
@@ -1013,7 +1013,7 @@ List<EmployeeSalaryResponse> getEmployees();
 
 #### `EmployeeReportService.generateExcelFile()`
 - **Signature**: `byte[] generateExcelFile(List<EmployeeSalaryResponse> employees)`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/EmployeeReportService.java` (lines 13-13)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java` (lines 13-13)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeReportController.exportToExcel()`
 
@@ -1022,15 +1022,15 @@ public byte[] generateExcelFile(List<EmployeeSalaryResponse> employees) throws I
 ```
 
 ### `EmployeeReportServiceImpl` (class, Service)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 27-98)
-- **Package**: `com.virtusa.vihanga.reportservice.service.implementation`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 27-98)
+- **Package**: `com.aura.vihanga.reportservice.service.implementation`
 - **Annotations**: @Service, @Slf4j
 - **Implements**: EmployeeReportService
 - **Fields**: `EmployeeReportRepository employeeReportRepository`, `WebClient.Builder builder`, `DepartmentConfigUrl departmentConfigUrl`
 
 #### `EmployeeReportServiceImpl.getEmployees()`
 - **Signature**: `List<EmployeeSalaryResponse> getEmployees()`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 38-72)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 38-72)
 - **Calls**: `DepartmentConfigUrl.getDepartmentUrl()`
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -1075,7 +1075,7 @@ public List<EmployeeSalaryResponse> getEmployees() {
 
 #### `EmployeeReportServiceImpl.generateExcelFile()`
 - **Signature**: `byte[] generateExcelFile(List<EmployeeSalaryResponse> employees)`
-- **Location**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 74-97)
+- **Location**: `report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java` (lines 74-97)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -1107,20 +1107,20 @@ public byte[] generateExcelFile(List<EmployeeSalaryResponse> employees) throws I
 ```
 
 ### `EmployeeType` (enum, Other)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/utill/EmployeeType.java` (lines 3-6)
-- **Package**: `com.virtusa.vihanga.reportservice.utill`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/utill/EmployeeType.java` (lines 3-6)
+- **Package**: `com.aura.vihanga.reportservice.utill`
 
 _No methods._
 
 ### `GenderType` (enum, Other)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/utill/GenderType.java` (lines 3-7)
-- **Package**: `com.virtusa.vihanga.reportservice.utill`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/utill/GenderType.java` (lines 3-7)
+- **Package**: `com.aura.vihanga.reportservice.utill`
 
 _No methods._
 
 ### `StandardResponse` (class, Other)
-- **File**: `report-service/src/main/java/com/virtusa/vihanga/reportservice/utill/StandardResponse.java` (lines 3-4)
-- **Package**: `com.virtusa.vihanga.reportservice.utill`
+- **File**: `report-service/src/main/java/com/aura/vihanga/reportservice/utill/StandardResponse.java` (lines 3-4)
+- **Package**: `com.aura.vihanga.reportservice.utill`
 
 _No methods._
 
@@ -1128,13 +1128,13 @@ _No methods._
 ## Module: `sheduler-service`
 
 ### `ShedulerServiceApplication` (class, Other)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/ShedulerServiceApplication.java` (lines 7-15)
-- **Package**: `com.virtusa.vihanga.shedulerservice`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/ShedulerServiceApplication.java` (lines 7-15)
+- **Package**: `com.aura.vihanga.shedulerservice`
 - **Annotations**: @SpringBootApplication, @EnableScheduling
 
 #### `ShedulerServiceApplication.main()`
 - **Signature**: `void main(String[] args)`
-- **Location**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/ShedulerServiceApplication.java` (lines 11-13)
+- **Location**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/ShedulerServiceApplication.java` (lines 11-13)
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
 
@@ -1145,14 +1145,14 @@ public static void main(String[] args) {
 ```
 
 ### `EmployeeSchedulerController` (class, Controller)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/controller/EmployeeSchedulerController.java` (lines 12-22)
-- **Package**: `com.virtusa.vihanga.shedulerservice.controller`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java` (lines 12-22)
+- **Package**: `com.aura.vihanga.shedulerservice.controller`
 - **Annotations**: @RestController, @RequestMapping("api/v1")
 - **Fields**: `EmployeeSchedulerService schedulerService`
 
 #### `EmployeeSchedulerController.getAllEmployees()`
 - **Signature**: `List<Employee> getAllEmployees()`
-- **Location**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/controller/EmployeeSchedulerController.java` (lines 18-21)
+- **Location**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java` (lines 18-21)
 - **Annotations**: @GetMapping("employee")
 - **REST endpoint**: `GET /api/v1/employee`
 - **Calls**: `EmployeeSchedulerService.getAllEmployees()`
@@ -1166,27 +1166,27 @@ public static void main(String[] args) {
 ```
 
 ### `Employee` (class, Entity/Document)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/entity/Employee.java` (lines 12-26)
-- **Package**: `com.virtusa.vihanga.shedulerservice.entity`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/entity/Employee.java` (lines 12-26)
+- **Package**: `com.aura.vihanga.shedulerservice.entity`
 - **Annotations**: @Document("employee"), @NoArgsConstructor, @AllArgsConstructor, @Data, @Builder
 - **Fields**: `String employeeId`, `String name`, `String department`, `String phoneNo`, `String address`, `GenderType gender`, `EmployeeType employeeType`
 
 _No methods._
 
 ### `EmployeeSchedulerRepository` (interface, Repository)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java` (lines 6-7)
-- **Package**: `com.virtusa.vihanga.shedulerservice.repository`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java` (lines 6-7)
+- **Package**: `com.aura.vihanga.shedulerservice.repository`
 - **Implements**: MongoRepository<Employee, String>
 
 _No methods._
 
 ### `EmployeeSchedulerService` (interface, Service)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/EmployeeSchedulerService.java` (lines 7-9)
-- **Package**: `com.virtusa.vihanga.shedulerservice.service`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java` (lines 7-9)
+- **Package**: `com.aura.vihanga.shedulerservice.service`
 
 #### `EmployeeSchedulerService.getAllEmployees()`
 - **Signature**: `List<Employee> getAllEmployees()`
-- **Location**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/EmployeeSchedulerService.java` (lines 8-8)
+- **Location**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java` (lines 8-8)
 - **Calls**: _none resolved_
 - **Called by**: `EmployeeSchedulerController.getAllEmployees()`, `WomenDaySchedulerImpl.printWomenDayMessage()`
 
@@ -1195,15 +1195,15 @@ List<Employee> getAllEmployees();
 ```
 
 ### `EmployeeSchedulerServiceImpl` (class, Service)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java` (lines 11-20)
-- **Package**: `com.virtusa.vihanga.shedulerservice.service.implementation`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java` (lines 11-20)
+- **Package**: `com.aura.vihanga.shedulerservice.service.implementation`
 - **Annotations**: @Service
 - **Implements**: EmployeeSchedulerService
 - **Fields**: `EmployeeSchedulerRepository employeeSchedulerRepository`
 
 #### `EmployeeSchedulerServiceImpl.getAllEmployees()`
 - **Signature**: `List<Employee> getAllEmployees()`
-- **Location**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java` (lines 16-19)
+- **Location**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java` (lines 16-19)
 - **Annotations**: @Override
 - **Calls**: _none resolved_
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -1216,14 +1216,14 @@ List<Employee> getAllEmployees();
 ```
 
 ### `WomenDaySchedulerImpl` (class, Service)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java` (lines 13-30)
-- **Package**: `com.virtusa.vihanga.shedulerservice.service.implementation`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java` (lines 13-30)
+- **Package**: `com.aura.vihanga.shedulerservice.service.implementation`
 - **Annotations**: @Service
 - **Fields**: `EmployeeSchedulerService employeeSchedulerService`
 
 #### `WomenDaySchedulerImpl.printWomenDayMessage()`
 - **Signature**: `void printWomenDayMessage()`
-- **Location**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java` (lines 19-29)
+- **Location**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java` (lines 19-29)
 - **Annotations**: @Scheduled(cron = "0 0 0 8 3 *")
 - **Calls**: `EmployeeSchedulerService.getAllEmployees()`
 - **Called by**: _none resolved (likely an entry point or only called externally)_
@@ -1243,14 +1243,14 @@ List<Employee> getAllEmployees();
 ```
 
 ### `EmployeeType` (enum, Other)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/utill/EmployeeType.java` (lines 3-6)
-- **Package**: `com.virtusa.vihanga.shedulerservice.utill`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/utill/EmployeeType.java` (lines 3-6)
+- **Package**: `com.aura.vihanga.shedulerservice.utill`
 
 _No methods._
 
 ### `GenderType` (enum, Other)
-- **File**: `sheduler-service/src/main/java/com/virtusa/vihanga/shedulerservice/utill/GenderType.java` (lines 3-7)
-- **Package**: `com.virtusa.vihanga.shedulerservice.utill`
+- **File**: `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/utill/GenderType.java` (lines 3-7)
+- **Package**: `com.aura.vihanga.shedulerservice.utill`
 
 _No methods._
 

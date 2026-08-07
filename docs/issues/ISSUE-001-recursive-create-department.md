@@ -11,7 +11,7 @@ affected_services:
 affected_symbols:
   - DepartmentController.createDepartment
 affected_files:
-  - department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java
+  - department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java
 entry_points:
   - POST /api/v1/department
 ---
@@ -32,7 +32,7 @@ record is ever written to MongoDB.
 | Service | `department-service` |
 | Endpoint | `POST /api/v1/department` |
 | Handler | `DepartmentController.createDepartment(Department)` |
-| Location | [DepartmentController.java:23-32](../../department-service/src/main/java/com/virtusa/vihanga/departmentservice/controller/DepartmentController.java#L23-L32) |
+| Location | [DepartmentController.java:23-32](../../department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java#L23-L32) |
 | Persistence | MongoDB collection `department` (never reached) |
 
 ## Observed Behavior
@@ -50,9 +50,9 @@ Representative stack trace (truncated — the same frame repeats thousands of ti
 
 ```
 java.lang.StackOverflowError
-	at com.virtusa.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
-	at com.virtusa.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
-	at com.virtusa.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
+	at com.aura.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
+	at com.aura.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
+	at com.aura.vihanga.departmentservice.controller.DepartmentController.createDepartment(DepartmentController.java:25)
 	... repeated ...
 ```
 
