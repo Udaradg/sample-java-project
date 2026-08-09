@@ -7,6 +7,7 @@ import com.aura.vihanga.employeeservice.dto.EmployeeSalaryResponse;
 import com.aura.vihanga.employeeservice.exception.EmployeeNotFoundException;
 import com.aura.vihanga.employeeservice.model.Employee;
 import com.aura.vihanga.employeeservice.repository.EmployeeRepository;
+import com.aura.vihanga.employeeservice.repository.EmployeeSearchRepository;
 import com.aura.vihanga.employeeservice.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,6 +27,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeSearchRepository employeeSearchRepository;
     @Autowired
     @Lazy
     private WebClient.Builder builder;
@@ -99,6 +103,22 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
 
         return employeeSalaryResponse;
+    }
+
+    @Override
+    public List<EmployeeResponse> searchEmployees(String name, String department) {
+        log.trace("EmployeeServiceImpl - searchEmployees - name {} department {}", name, department);
+        List<Employee> employees = employeeSearchRepository.searchEmployees(name, department);
+
+        return employees.stream().map(employee -> EmployeeResponse.builder()
+                .employeeId(employee.getEmployeeId())
+                .name(employee.getName())
+                .department(employee.getDepartment())
+                .phoneNo(employee.getPhoneNo())
+                .address(employee.getAddress())
+                .gender(employee.getGender())
+                .employeeType(employee.getEmployeeType())
+                .build()).collect(Collectors.toList());
     }
 
     @Override

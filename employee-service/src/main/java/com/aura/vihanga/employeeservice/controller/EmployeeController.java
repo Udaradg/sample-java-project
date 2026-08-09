@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -43,6 +44,17 @@ public class EmployeeController {
 
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "File Upload Successfully", null), HttpStatus.OK
+        );
+    }
+
+    @GetMapping("employee/search")
+    public ResponseEntity<StandardResponse> searchEmployees(@RequestParam("name") String name,
+                                                            @RequestParam(value = "department", required = false) String department) {
+        log.trace("EmployeeController - searchEmployees - name {} department {}", name, department);
+        List<EmployeeResponse> employeeResponses = employeeService.searchEmployees(name, department);
+
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(200, "Employee Search Completed Successfully", employeeResponses), HttpStatus.OK
         );
     }
 

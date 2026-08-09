@@ -1,5 +1,5 @@
 ---
-issue_id: ISSUE-002
+issue_id: ISSUE-001
 title: Unbounded repository findAll() reads whole collections into memory across multiple services
 type: Vulnerability
 severity: High

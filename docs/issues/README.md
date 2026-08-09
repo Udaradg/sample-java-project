@@ -12,8 +12,9 @@ it shows up** — symptoms, reproduction, and impact only. Diagnosis lives separ
 
 | ID | Title | Type | Severity | Services | Status |
 |---|---|---|---|---|---|
-| [ISSUE-001](./ISSUE-001-recursive-create-department.md) | Creating a department never completes and crashes the department-service worker thread | Defect | Critical | `department-service` | Open |
 | [ISSUE-002](./ISSUE-002-unbounded-findall-usage.md) | Unbounded repository `findAll()` reads whole collections into memory across multiple services | Vulnerability | High | `sheduler-service`, `report-service` | Open |
+| [ISSUE-003](./ISSUE-003-unauthenticated-pii-exposure.md) | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | Vulnerability | Critical | `employee-service`, `report-service`, `sheduler-service`, `department-service`, `configuaration-server`, `discovery-service` | Open |
+| [ISSUE-004](./ISSUE-004-nosql-injection-employee-search.md) | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated `BasicQuery` | Vulnerability | Critical | `employee-service` | Open |
 
 Keep this table in step with the files in the folder — it is for humans. The pipeline itself
 discovers issues by scanning for front matter, not from this list, so a new issue works whether or

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface EmployeeService {
     EmployeeResponse createEmployee(Employee employee);
@@ -17,4 +18,6 @@ public interface EmployeeService {
     EmployeeSalaryResponse getEmployeeSalary(String employeeId) throws EmployeeNotFoundException;
 
     void uploadEmployee(MultipartFile multipartFile) throws IOException;
+
+    List<EmployeeResponse> searchEmployees(String name, String department);
 }
