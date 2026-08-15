@@ -4,7 +4,16 @@
  * Loads the artifacts.json produced by Code Cartographer into an existing
  * Neo4j instance, modeling modules, packages, types, methods and their
  * connections (inheritance, containment, REST endpoints, field-based usage).
+ *
+ * Structure is only half of what a downstream agent needs. If Context Weaver has
+ * produced .architect/context/descriptions.json, this loader also attaches the
+ * semantic layer — what each significant node is for, how it fails, what it touches —
+ * onto the same nodes, so one Cypher query returns both the shape and the meaning.
+ *
+ * That layer is interpretation, not parser output, and is loaded with its provenance
+ * intact (author, confidence, staleness) so a consumer can always tell the two apart.
  */
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
@@ -15,6 +24,7 @@ const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
   : path.join(REPO_ROOT, '.architect');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
+const DESCRIPTIONS_FILE = path.join(DATA_DIR, 'context', 'descriptions.json');
 
 const MAPPING_ANNOTATIONS = {
   GetMapping: 'GET',
@@ -34,6 +44,161 @@ function joinPath(base, extra) {
   const b = (base || '').replace(/^\/|\/$/g, '');
   const e = (extra || '').replace(/^\/|\/$/g, '');
   return '/' + [b, e].filter(Boolean).join('/');
+}
+
+function methodIdOf(typeId, method) {
+  return `${typeId}#${method.name}(${(method.params || []).map((p) => p.type).join(',')})`;
+}
+
+// ---------------------------------------------------------------------------
+// Context fingerprints
+// ---------------------------------------------------------------------------
+//
+// A description is written against one shape of the code. When that shape changes the
+// description may have quietly become false, which is worse than having none — so each
+// carries the fingerprint it was written for, and the loader recomputes the current one
+// to mark drift as `contextStale` rather than serving it as if it were still true.
+//
+// MUST stay identical to context-weaver/scripts/lib/context.js. Duplicated rather than
+// imported so this skill folder stays independently copyable, the same way the analyst
+// skills each carry their own copy of the model helpers.
+
+function sha1(text) {
+  return crypto.createHash('sha1').update(text).digest('hex').slice(0, 16);
+}
+
+function fingerprintModule(mod) {
+  const deps = (mod.dependencies || []).map((d) => `${d.groupId}:${d.artifactId}`).sort();
+  return sha1(['module', mod.name, mod.path, mod.groupId, mod.version, mod.packaging, ...deps].join('|'));
+}
+
+function fingerprintPackage(packageName, typesInPackage) {
+  return sha1(['package', packageName, ...typesInPackage.map((t) => t.id).sort()].join('|'));
+}
+
+function fingerprintType(type) {
+  const annotations = (type.annotations || []).map((a) => a.name).sort();
+  const inheritance = [...(type.extends || []), ...(type.implements || [])].map(simpleName).sort();
+  const fields = (type.fields || []).map((f) => `${f.name}:${f.type}`).sort();
+  const methods = (type.methods || []).map((m) => methodIdOf(type.id, m)).sort();
+  return sha1(['type', type.id, type.kind, ...annotations, ...inheritance, ...fields, ...methods].join('|'));
+}
+
+function fingerprintMethod(typeId, method) {
+  const annotations = (method.annotations || []).map((a) => a.name).sort();
+  const body = (method.source || '').replace(/\s+/g, ' ').trim();
+  return sha1(['method', methodIdOf(typeId, method), method.returnType || 'void', ...annotations, body].join('|'));
+}
+
+function fingerprintEndpoint(endpointId, typeId, methodName) {
+  return sha1(['endpoint', endpointId, typeId, methodName].join('|'));
+}
+
+function fingerprintExternalType(name, implementorIds) {
+  return sha1(['externalType', name, ...[...implementorIds].sort()].join('|'));
+}
+
+/** Current fingerprint of every node this graph will hold, keyed "Kind:id". */
+function indexFingerprints(modules, types) {
+  const index = new Map();
+  const nameToId = new Map();
+  for (const t of types) if (!nameToId.has(t.name)) nameToId.set(t.name, t.id);
+
+  for (const mod of modules) index.set(`Module:${mod.name}`, fingerprintModule(mod));
+
+  const byPackage = new Map();
+  for (const t of types) {
+    const list = byPackage.get(t.package) || [];
+    list.push(t);
+    byPackage.set(t.package, list);
+  }
+  for (const [packageName, typesInPackage] of byPackage) {
+    if (packageName) index.set(`Package:${packageName}`, fingerprintPackage(packageName, typesInPackage));
+  }
+
+  const externalBases = new Map();
+  for (const t of types) {
+    index.set(`Type:${t.id}`, fingerprintType(t));
+    const classMapping = (t.annotations || []).find((a) => a.name === 'RequestMapping');
+    const basePath = classMapping ? classMapping.args.value || '' : '';
+    for (const m of t.methods || []) {
+      index.set(`Method:${methodIdOf(t.id, m)}`, fingerprintMethod(t.id, m));
+      const mapping = (m.annotations || []).find((a) => MAPPING_ANNOTATIONS[a.name]);
+      if (mapping) {
+        const id = `${MAPPING_ANNOTATIONS[mapping.name]} ${joinPath(basePath, mapping.args.value || mapping.args.path || '')}`;
+        index.set(`Endpoint:${id}`, fingerprintEndpoint(id, t.id, m.name));
+      }
+    }
+    for (const raw of [...(t.implements || []), ...(t.extends || [])]) {
+      const name = simpleName(raw);
+      if (name && !nameToId.has(name)) {
+        const list = externalBases.get(name) || [];
+        list.push(t.id);
+        externalBases.set(name, list);
+      }
+    }
+  }
+  for (const [name, implementorIds] of externalBases) {
+    index.set(`ExternalType:${name}`, fingerprintExternalType(name, implementorIds));
+  }
+  return index;
+}
+
+/** The property each label is keyed on, for matching a description to its node. */
+const CONTEXT_KEY_PROPERTY = {
+  Module: 'name',
+  Package: 'name',
+  Type: 'id',
+  Method: 'id',
+  Endpoint: 'id',
+  ExternalType: 'name',
+};
+
+/**
+ * Flatten one description into Neo4j-safe properties. Neo4j stores primitives and
+ * arrays of primitives only — which is exactly what descriptions.schema.json allows,
+ * so nothing here can fail to serialize.
+ *
+ * Every property is namespaced `ctx*`, and that prefix is load-bearing rather than
+ * cosmetic. Nodes in this graph may already carry a generated `description` that only
+ * restates the AST ("GenderType — enum in module sheduler-service. 0 methods"), which
+ * is a different kind of claim entirely. Keeping the semantic layer in its own
+ * namespace means it never overwrites generated text, never gets mistaken for parser
+ * output, and can be full-text indexed on its own without the boilerplate drowning it.
+ */
+function contextProperties(node, currentFingerprint, author, generatedAt) {
+  return {
+    key: node.id,
+    ctxSummary: node.summary,
+    ctxRole: node.role || null,
+    ctxCriticality: node.criticality || null,
+    ctxResponsibilities: node.responsibilities || [],
+    ctxSideEffects: node.sideEffects || [],
+    ctxInvariants: node.invariants || [],
+    ctxFailureModes: node.failureModes || [],
+    ctxDataTouched: node.dataTouched || [],
+    ctxUpstream: node.upstream || [],
+    ctxDownstream: node.downstream || [],
+    ctxTestHints: node.testHints || [],
+    ctxOpenQuestions: node.openQuestions || [],
+    ctxEvidence: node.evidence || [],
+    ctxAuthor: author,
+    ctxConfidence: node.confidence,
+    ctxUpdatedAt: generatedAt,
+    ctxFingerprint: node.fingerprint,
+    ctxStale: Boolean(currentFingerprint && currentFingerprint !== node.fingerprint),
+  };
+}
+
+/** Optional input — a graph without context is still a valid, useful graph. */
+function loadDescriptions() {
+  if (!fs.existsSync(DESCRIPTIONS_FILE)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(DESCRIPTIONS_FILE, 'utf8'));
+  } catch (err) {
+    console.warn(`Warning: ${DESCRIPTIONS_FILE} could not be parsed (${err.message}) — loading structure only.`);
+    return null;
+  }
 }
 
 async function main() {
@@ -262,7 +427,142 @@ async function main() {
       { rows: usesRows }
     ));
 
+    // -----------------------------------------------------------------------
+    // Semantic layer — Context Weaver descriptions, if any exist.
+    // -----------------------------------------------------------------------
+    // Everything above is derived from the AST and is fact. Everything below is an
+    // interpretation of it, and is loaded with the provenance a reader needs to treat
+    // it as such: who wrote it, how confident they were, and whether the code has
+    // changed underneath it since.
+    const descriptions = loadDescriptions();
+    let contextSummary = 'no descriptions found — structure only';
+
+    if (descriptions) {
+      const currentFingerprints = indexFingerprints(modules, types);
+      const author = descriptions.author || 'unknown';
+      const generatedAt = descriptions.generatedAt || new Date().toISOString();
+
+      const byLabel = new Map();
+      let staleCount = 0;
+      let unmatched = 0;
+      for (const node of descriptions.nodes || []) {
+        if (!CONTEXT_KEY_PROPERTY[node.kind]) {
+          unmatched += 1;
+          continue;
+        }
+        const current = currentFingerprints.get(`${node.kind}:${node.id}`);
+        if (current === undefined) {
+          // Validation should have caught this. Skip rather than MERGE — inventing a
+          // node here would put a description in the graph with nothing behind it.
+          unmatched += 1;
+          continue;
+        }
+        const props = contextProperties(node, current, author, generatedAt);
+        if (props.ctxStale) staleCount += 1;
+        const rows = byLabel.get(node.kind) || [];
+        rows.push(props);
+        byLabel.set(node.kind, rows);
+      }
+
+      // MATCH, never MERGE: a description can only annotate a node the parser found.
+      let applied = 0;
+      for (const [label, rows] of byLabel) {
+        const keyProperty = CONTEXT_KEY_PROPERTY[label];
+        await session.executeWrite((tx) => tx.run(
+          `
+          UNWIND $rows AS r
+          MATCH (n:${label} {${keyProperty}: r.key})
+          SET n.ctxSummary = r.ctxSummary,
+              n.ctxRole = r.ctxRole,
+              n.ctxCriticality = r.ctxCriticality,
+              n.ctxResponsibilities = r.ctxResponsibilities,
+              n.ctxSideEffects = r.ctxSideEffects,
+              n.ctxInvariants = r.ctxInvariants,
+              n.ctxFailureModes = r.ctxFailureModes,
+              n.ctxDataTouched = r.ctxDataTouched,
+              n.ctxUpstream = r.ctxUpstream,
+              n.ctxDownstream = r.ctxDownstream,
+              n.ctxTestHints = r.ctxTestHints,
+              n.ctxOpenQuestions = r.ctxOpenQuestions,
+              n.ctxEvidence = r.ctxEvidence,
+              n.ctxAuthor = r.ctxAuthor,
+              n.ctxConfidence = r.ctxConfidence,
+              n.ctxUpdatedAt = r.ctxUpdatedAt,
+              n.ctxFingerprint = r.ctxFingerprint,
+              n.ctxStale = r.ctxStale
+          `,
+          { rows }
+        ));
+        applied += rows.length;
+      }
+
+      // Cross-cutting notes: facts that belong to no single node — a shared collection,
+      // a service dependency with no Java call edge. Modeled as their own nodes so they
+      // can be reached from every node they concern.
+      const notes = descriptions.crossCutting || [];
+      if (notes.length) {
+        await session.executeWrite((tx) => tx.run(`
+          CREATE CONSTRAINT context_note_id IF NOT EXISTS FOR (c:ContextNote) REQUIRE c.id IS UNIQUE;
+        `));
+        await session.executeWrite((tx) => tx.run(
+          `
+          UNWIND $notes AS note
+          MERGE (c:ContextNote {id: note.id})
+          SET c.topic = note.topic, c.ctxSummary = note.text,
+              c.ctxConfidence = note.confidence, c.ctxEvidence = note.evidence,
+              c.ctxAuthor = $author, c.ctxUpdatedAt = $generatedAt
+          WITH c, note
+          CALL {
+            WITH c, note
+            UNWIND note.modules AS moduleName
+            MATCH (m:Module {name: moduleName})
+            MERGE (c)-[:ABOUT]->(m)
+          }
+          CALL {
+            WITH c, note
+            UNWIND note.types AS typeId
+            MATCH (t:Type {id: typeId})
+            MERGE (c)-[:ABOUT]->(t)
+          }
+          `,
+          {
+            author,
+            generatedAt,
+            notes: notes.map((n) => ({
+              id: n.id,
+              topic: n.topic,
+              text: n.text,
+              confidence: n.confidence,
+              evidence: n.evidence || [],
+              modules: n.modules || [],
+              types: n.types || [],
+            })),
+          }
+        ));
+      }
+
+      // Full-text index over the semantic layer only, so an agent can find the right
+      // node from a symptom described in prose ("salary lookup returns nothing")
+      // instead of having to already know the class name. Failure modes are indexed
+      // alongside summaries because a reported symptom usually matches those first.
+      await session.executeWrite((tx) => tx.run(`
+        CREATE FULLTEXT INDEX context_search IF NOT EXISTS
+        FOR (n:Module|Package|Type|Method|Endpoint|ExternalType|ContextNote)
+        ON EACH [n.ctxSummary, n.ctxFailureModes, n.ctxResponsibilities, n.ctxRole];
+      `));
+
+      contextSummary =
+        `${applied} node(s) annotated by ${author}` +
+        (staleCount ? `, ${staleCount} STALE` : '') +
+        (unmatched ? `, ${unmatched} skipped (no matching graph node)` : '') +
+        (notes.length ? `, ${notes.length} cross-cutting note(s)` : '');
+    }
+
     console.log(`Graph Forge: loaded ${modules.length} module(s), ${types.length} type(s), ${inheritanceRows.length} inheritance edge(s), ${endpointRows.length} endpoint(s), ${usesRows.length} uses edge(s), ${callRows.length} method-call edge(s) into Neo4j.`);
+    console.log(`Graph Forge: context — ${contextSummary}.`);
+    if (descriptions && contextSummary.includes('STALE')) {
+      console.log('  Stale descriptions were written against older code. Re-run Context Weaver to refresh them.');
+    }
   } finally {
     await session.close();
     await driver.close();
