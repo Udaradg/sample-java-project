@@ -49,7 +49,6 @@ logs/
 
 ### Environment / secrets ###
 .env
-.env.*
 *.pem
 application-local.properties
 application-local.yml
