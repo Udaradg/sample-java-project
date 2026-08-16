@@ -3,8 +3,8 @@
  * Fix Strategist — Plan Renderer
  *
  * Combines:
- *   .github/.architect/fix-strategy/<id>.context.json  — facts, from collect-remediation-context.js
- *   .github/.architect/fix-strategy/<id>.strategy.json — judgement, written by the agent
+ *   docs/agent_output/.architect/fix-strategy/<id>.context.json  — facts, from collect-remediation-context.js
+ *   docs/agent_output/.architect/fix-strategy/<id>.strategy.json — judgement, written by the agent
  *
  * Output: docs/agent_output/04-fix-plans/fix_plan_<id>.md
  *

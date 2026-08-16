@@ -69,7 +69,7 @@ wrong.
 is right — in prose. It does not map how far the defect spreads: no service maps, no endpoint
 status tables, no who-is-affected breakdown. Keep this report focused on cause and remedy.
 
-Intermediate files land in `.github/.architect/rca/` (gitignored):
+Intermediate files land in `docs/agent_output/.architect/rca/` (gitignored):
 `<issue_id>.evidence.json`, `<issue_id>.evidence.md`, `<issue_id>.analysis.json`.
 
 ## Procedure
@@ -95,7 +95,7 @@ node scripts/collect-evidence.js --all              # every issue in the registe
 node scripts/collect-evidence.js --issue ISSUE-001  # or just one
 ```
 
-For each issue the collector resolves `affected_symbols` against `.github/.architect/artifacts.json`, walks
+For each issue the collector resolves `affected_symbols` against `docs/agent_output/.architect/artifacts.json`, walks
 the call graph in both directions, queries Neo4j for callers/callees/endpoints/fan-in/module impact,
 slices the relevant rows out of `architecture.md` and the matching entries out of
 `function-reference.md`, and detects cross-service HTTP consumers that no Java call edge captures.
@@ -115,7 +115,7 @@ still succeeds, and the fallback is recorded in the report.
 
 ### Step 3 — Read the evidence briefing (per issue)
 
-Read `.github/.architect/rca/<issue_id>.evidence.md` in full, then read the actual source files it points
+Read `docs/agent_output/.architect/rca/<issue_id>.evidence.md` in full, then read the actual source files it points
 to. Confirm each of these before forming any conclusion:
 
 - Which method is the **defect site**, and which methods are merely **on the path** to it
@@ -126,7 +126,7 @@ to. Confirm each of these before forming any conclusion:
 
 ### Step 4 — Write the analysis (per issue)
 
-Write `.github/.architect/rca/<issue_id>.analysis.json` following
+Write `docs/agent_output/.architect/rca/<issue_id>.analysis.json` following
 [templates/analysis.schema.json](./templates/analysis.schema.json)
 (worked shape in [templates/analysis.example.json](./templates/analysis.example.json)).
 
@@ -184,5 +184,5 @@ one sentence, and a link to the generated file. Lead with a coverage line
 - Neo4j credentials are read from `../01c-graph-forge/.env`; add a local `.env` here only to override.
   Never print the password or commit an `.env`
 - Every script is read-only against the codebase and against `docs/agent_output/00-issues/`; the only files written
-  are `.github/.architect/rca/*` and `docs/agent_output/02-root-cause/*.md`
-- `.github/.architect/` is gitignored — only `docs/agent_output/02-root-cause/*.md` is meant to be committed
+  are `docs/agent_output/.architect/rca/*` and `docs/agent_output/02-root-cause/*.md`
+- `docs/agent_output/.architect/` is gitignored — only `docs/agent_output/02-root-cause/*.md` is meant to be committed

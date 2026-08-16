@@ -40,7 +40,7 @@ first.
 running anything. It provides three scripts:
 
 - `scripts/list-root-causes.js` — the workload and each item's pipeline state
-- `scripts/collect-impact.js --all` — measures reach into `.github/.architect/blast-radius/<id>.facts.{json,md}`
+- `scripts/collect-impact.js --all` — measures reach into `docs/agent_output/.architect/blast-radius/<id>.facts.{json,md}`
 - `scripts/render-blast-radius.js --all` — merges your narrative with those facts into the report
 
 ## Approach
@@ -51,10 +51,10 @@ running anything. It provides three scripts:
 2. **Measure the reach.** Run `node scripts/collect-impact.js --all` (or `--issue <ISSUE-ID>`).
    Each defect is measured independently; one failure does not stop the batch.
 3. **Per defect: read the facts, then the root cause report.** Read
-   `.github/.architect/blast-radius/<id>.facts.md` in full. Settle the decisive question first: does the
+   `docs/agent_output/.architect/blast-radius/<id>.facts.md` in full. Settle the decisive question first: does the
    service still run with this defect, or does it fail to build, start or stay up? That decides
    whether one endpoint is down or the whole service is.
-4. **Per defect: write the narrative.** Write `.github/.architect/blast-radius/<id>.narrative.json` per the
+4. **Per defect: write the narrative.** Write `docs/agent_output/.architect/blast-radius/<id>.narrative.json` per the
    skill's `templates/narrative.schema.json`. Set `scope`, describe the ripple ring by ring, name
    who feels it in plain language, and list what is explicitly **not** affected.
 5. **Render.** Run `node scripts/render-blast-radius.js --all`. Fix any validation error and

@@ -141,11 +141,11 @@ Modules built: `sheduler-service`
 
 ```
 [ERROR] COMPILATION ERROR : 
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-001/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java:[23,60] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-001/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java:[23,60] cannot find symbol
   symbol:   method getName()
   location: variable employee of type com.aura.vihanga.shedulerservice.entity.Employee
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project sheduler-service: Compilation failure
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-001/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java:[23,60] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-001/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java:[23,60] cannot find symbol
 [ERROR]   symbol:   method getName()
 [ERROR]   location: variable employee of type com.aura.vihanga.shedulerservice.entity.Employee
 [ERROR] 

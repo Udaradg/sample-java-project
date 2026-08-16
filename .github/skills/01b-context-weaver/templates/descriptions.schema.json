@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Context Weaver — node descriptions",
-  "description": "The semantic layer of the knowledge graph. Written by the Architect agent (or by generate-descriptions.js) to .github/.architect/context/descriptions.json after reading the authoring brief, then loaded onto Neo4j nodes by Graph Forge. Everything here is INTERPRETATION, not parser output — downstream agents treat it as orienting context to be verified against source, never as evidence in its own right.",
+  "description": "The semantic layer of the knowledge graph. Written by the Architect agent (or by generate-descriptions.js) to docs/agent_output/.architect/context/descriptions.json after reading the authoring brief, then loaded onto Neo4j nodes by Graph Forge. Everything here is INTERPRETATION, not parser output — downstream agents treat it as orienting context to be verified against source, never as evidence in its own right.",
   "type": "object",
   "required": ["generatedAt", "artifactsGeneratedAt", "author", "nodes"],
   "additionalProperties": false,

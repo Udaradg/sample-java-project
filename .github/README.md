@@ -315,7 +315,7 @@ flowchart LR
 Because of this split, a reviewer reading any report can tell **which claims are measured and which
 are reasoned** — and the agent physically cannot overwrite a measured fact.
 
-The intermediate files live in [`.architect/`](./.architect/) (gitignored — regeneratable at any time):
+The intermediate files live in [`docs/agent_output/.architect/`](../docs/agent_output/.architect/) (gitignored — regeneratable at any time):
 
 | Folder | Contents |
 |:--|:--|

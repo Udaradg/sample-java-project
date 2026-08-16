@@ -14,8 +14,8 @@
  * invent or recall a CWE from memory.
  *
  * Writes:
- *   .github/.architect/fix-strategy/<id>.context.json  — machine-readable, consumed by render-fix-plan.js
- *   .github/.architect/fix-strategy/<id>.context.md    — briefing for the agent
+ *   docs/agent_output/.architect/fix-strategy/<id>.context.json  — machine-readable, consumed by render-fix-plan.js
+ *   docs/agent_output/.architect/fix-strategy/<id>.context.md    — briefing for the agent
  *
  * This script never proposes a remediation. It only collects facts and catalog candidates.
  *

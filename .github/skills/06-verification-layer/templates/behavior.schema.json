@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Behavior Guard — agent verdict input",
-  "description": "Written by the behavior-guard agent to .github/.architect/verify/<id>.behavior.verdict.json after reading <id>.behavior.facts.md, then consumed by scripts/render-behavior.js. Answers: did real behavior change beyond what the fix plan intended?",
+  "description": "Written by the behavior-guard agent to docs/agent_output/.architect/verify/<id>.behavior.verdict.json after reading <id>.behavior.facts.md, then consumed by scripts/render-behavior.js. Answers: did real behavior change beyond what the fix plan intended?",
   "type": "object",
   "required": ["issue_id", "verdict", "plain_summary", "in_scope_changes", "out_of_scope_changes", "reasoning"],
   "additionalProperties": false,

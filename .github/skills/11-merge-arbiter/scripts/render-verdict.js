@@ -2,8 +2,8 @@
 /**
  * Merge Arbiter — Verdict Renderer
  *
- * Combines .github/.architect/merge/<id>.score.json (script: the deterministic score/gates/computed
- * decision) with .github/.architect/merge/<id>.arbitration.json (agent: narrative + optional override)
+ * Combines docs/agent_output/.architect/merge/<id>.score.json (script: the deterministic score/gates/computed
+ * decision) with docs/agent_output/.architect/merge/<id>.arbitration.json (agent: narrative + optional override)
  * into docs/agent_output/11-ship/verdict_<id>.md. The final Decision is the override's decision when applied,
  * otherwise the computed one — and when an override is applied, BOTH are always shown, never just
  * the final answer, so nothing here is silent.

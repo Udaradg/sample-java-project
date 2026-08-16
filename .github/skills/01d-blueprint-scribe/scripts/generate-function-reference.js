@@ -12,7 +12,7 @@ const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
 const OUT_FILE = path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'function-reference.md');
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QA Test Plan — agent input",
-  "description": "Written by the qa-runner agent to .github/.architect/qa/<issue_id>.test-plan.json, alongside a hand-drafted unified diff at .github/.architect/qa/<issue_id>.new-test.diff that adds exactly one new regression test file. Consumed by scripts/run-qa-gate.js (to know which class to run) and scripts/render-qa-report.js. This file explains the test; it does not contain the test's execution result — that comes from the deterministic gate script and is never edited by the agent.",
+  "description": "Written by the qa-runner agent to docs/agent_output/.architect/qa/<issue_id>.test-plan.json, alongside a hand-drafted unified diff at docs/agent_output/.architect/qa/<issue_id>.new-test.diff that adds exactly one new regression test file. Consumed by scripts/run-qa-gate.js (to know which class to run) and scripts/render-qa-report.js. This file explains the test; it does not contain the test's execution result — that comes from the deterministic gate script and is never edited by the agent.",
   "type": "object",
   "required": ["issue_id", "test_file", "what_it_proves", "mocking_strategy", "requires_live_dependency"],
   "additionalProperties": false,

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Fix Strategy — agent strategy input",
-  "description": "The judgement half of a fix plan. Written by the Fix Strategist agent to .github/.architect/fix-strategy/<issue_id>.strategy.json after reading the context briefing and the matched CWE catalog entry in full, then consumed by scripts/render-fix-plan.js. This is strategy only — no diff, no applied code. Illustrative code, if included, must not be presented as a patch; that is the Fixer agent's job.",
+  "description": "The judgement half of a fix plan. Written by the Fix Strategist agent to docs/agent_output/.architect/fix-strategy/<issue_id>.strategy.json after reading the context briefing and the matched CWE catalog entry in full, then consumed by scripts/render-fix-plan.js. This is strategy only — no diff, no applied code. Illustrative code, if included, must not be presented as a patch; that is the Fixer agent's job.",
   "type": "object",
   "required": ["issue_id", "cwe", "plain_summary", "approach", "catalog_reference", "affected_files", "verification_plan"],
   "additionalProperties": false,

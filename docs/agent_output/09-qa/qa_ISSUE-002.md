@@ -34,22 +34,22 @@ Asserts every employee endpoint rejects an unauthenticated request with 401 inst
 nga/employeeservice/service/implementation/EmployeeServiceImpl.java:[115,31] cannot find symbol
 [ERROR]   symbol:   method getName()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[116,37] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[116,37] cannot find symbol
 [ERROR]   symbol:   method getDepartment()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[117,34] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[117,34] cannot find symbol
 [ERROR]   symbol:   method getPhoneNo()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[118,34] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[118,34] cannot find symbol
 [ERROR]   symbol:   method getAddress()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[119,33] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[119,33] cannot find symbol
 [ERROR]   symbol:   method getGender()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[120,39] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[120,39] cannot find symbol
 [ERROR]   symbol:   method getEmployeeType()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[121,34] incompatible types: inference variable T has incompatible bounds
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/qa/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[121,34] incompatible types: inference variable T has incompatible bounds
 [ERROR]     equality constraints: com.aura.vihanga.employeeservice.dto.EmployeeResponse
 [ERROR]     lower bounds: java.lang.Object
 [ERROR] -> [Help 1]

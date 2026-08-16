@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Merge Arbitration — agent narrative input",
-  "description": "Written by the merge-arbiter agent to .github/.architect/merge/<issue_id>.arbitration.json after reading <issue_id>.score.json (the deterministic score, gates, and computed decision from compute-score.js). Consumed by scripts/render-verdict.js. The score and computed decision are facts this file does not restate or alter directly — the only way to change the outcome is the explicit, always-visible override object below.",
+  "description": "Written by the merge-arbiter agent to docs/agent_output/.architect/merge/<issue_id>.arbitration.json after reading <issue_id>.score.json (the deterministic score, gates, and computed decision from compute-score.js). Consumed by scripts/render-verdict.js. The score and computed decision are facts this file does not restate or alter directly — the only way to change the outcome is the explicit, always-visible override object below.",
   "type": "object",
   "required": ["issue_id", "narrative"],
   "additionalProperties": false,

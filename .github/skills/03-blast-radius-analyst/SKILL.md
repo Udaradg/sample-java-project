@@ -55,7 +55,7 @@ Written to be read top-down by someone who has not seen the code:
 8. **What is NOT affected** — explicit scoping
 9. **Containment and priority**, then a short appendix of how it was measured
 
-Intermediates land in `.github/.architect/blast-radius/` (gitignored):
+Intermediates land in `docs/agent_output/.architect/blast-radius/` (gitignored):
 `<id>.facts.json`, `<id>.facts.md`, `<id>.narrative.json`.
 
 ## Procedure
@@ -92,7 +92,7 @@ Flags: `--depth <1-10>` (traversal depth, default 6), `--no-graph` (skip Neo4j a
 
 ### Step 3 — Read the facts briefing (per issue)
 
-Read `.github/.architect/blast-radius/<id>.facts.md` in full, and read the root cause report it cites.
+Read `docs/agent_output/.architect/blast-radius/<id>.facts.md` in full, and read the root cause report it cites.
 Before writing anything, be able to answer:
 
 - Does the service still **run** with this defect, or does it fail to build, start or stay up?
@@ -107,7 +107,7 @@ the defect, and every endpoint the broken service hosts. Pick the right one deli
 
 ### Step 4 — Write the narrative (per issue)
 
-Write `.github/.architect/blast-radius/<id>.narrative.json` following
+Write `docs/agent_output/.architect/blast-radius/<id>.narrative.json` following
 [templates/narrative.schema.json](./templates/narrative.schema.json)
 (worked shape in [templates/narrative.example.json](./templates/narrative.example.json)).
 
@@ -169,5 +169,5 @@ The colour in every diagram and table follows one rule set, applied by the scrip
 - Neo4j credentials are read from `../01c-graph-forge/.env`; add a local `.env` here only to override.
   Never print the password or commit an `.env`
 - Read-only against the codebase, `docs/agent_output/00-issues/` and `docs/agent_output/02-root-cause/`. The only files written are
-  `.github/.architect/blast-radius/*` and `docs/agent_output/03-blast-radius/*.md`
-- `.github/.architect/` is gitignored — only `docs/agent_output/03-blast-radius/*.md` is meant to be committed
+  `docs/agent_output/.architect/blast-radius/*` and `docs/agent_output/03-blast-radius/*.md`
+- `docs/agent_output/.architect/` is gitignored — only `docs/agent_output/03-blast-radius/*.md` is meant to be committed

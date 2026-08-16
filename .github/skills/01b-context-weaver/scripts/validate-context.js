@@ -180,7 +180,7 @@ function main() {
 
   --strict   Treat stale descriptions as errors instead of warnings.
 
-Validates .github/.architect/context/descriptions.json against the schema, against the ids in
+Validates docs/agent_output/.architect/context/descriptions.json against the schema, against the ids in
 artifacts.json, and against the current fingerprint of each described node.`);
     return;
   }
@@ -191,7 +191,7 @@ artifacts.json, and against the current fingerprint of each described node.`);
   if (!fs.existsSync(DESCRIPTIONS_FILE)) {
     throw new Error(
       `No descriptions at ${rel(DESCRIPTIONS_FILE)}.\n` +
-      'Read .github/.architect/context/context-workload.md and write them there (or run generate-descriptions.js).'
+      'Read docs/agent_output/.architect/context/context-workload.md and write them there (or run generate-descriptions.js).'
     );
   }
 

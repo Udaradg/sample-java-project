@@ -54,7 +54,7 @@ One plan per root cause report: `docs/agent_output/04-fix-plans/fix_plan_<issue_
 `docs/agent_output/04-fix-plans/README.md`'s index table is fully rewritten on every render run, scanning whatever is
 currently in `docs/agent_output/04-fix-plans/` — it always reflects the real state of every plan's Status cell.
 
-Intermediate files land in `.github/.architect/fix-strategy/` (gitignored):
+Intermediate files land in `docs/agent_output/.architect/fix-strategy/` (gitignored):
 `<issue_id>.context.json`, `<issue_id>.context.md`, `<issue_id>.strategy.json`.
 
 ## The approval checkpoint
@@ -95,7 +95,7 @@ fails loudly for that item rather than guessing `affected_files`.
 
 ### Step 3 — Read the briefing, then the catalog entry in full (per issue)
 
-Read `.github/.architect/fix-strategy/<issue_id>.context.md`, then open
+Read `docs/agent_output/.architect/fix-strategy/<issue_id>.context.md`, then open
 [catalog/cwe-patterns.json](./catalog/cwe-patterns.json) and read the matched entry's
 `canonical_approach` and `anti_patterns` in full — not just the title. If more than one CWE was
 detected, pick the one that names the root cause, not every CWE loosely related to the symptom. If
@@ -105,7 +105,7 @@ reasoning, or state that a new catalog entry is needed — do not invent a patte
 
 ### Step 4 — Write the strategy (per issue)
 
-Write `.github/.architect/fix-strategy/<issue_id>.strategy.json` following
+Write `docs/agent_output/.architect/fix-strategy/<issue_id>.strategy.json` following
 [templates/strategy.schema.json](./templates/strategy.schema.json)
 (worked shape in [templates/strategy.example.json](./templates/strategy.example.json)).
 
@@ -153,6 +153,6 @@ paste whole plans into chat. Close by reminding the user that a plan sits at `Pr
 - `scripts/lib/plans.js` holds shared path resolution, the front-matter/table parser, and read-only
   access to the issue register, root cause reports, blast radius reports and the CWE catalog.
 - Every script here is read-only against `docs/agent_output/00-issues/`, `docs/agent_output/02-root-cause/` and
-  `docs/agent_output/03-blast-radius/`; the only files written are `.github/.architect/fix-strategy/*` and
+  `docs/agent_output/03-blast-radius/`; the only files written are `docs/agent_output/.architect/fix-strategy/*` and
   `docs/agent_output/04-fix-plans/*.md`.
-- `.github/.architect/` is gitignored — only `docs/agent_output/04-fix-plans/*.md` is meant to be committed.
+- `docs/agent_output/.architect/` is gitignored — only `docs/agent_output/04-fix-plans/*.md` is meant to be committed.

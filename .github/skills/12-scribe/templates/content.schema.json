@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Scribe Content — agent input",
-  "description": "Written by the scribe agent to .github/.architect/scribe/<issue_id>.content.json after reading <issue_id>.chain.facts.md, then consumed by scripts/render-scribe.js to produce both docs/agent_output/11-ship/audit_<id>.md and docs/agent_output/11-ship/pr_<id>.md. The Cleared/Blocked banner and decision are pulled by the render script directly from the merge verdict, never from this file — the agent does not restate or decide the outcome here.",
+  "description": "Written by the scribe agent to docs/agent_output/.architect/scribe/<issue_id>.content.json after reading <issue_id>.chain.facts.md, then consumed by scripts/render-scribe.js to produce both docs/agent_output/11-ship/audit_<id>.md and docs/agent_output/11-ship/pr_<id>.md. The Cleared/Blocked banner and decision are pulled by the render script directly from the merge verdict, never from this file — the agent does not restate or decide the outcome here.",
   "type": "object",
   "required": ["issue_id", "audit_narrative", "pr_title", "pr_summary", "pr_test_plan"],
   "additionalProperties": false,

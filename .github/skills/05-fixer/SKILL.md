@@ -56,9 +56,9 @@ Per Approved plan: `docs/agent_output/05-fixes/fix_<issue_id>.md` and a sibling 
 
 `docs/agent_output/05-fixes/README.md`'s index is fully rewritten on every render run.
 
-Intermediate files land in `.github/.architect/fixer/` (gitignored):
+Intermediate files land in `docs/agent_output/.architect/fixer/` (gitignored):
 `<id>.patch.diff`, `<id>.rationale.json`, `<id>.verification.{json,md}`, and transiently
-`.github/.architect/fixer/worktrees/<id>/` (always removed by `verify-patch.js` unless `--keep` is passed).
+`docs/agent_output/.architect/fixer/worktrees/<id>/` (always removed by `verify-patch.js` unless `--keep` is passed).
 
 ## The approval gate
 
@@ -86,9 +86,9 @@ Write the **smallest diff** that implements `planned_change` for each file, matc
 existing style (imports, naming, formatting, error handling conventions already in use in that
 module) — do not refactor or reformat anything the plan did not ask for. Save it as a standard
 unified diff (the format `git diff` produces, with `a/`/`b/`-prefixed paths) to
-`.github/.architect/fixer/<issue_id>.patch.diff`.
+`docs/agent_output/.architect/fixer/<issue_id>.patch.diff`.
 
-Then write `.github/.architect/fixer/<issue_id>.rationale.json` per
+Then write `docs/agent_output/.architect/fixer/<issue_id>.rationale.json` per
 [templates/rationale.schema.json](./templates/rationale.schema.json)
 (worked shape in [templates/rationale.example.json](./templates/rationale.example.json)). If the real
 source didn't match what the plan assumed and you had to deviate, set `matches_plan: false` and
@@ -158,6 +158,6 @@ needing attention: plans still waiting on approval, verification failures, or en
 - Self-contained folder — zero dependencies, nothing to `npm install`.
 - `scripts/lib/fixplans.js` holds shared path resolution and the fix-plan table parser.
 - Every script here is read-only against `docs/agent_output/04-fix-plans/`; the only files written are
-  `.github/.architect/fixer/*` and `docs/agent_output/05-fixes/*`. Nothing here ever edits a file under `docs/agent_output/04-fix-plans/`,
+  `docs/agent_output/.architect/fixer/*` and `docs/agent_output/05-fixes/*`. Nothing here ever edits a file under `docs/agent_output/04-fix-plans/`,
   `docs/agent_output/02-root-cause/` or `docs/agent_output/03-blast-radius/`, and nothing here edits the real application source.
-- `.github/.architect/` is gitignored — only `docs/agent_output/05-fixes/*` is meant to be committed.
+- `docs/agent_output/.architect/` is gitignored — only `docs/agent_output/05-fixes/*` is meant to be committed.

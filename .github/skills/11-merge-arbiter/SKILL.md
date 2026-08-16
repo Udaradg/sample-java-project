@@ -31,8 +31,8 @@ weights there, never in the scripts):
 ## The agent's role: narrative, and a narrow, never-silent override
 
 `compute-score.js` computes the score and the decision — you do not recompute or restate it
-differently. You read `.github/.architect/merge/<id>.score.json` and write
-`.github/.architect/merge/<id>.arbitration.json`: a plain-language `narrative` explaining the decision, and
+differently. You read `docs/agent_output/.architect/merge/<id>.score.json` and write
+`docs/agent_output/.architect/merge/<id>.arbitration.json`: a plain-language `narrative` explaining the decision, and
 an `override` object that defaults to `applied: false`. You may set `applied: true` with a `decision`
 and an evidenced `reason` to contest the computed outcome in **either** direction — but
 `render-verdict.js` always shows the computed decision **and** your override side by side. There is
@@ -45,7 +45,7 @@ to all five upstream reports, the narrative, and the override section if one was
 `docs/agent_output/11-ship/README.md`'s index is owned by the **12-scribe** skill, not this one — it is written once
 scribe runs, since scribe's own workload already covers every rendered verdict.
 
-Intermediate: `.github/.architect/merge/<id>.score.json` (script), `<id>.arbitration.json` (agent).
+Intermediate: `docs/agent_output/.architect/merge/<id>.score.json` (script), `<id>.arbitration.json` (agent).
 
 ## Procedure
 
@@ -66,12 +66,12 @@ node scripts/compute-score.js --all
 ```
 
 Reads all five reports plus `scoring.json`, applies the hard gates, computes the weighted score
-against the severity-scaled threshold, and writes `.github/.architect/merge/<id>.score.json`.
+against the severity-scaled threshold, and writes `docs/agent_output/.architect/merge/<id>.score.json`.
 
 ### Step 3 — Per fix: read the score, write the narrative
 
-Read `.github/.architect/merge/<id>.score.json` in full. Write
-`.github/.architect/merge/<id>.arbitration.json` per
+Read `docs/agent_output/.architect/merge/<id>.score.json` in full. Write
+`docs/agent_output/.architect/merge/<id>.arbitration.json` per
 [templates/arbitration.schema.json](./templates/arbitration.schema.json). Your narrative should let
 a reviewer understand the decision from your paragraph alone, without opening all five reports.
 Only set `override.applied: true` when you have a specific, evidenced reason grounded in one or more

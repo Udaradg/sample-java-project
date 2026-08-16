@@ -47,11 +47,11 @@ your verdict so nobody mistakes your report for a claim that the patch builds.
 1. `node scripts/list-workload.js` from the skill folder — your workload is every row not already
    showing `report written` under RE-SCAN.
 2. `node scripts/collect-rescan.js --all` (or `--issue <ID>`).
-3. Per fix, read `.github/.architect/verify/<id>.rescan.facts.md` in full. Check each detected signature
+3. Per fix, read `docs/agent_output/.architect/verify/<id>.rescan.facts.md` in full. Check each detected signature
    against the patched file content already in the briefing. Then reason past the literal check: does
    the new construction actually remove the *mechanism* (e.g. binding a value as data instead of
    splicing it into query/command syntax), or could an equivalent unsafe pattern reappear under a
-   different name? Write `.github/.architect/verify/<id>.rescan.verdict.json` per
+   different name? Write `docs/agent_output/.architect/verify/<id>.rescan.verdict.json` per
    `templates/rescan.schema.json`.
 4. `node scripts/render-rescan.js --all`.
 5. Re-run `list-workload.js` and confirm every row shows `report written` under RE-SCAN.

@@ -102,21 +102,21 @@ Modules built: `employee-service`
 trees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[63,9] cannot find symbol
 [ERROR]   symbol:   variable log
 [ERROR]   location: class com.aura.vihanga.employeeservice.controller.EmployeeController
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[67,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[67,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
 [ERROR]   required: no arguments
 [ERROR]   found:    int,java.lang.String,com.aura.vihanga.employeeservice.dto.EmployeeResponse
 [ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[76,9] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[76,9] cannot find symbol
 [ERROR]   symbol:   variable log
 [ERROR]   location: class com.aura.vihanga.employeeservice.controller.EmployeeController
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[80,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[80,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
 [ERROR]   required: no arguments
 [ERROR]   found:    int,java.lang.String,com.aura.vihanga.employeeservice.dto.EmployeeSalaryResponse
 [ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[85,9] cannot find symbol
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[85,9] cannot find symbol
 [ERROR]   symbol:   variable log
 [ERROR]   location: class com.aura.vihanga.employeeservice.controller.EmployeeController
-[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/.github/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[87,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
+[ERROR] /D:/Office Research/jpmc-code-impact/sample-java-project/docs/agent_output/.architect/fixer/worktrees/ISSUE-002/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java:[87,17] constructor StandardResponse in class com.aura.vihanga.employeeservice.utill.StandardResponse cannot be applied to given types;
 [ERROR]   required: no arguments
 [ERROR]   found:    int,java.lang.String,<nulltype>
 [ERROR]   reason: actual and formal argument lists differ in length
