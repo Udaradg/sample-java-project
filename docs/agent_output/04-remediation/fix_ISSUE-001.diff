@@ -1,89 +1,191 @@
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
-index 20df816..b407f0e 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
-@@ -1,7 +1,11 @@
- package com.aura.vihanga.shedulerservice.repository;
- 
+@@
  import com.aura.vihanga.shedulerservice.entity.Employee;
 +import com.aura.vihanga.shedulerservice.utill.GenderType;
  import org.springframework.data.mongodb.repository.MongoRepository;
- 
 +import java.util.List;
-+
+ 
  public interface EmployeeSchedulerRepository extends MongoRepository<Employee, String> {
 +    List<Employee> findByGender(GenderType gender);
  }
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java
-index 8af2490..c776adf 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java
-@@ -6,4 +6,6 @@ import java.util.List;
+@@
+ import com.aura.vihanga.shedulerservice.entity.Employee;
++import com.aura.vihanga.shedulerservice.utill.GenderType;
++import org.springframework.data.domain.Page;
++import org.springframework.data.domain.Pageable;
+ 
+ import java.util.List;
  
  public interface EmployeeSchedulerService {
-     List<Employee> getAllEmployees();
-+
-+    List<Employee> getFemaleEmployees();
+-    List<Employee> getAllEmployees();
++    Page<Employee> getEmployees(Pageable pageable);
++    List<Employee> getEmployeesByGender(GenderType gender);
  }
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java
-index a15f664..f9c260f 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java
-@@ -3,18 +3,27 @@ package com.aura.vihanga.shedulerservice.service.implementation;
- import com.aura.vihanga.shedulerservice.entity.Employee;
- import com.aura.vihanga.shedulerservice.repository.EmployeeSchedulerRepository;
+@@
  import com.aura.vihanga.shedulerservice.service.EmployeeSchedulerService;
 +import com.aura.vihanga.shedulerservice.utill.GenderType;
  import org.springframework.beans.factory.annotation.Autowired;
-+import org.springframework.data.domain.PageRequest;
- import org.springframework.stereotype.Service;
- 
- import java.util.List;
- 
- @Service
- public class EmployeeSchedulerServiceImpl implements EmployeeSchedulerService {
-+    private static final int MAX_PAGE_SIZE = 500;
-+
-     @Autowired
-     private EmployeeSchedulerRepository employeeSchedulerRepository;
- 
-     @Override
-     public List<Employee> getAllEmployees() {
++import org.springframework.data.domain.Page;
++import org.springframework.data.domain.Pageable;
+@@
+-    public List<Employee> getAllEmployees() {
 -        return employeeSchedulerRepository.findAll();
-+        return employeeSchedulerRepository.findAll(PageRequest.of(0, MAX_PAGE_SIZE)).getContent();
++    public Page<Employee> getEmployees(Pageable pageable) {
++        return employeeSchedulerRepository.findAll(pageable);
 +    }
 +
 +    @Override
-+    public List<Employee> getFemaleEmployees() {
-+        return employeeSchedulerRepository.findByGender(GenderType.FEMALE);
++    public List<Employee> getEmployeesByGender(GenderType gender) {
++        return employeeSchedulerRepository.findByGender(gender);
+     }
+ }
+diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
+--- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
++++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
+@@
+ import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.data.domain.Page;
++import org.springframework.data.domain.PageRequest;
+ import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.RequestParam;
+@@
+-import java.util.List;
+-
+@@
+-    public List<Employee> getAllEmployees() {
+-        return schedulerService.getAllEmployees();
++    public Page<Employee> getEmployees(@RequestParam(defaultValue = "0") int page,
++                                       @RequestParam(defaultValue = "100") int size) {
++        return schedulerService.getEmployees(PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
      }
  }
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java
-index b129ba2..109b33d 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/WomenDaySchedulerImpl.java
-@@ -2,13 +2,11 @@ package com.aura.vihanga.shedulerservice.service.implementation;
- 
- import com.aura.vihanga.shedulerservice.entity.Employee;
- import com.aura.vihanga.shedulerservice.service.EmployeeSchedulerService;
--import com.aura.vihanga.shedulerservice.utill.GenderType;
- import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.scheduling.annotation.Scheduled;
- import org.springframework.stereotype.Service;
- 
- import java.util.List;
+@@
 -import java.util.stream.Collectors;
- 
- @Service
- public class WomenDaySchedulerImpl {
-@@ -18,9 +16,7 @@ public class WomenDaySchedulerImpl {
- 
-     @Scheduled(cron = "0 0 0 8 3 *")
-     public void printWomenDayMessage() {
+@@
 -        List<Employee> womenEmployees = employeeSchedulerService.getAllEmployees().stream()
 -                .filter(employee -> employee.getGender() == GenderType.FEMALE)
 -                .collect(Collectors.toList());
-+        List<Employee> womenEmployees = employeeSchedulerService.getFemaleEmployees();
++        List<Employee> womenEmployees = employeeSchedulerService.getEmployeesByGender(GenderType.FEMALE);
+diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java b/report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java
+--- a/report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java
++++ b/report-service/src/main/java/com/aura/vihanga/reportservice/service/EmployeeReportService.java
+@@
+-import com.aura.vihanga.reportservice.dto.EmployeeSalaryResponse;
+-import com.aura.vihanga.reportservice.entity.Employee;
+-
+ import java.io.IOException;
+-import java.util.List;
++import java.io.OutputStream;
  
-         System.out.println("Happy Women's Day!");
-         for (Employee employee : womenEmployees) {
+ public interface EmployeeReportService {
+-    List<EmployeeSalaryResponse> getEmployees();
+-
+-    public byte[] generateExcelFile(List<EmployeeSalaryResponse> employees) throws IOException;
++    void writeExcelFile(OutputStream outputStream) throws IOException;
+ }
+diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java b/report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java
+--- a/report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java
++++ b/report-service/src/main/java/com/aura/vihanga/reportservice/controller/EmployeeReportController.java
+@@
+-import com.aura.vihanga.reportservice.dto.EmployeeSalaryResponse;
+-import com.aura.vihanga.reportservice.entity.Employee;
+@@
+-import java.util.ArrayList;
+-import java.util.List;
+@@
+-        List<EmployeeSalaryResponse> employeeSalaryResponseList = reportService.getEmployees();
+-        byte[] excelBytes = reportService.generateExcelFile(employeeSalaryResponseList);
+-
+         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+         response.setHeader("Content-Disposition", "attachment; filename=employees.xlsx");
+-        response.getOutputStream().write(excelBytes);
++        reportService.writeExcelFile(response.getOutputStream());
+diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
+--- a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
++++ b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
+@@
+ import org.springframework.context.annotation.Lazy;
++import org.springframework.data.domain.Page;
++import org.springframework.data.domain.PageRequest;
+@@
+-import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
+-import java.util.ArrayList;
++import java.io.OutputStream;
+@@
+-    public List<EmployeeSalaryResponse> getEmployees() {
++    public void writeExcelFile(OutputStream outputStream) throws IOException {
+         log.info("Report Service");
+-        List<Employee> employeesList = employeeReportRepository.findAll();
+@@
+-        List<EmployeeSalaryResponse> employeeSalaryResponseList = new ArrayList<>();
+-
+-        for (Employee employee : employeesList) {
+-            for (DepartmentResponse department : departmentResponseList) {
+-                if (employee.getDepartment().equals(department.getDepartmentId())) {
+-                    EmployeeSalaryResponse employeeSalaryResponse = EmployeeSalaryResponse.builder()
+-                            .employeeId(employee.getEmployeeId())
+-                            .name(employee.getName())
+-                            .departmentName(department.getDepartmentName())
+-                            .salary(department.getSalary())
+-                            .build();
+-
+-                    log.info("employee Salary {}",employeeSalaryResponse);
+-
+-                    employeeSalaryResponseList.add(employeeSalaryResponse);
+-                }
+-            }
+-        }
+-
+-        return employeeSalaryResponseList;
+-
+-    }
+-
+-        public byte[] generateExcelFile(List<EmployeeSalaryResponse> employees) throws IOException {
+-            try (Workbook workbook = new XSSFWorkbook()) {
++        try (Workbook workbook = new XSSFWorkbook()) {
+                 Sheet sheet = workbook.createSheet("Employees");
+@@
+-                for (int i = 0; i < employees.size(); i++) {
+-                    EmployeeSalaryResponse employee = employees.get(i);
+-                    Row dataRow = sheet.createRow(i + 1);
+-                    dataRow.createCell(0).setCellValue(employee.getEmployeeId());
+-                    dataRow.createCell(1).setCellValue(employee.getName());
+-                    dataRow.createCell(2).setCellValue(employee.getDepartmentName());
+-                    dataRow.createCell(3).setCellValue(employee.getSalary());
++            int page = 0;
++            int row = 1;
++            Page<Employee> employeePage;
++            do {
++                employeePage = employeeReportRepository.findAll(PageRequest.of(page++, 500));
++                for (Employee employee : employeePage.getContent()) {
++                    for (DepartmentResponse department : departmentResponseList) {
++                        if (employee.getDepartment().equals(department.getDepartmentId())) {
++                            Row dataRow = sheet.createRow(row++);
++                            dataRow.createCell(0).setCellValue(employee.getEmployeeId());
++                            dataRow.createCell(1).setCellValue(employee.getName());
++                            dataRow.createCell(2).setCellValue(department.getDepartmentName());
++                            dataRow.createCell(3).setCellValue(department.getSalary());
++                        }
++                    }
+                 }
+-
+-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
++            } while (employeePage.hasNext());
+                 workbook.write(outputStream);
+-                return outputStream.toByteArray();
+-            }
++        }
+     }
+ }

@@ -1,9 +1,11 @@
 diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
-index d28c2b7..0ec2583 100644
 --- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
 +++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
-@@ -4,10 +4,12 @@ import com.aura.vihanga.employeeservice.model.Employee;
- import lombok.extern.slf4j.Slf4j;
+@@ -1,34 +1,25 @@
+ package com.aura.vihanga.employeeservice.repository;
+ 
+ import com.aura.vihanga.employeeservice.model.Employee;
+-import lombok.extern.slf4j.Slf4j;
  import org.springframework.beans.factory.annotation.Autowired;
  import org.springframework.data.mongodb.core.MongoTemplate;
 -import org.springframework.data.mongodb.core.query.BasicQuery;
@@ -15,27 +17,128 @@ index d28c2b7..0ec2583 100644
 +import java.util.regex.Pattern;
  
  @Repository
- @Slf4j
-@@ -17,17 +19,16 @@ public class EmployeeSearchRepository {
+-@Slf4j
+ public class EmployeeSearchRepository {
+ 
+     @Autowired
      private MongoTemplate mongoTemplate;
  
      public List<Employee> searchEmployees(String name, String department) {
 -        StringBuilder filter = new StringBuilder("{ ");
 -        filter.append("'name': { $regex: '").append(name).append("' }");
+-
 +        Criteria criteria = Criteria.where("name").regex(Pattern.quote(name));
- 
          if (department != null && !department.isEmpty()) {
 -            filter.append(", 'department': '").append(department).append("'");
-+            criteria = criteria.and("department").is(department);
++            criteria.and("department").is(department);
          }
  
 -        filter.append(" }");
-+        Query query = new Query(criteria);
- 
+-
 -        log.info("EmployeeSearchRepository - searchEmployees - filter {}", filter);
-+        log.info("EmployeeSearchRepository - searchEmployees - filter {}", query.getQueryObject().toJson());
- 
+-
 -        return mongoTemplate.find(new BasicQuery(filter.toString()), Employee.class);
-+        return mongoTemplate.find(query, Employee.class);
++        return mongoTemplate.find(new Query(criteria), Employee.class);
      }
  }
+diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+--- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
++++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
+ import java.io.IOException;
+ import java.util.List;
+ import java.util.concurrent.CompletableFuture;
++import java.util.regex.Pattern;
+ 
+ @RestController
+ @RequestMapping("api/v1")
+@@ -25,6 +26,9 @@ import java.util.concurrent.CompletableFuture;
+ @Slf4j
+ public class EmployeeController {
+ 
++    private static final int MAX_SEARCH_LENGTH = 100;
++    private static final Pattern SEARCH_VALUE_PATTERN = Pattern.compile("[\\p{L} .'-]+");
++
+     @Autowired
+     private EmployeeService employeeService;
+@@ -50,13 +54,20 @@ public class EmployeeController {
+     @GetMapping("employee/search")
+     public ResponseEntity<StandardResponse> searchEmployees(@RequestParam("name") String name,
+                                                             @RequestParam(value = "department", required = false) String department) {
+-        log.trace("EmployeeController - searchEmployees - name {} department {}", name, department);
++        if (!isValidSearchValue(name) || (department != null && !isValidSearchValue(department))) {
++            return new ResponseEntity<StandardResponse>(
++                    new StandardResponse(400, "Invalid search parameters", null), HttpStatus.BAD_REQUEST
++            );
++        }
+         List<EmployeeResponse> employeeResponses = employeeService.searchEmployees(name, department);
+ 
+         return new ResponseEntity<StandardResponse>(
+                 new StandardResponse(200, "Employee Search Completed Successfully", employeeResponses), HttpStatus.OK
+         );
+     }
+
+    private boolean isValidSearchValue(String value) {
+        return value != null && value.length() <= MAX_SEARCH_LENGTH && SEARCH_VALUE_PATTERN.matcher(value).matches();
+    }
+ 
+     @GetMapping("employee/{id}")diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
+--- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
++++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
+@@
+-import lombok.extern.slf4j.Slf4j;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.data.mongodb.core.MongoTemplate;
+-import org.springframework.data.mongodb.core.query.BasicQuery;
++import org.springframework.data.mongodb.core.query.Criteria;
++import org.springframework.data.mongodb.core.query.Query;
+@@
+ import java.util.List;
++import java.util.regex.Pattern;
+ 
+ @Repository
+-@Slf4j
+ public class EmployeeSearchRepository {
+@@
+-        StringBuilder filter = new StringBuilder("{ ");
+-        filter.append("'name': { $regex: '").append(name).append("' }");
+-
++        Criteria criteria = Criteria.where("name").regex(Pattern.quote(name));
+         if (department != null && !department.isEmpty()) {
+-            filter.append(", 'department': '").append(department).append("'");
++            criteria.and("department").is(department);
+         }
+-
+-        filter.append(" }");
+-
+-        log.info("EmployeeSearchRepository - searchEmployees - filter {}", filter);
+-
+-        return mongoTemplate.find(new BasicQuery(filter.toString()), Employee.class);
++        return mongoTemplate.find(new Query(criteria), Employee.class);
+diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+--- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
++++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+@@
+ import java.util.concurrent.CompletableFuture;
++import java.util.regex.Pattern;
+@@
+ public class EmployeeController {
+ 
++    private static final int MAX_SEARCH_LENGTH = 100;
++    private static final Pattern SEARCH_VALUE_PATTERN = Pattern.compile("[\\p{L} .'-]+");
++
+@@
+-        log.trace("EmployeeController - searchEmployees - name {} department {}", name, department);
++        if (!isValidSearchValue(name) || (department != null && !isValidSearchValue(department))) {
++            return new ResponseEntity<StandardResponse>(
++                    new StandardResponse(400, "Invalid search parameters", null), HttpStatus.BAD_REQUEST
++            );
++        }
+         List<EmployeeResponse> employeeResponses = employeeService.searchEmployees(name, department);
+@@
+         );
+     }
+
+    private boolean isValidSearchValue(String value) {
+        return value != null && value.length() <= MAX_SEARCH_LENGTH && SEARCH_VALUE_PATTERN.matcher(value).matches();
+    }
