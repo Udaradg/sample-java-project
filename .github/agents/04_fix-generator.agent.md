@@ -81,20 +81,28 @@ when the user names it.
 
 1. `node scripts/list-fix-workload.js` from `.github/skills/04b-fixer/`. Plans not at `Approved` are
    shown for visibility but are not workload.
-2. Per Approved plan: read the plan, then the current source of every affected file. Write the
-   smallest diff implementing `planned_change`, matching that file's existing style — imports,
-   naming, formatting, error-handling conventions already present in the module. Do not refactor,
-   reformat, or touch anything the plan didn't ask for. Save it as a standard unified diff to
-   `.github/.pipeline-context/fixer/<id>.patch.diff`.
+2. Per Approved plan: read the plan, then the current source of every affected file. Produce the
+smallest diff implementing `planned_change`, matching that file's existing style — imports,
+naming, formatting, error-handling conventions already present in the module. Do not refactor,
+reformat, or touch anything the plan didn't ask for. Generate the patch with `git diff` in a
+disposable worktree (or `git diff --no-index` against a temporary copy); never hand-count hunk
+ranges or concatenate copied diff fragments. Save only that one raw standard unified diff to
+`.github/.pipeline-context/fixer/<id>.patch.diff`: no Markdown fences, prose, duplicate file
+sections, or partial diffs. It must end with a newline. Before writing rationale or continuing,
+run `git apply --check .github/.pipeline-context/fixer/<id>.patch.diff` against a clean worktree
+at `HEAD`. A `patch-apply-check` failure is a draft defect: repair and re-check the patch; do not
+render or publish an invalid `.diff` artifact.
 3. Write `.github/.pipeline-context/fixer/<id>.rationale.json` per `templates/rationale.schema.json`: what
    changed and why it's the smallest correct diff, every file touched, and — if the real code didn't
    match what the plan assumed — exactly what you deviated on and why, with `matches_plan: false`.
 4. `node scripts/verify-patch.js --issue <ID>` (optionally `--test <ClassName>` for an existing test
    needing no live dependency). This refuses outright if the plan is not Approved — if it refuses,
    stop, you do not have authorization.
-5. `node scripts/render-fix-report.js --all`. The rendered Status always reflects the real
-   verification result, including a failure or a refusal — never report success the verification did
-   not confirm.
+5. `node scripts/render-fix-report.js --all`. Immediately validate every rendered standalone
+`docs/agent_output/04-remediation/fix_<id>.diff` with `git apply --check`, and compare it byte for
+byte with `.github/.pipeline-context/fixer/<id>.patch.diff`. Re-render only from the validated
+intermediate patch if either check fails. The rendered Status always reflects the real verification
+result, including a failure or a refusal — never report success the verification did not confirm.
 6. Re-run `list-fix-workload.js` and confirm every Approved plan shows "report written".
 
 ## Constraints
@@ -116,6 +124,9 @@ when the user names it.
   recording it as a deviation with a reason — "while I was in there" changes are not smallest diffs.
 - DO NOT claim a verification passed that did not, and DO NOT overstate certainty in Stage 1 — set
   `confidence` honestly and put anything unproven in `open_questions`.
+- A patch that fails `git apply --check` is malformed, not merely a failed implementation. Repair it
+   before creating a rationale, verification record, report, or sibling `.diff` artifact. A patch
+   that applies but fails compilation may still be reported honestly as `Compile Failed`.
 - DO NOT leave a kept worktree (`--keep`) behind after a normal run.
 - DO NOT merge two issues into one plan or diff, and DO NOT rename any output file.
 - DO NOT print full context bundles, plans, diffs, or rationale into chat — link to the files.

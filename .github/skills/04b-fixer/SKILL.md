@@ -82,11 +82,24 @@ Status and its own fixer pipeline state. `--approved` narrows to Approved plans 
 ### Step 2 — Per plan: draft the patch (you write this directly, no script)
 
 For each Approved plan, read it, then open the current source of every file in `affected_files`.
-Write the **smallest diff** that implements `planned_change` for each file, matching the file's
+Produce the **smallest diff** that implements `planned_change` for each file, matching the file's
 existing style (imports, naming, formatting, error handling conventions already in use in that
-module) — do not refactor or reformat anything the plan did not ask for. Save it as a standard
-unified diff (the format `git diff` produces, with `a/`/`b/`-prefixed paths) to
-`.github/.pipeline-context/fixer/<issue_id>.patch.diff`.
+module) — do not refactor or reformat anything the plan did not ask for. Generate it with `git diff`
+in a disposable worktree (or `git diff --no-index` against a temporary copy), rather than
+hand-counting hunk ranges or combining copied fragments. Save exactly one raw standard unified diff
+(the format `git diff` produces, with `a/`/`b/`-prefixed paths) to
+`.github/.pipeline-context/fixer/<issue_id>.patch.diff`: no Markdown fences, prose, duplicate file
+sections, or partial diffs; the file must end with a newline.
+
+Before writing the rationale or running the verifier, run this from the repository root:
+
+```powershell
+git apply --check .github/.pipeline-context/fixer/<issue_id>.patch.diff
+```
+
+A failure here means the patch artifact is malformed. Repair and re-check it before proceeding;
+do not publish an invalid raw `.diff` as a `Compile Failed` result. A patch that applies cleanly
+but fails Maven compilation is different and is still reported honestly as `Compile Failed`.
 
 Then write `.github/.pipeline-context/fixer/<issue_id>.rationale.json` per
 [templates/rationale.schema.json](./templates/rationale.schema.json)
@@ -121,6 +134,16 @@ Writes `docs/agent_output/04-remediation/fix_<issue_id>.md` and `docs/agent_outp
 auto-generated index in `docs/agent_output/04-remediation/README.md`. The rendered Status always reflects the actual
 verification result — a failed or refused verification is still published, marked as such, never
 upgraded to a pass.
+
+Immediately validate the rendered raw patch and its fidelity to the intermediate source:
+
+```powershell
+git apply --check docs/agent_output/04-remediation/fix_<issue_id>.diff
+git diff --no-index --exit-code .github/.pipeline-context/fixer/<issue_id>.patch.diff docs/agent_output/04-remediation/fix_<issue_id>.diff
+```
+
+Both commands must succeed. If either fails, do not treat the report as a valid deliverable; fix
+the intermediate patch or renderer input and re-render before reporting the outcome.
 
 ### Step 5 — Report back
 
