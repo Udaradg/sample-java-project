@@ -38,7 +38,7 @@ function readIfPresent(file) {
 }
 
 // ---------------------------------------------------------------------------
-// docs/agent_output/04-remediation/fix_<id>.md — same parser as verification-layer/fixer, duplicated
+// docs/agent_output/04-remediation/fix_<id>.md — same parser pattern as 05-verify/fixer, duplicated
 // ---------------------------------------------------------------------------
 
 function sectionBody(text, headingPattern) {
