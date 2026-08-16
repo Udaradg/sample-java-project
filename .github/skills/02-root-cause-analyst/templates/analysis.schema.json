@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Root Cause Analysis — agent analysis input",
-  "description": "The reasoning half of a root cause report. Written by the Root Cause Analyst agent to docs/agent_output/.architect/rca/<issue_id>.analysis.json after reading the evidence bundle, then consumed by scripts/render-root-cause.js. Every claim made here must be traceable to the evidence bundle.",
+  "description": "The reasoning half of a root cause report. Written by the Root Cause Analyst agent to .github/.architect/rca/<issue_id>.analysis.json after reading the evidence bundle, then consumed by scripts/render-root-cause.js. Every claim made here must be traceable to the evidence bundle.",
   "type": "object",
   "required": ["issue_id", "summary", "root_cause", "causal_chain", "impact", "recommended_fix", "verification"],
   "additionalProperties": false,

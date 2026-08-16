@@ -14,7 +14,7 @@ listings read in the same order the pipeline actually runs:
 - Numbers are zero-padded so `10`–`12` sort after `02`, not before it.
 
 The whole harness lives under `.github/`: the agents, the skills, the generated documents
-(`docs/agent_output/`) and the regeneratable working data (`docs/agent_output/.architect/`, gitignored).
+(`docs/agent_output/`) and the regeneratable working data (`.github/.architect/`, gitignored).
 
 **Step 00 is the input.** `docs/agent_output/00-issues/issue-register.xlsx` is an Excel workbook with one
 row per reported vulnerability. It is written by whoever reports the issue and is read-only to every
@@ -25,8 +25,8 @@ agent. See [`docs/agent_output/00-issues/README.md`](./00-issues/README.md) for 
 | Step | Agent (`.github/agents/`) | Skill (`.github/skills/`) | Produces |
 |---|---|---|---|
 | **00** | _(none — human input)_ | `00-issue-register/` | Reads `docs/agent_output/00-issues/issue-register.xlsx`; serves every issue-consuming skill |
-| **01** | `01_architect.agent.md` | `01a-code-cartographer/` | `docs/agent_output/.architect/artifacts.json` — parses every `pom.xml` + `.java` file |
-| | ″ | `01b-context-weaver/` | `docs/agent_output/.architect/context/descriptions.json` — the semantic layer over those artifacts |
+| **01** | `01_architect.agent.md` | `01a-code-cartographer/` | `.github/.architect/artifacts.json` — parses every `pom.xml` + `.java` file |
+| | ″ | `01b-context-weaver/` | `.github/.architect/context/descriptions.json` — the semantic layer over those artifacts |
 | | ″ | `01c-graph-forge/` | The Neo4j knowledge graph — artifacts + context on the same nodes |
 | | ″ | `01d-blueprint-scribe/` | `docs/agent_output/01-architecture/architecture.md` + `docs/agent_output/01-architecture/function-reference.md` |
 | **02** | `02_root-cause-analyst.agent.md` | `02-root-cause-analyst/` | `docs/agent_output/02-root-cause/root_cause_<issue_id>.md` — *why* the defect exists |
@@ -228,7 +228,7 @@ cd ../01d-blueprint-scribe; node scripts/generate-docs.js
 
 ## Where the output goes
 
-- `docs/agent_output/.architect/artifacts.json` — intermediate scan data, gitignored (local cache, regenerate anytime with the scan script)
+- `.github/.architect/artifacts.json` — intermediate scan data, gitignored (local cache, regenerate anytime with the scan script)
 - `docs/agent_output/01-architecture/architecture.md` — the shareable Markdown document, **not** gitignored — commit it when you want to update the team's view of the architecture
 - The Neo4j graph itself — browse/query it directly in your Neo4j instance (aura console or `neo4j://localhost:7474` for local Docker) using Cypher, e.g.:
   ```cypher
@@ -236,7 +236,7 @@ cd ../01d-blueprint-scribe; node scripts/generate-docs.js
   ```
 - `docs/agent_output/02-root-cause/`, `docs/agent_output/03-blast-radius/`, `docs/agent_output/04-fix-plans/`, `docs/agent_output/05-fixes/`, `docs/agent_output/06-verify/`,
   `docs/agent_output/09-qa/`, `docs/agent_output/10-build/` and `docs/agent_output/11-ship/` — all committed, all produced the same way: a script
-  gathers facts into `docs/agent_output/.architect/<sub>/` (gitignored), the agent writes a small piece of
+  gathers facts into `.github/.architect/<sub>/` (gitignored), the agent writes a small piece of
   schema-validated judgement alongside it (or, for `10_build-gatekeeper`, nothing at all — that report
   is 100% script-generated), and a render script merges the two into the final Markdown. None of
   these generated reports carry YAML front matter — downstream tooling reads them by filename pattern

@@ -46,12 +46,12 @@ Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alon
 1. `node scripts/list-workload.js` — your workload is every row not showing `report written` under
    BEHAVIOR.
 2. `node scripts/collect-behavior.js --all` (or `--issue <ID>`).
-3. Per fix, read `docs/agent_output/.architect/verify/<id>.behavior.facts.md` in full — the plan's stated scope, the
+3. Per fix, read `.github/.architect/verify/<id>.behavior.facts.md` in full — the plan's stated scope, the
    signature diff, the full diff, and pre/post source side by side. Classify every observable change:
    if it's explained by `planned_change`, it's in-scope; if not, it belongs in
    `out_of_scope_changes` — even something as small as a changed log format or a widened exception
    type, since that's exactly the class of thing this check exists to catch. Write
-   `docs/agent_output/.architect/verify/<id>.behavior.verdict.json` per `templates/behavior.schema.json`.
+   `.github/.architect/verify/<id>.behavior.verdict.json` per `templates/behavior.schema.json`.
 4. `node scripts/render-behavior.js --all`.
 5. Re-run `list-workload.js` and confirm every row shows `report written` under BEHAVIOR.
 

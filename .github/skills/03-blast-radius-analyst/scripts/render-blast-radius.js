@@ -3,8 +3,8 @@
  * Blast Radius Analyst — Report Renderer
  *
  * Combines:
- *   docs/agent_output/.architect/blast-radius/<id>.facts.json     — measured reach, from collect-impact.js
- *   docs/agent_output/.architect/blast-radius/<id>.narrative.json — plain-language judgement, from the agent
+ *   .github/.architect/blast-radius/<id>.facts.json     — measured reach, from collect-impact.js
+ *   .github/.architect/blast-radius/<id>.narrative.json — plain-language judgement, from the agent
  *
  * Output: docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md
  *
@@ -50,7 +50,7 @@ function usage() {
 Options:
   --all, -a         Render every root cause that has facts + narrative
   --issue, -i       A single issue id, e.g. ISSUE-001
-  --narrative, -n   Narrative JSON path (default docs/agent_output/.architect/blast-radius/<id>.narrative.json)
+  --narrative, -n   Narrative JSON path (default .github/.architect/blast-radius/<id>.narrative.json)
   --out, -o         Output path (default docs/agent_output/03-blast-radius/blast_radius_<id>.md)
   --help, -h        Show this message`);
 }

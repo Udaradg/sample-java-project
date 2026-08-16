@@ -290,7 +290,7 @@ public List<Employee> searchEmployees(String name, String department) {
 | Issue report | [docs/agent_output/00-issues/issue-register.xlsx](../../../docs/agent_output/00-issues/issue-register.xlsx) |
 | Architecture document | [docs/agent_output/01-architecture/architecture.md](../../../docs/agent_output/01-architecture/architecture.md) |
 | Function reference | [docs/agent_output/01-architecture/function-reference.md](../../../docs/agent_output/01-architecture/function-reference.md) |
-| Code scan | `docs/agent_output/.architect/artifacts.json` (generated 2026-08-16T07:12:00.733Z) |
+| Code scan | `.github/.architect/artifacts.json` (generated 2026-08-16T07:12:00.733Z) |
 | Knowledge graph | Neo4j, traversal depth 4 |
 
 <details><summary>Architecture observations considered</summary>

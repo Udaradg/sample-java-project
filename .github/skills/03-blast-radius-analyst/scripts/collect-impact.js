@@ -8,11 +8,11 @@
  *   3. docs/agent_output/01-architecture/architecture.md                — service topology and the full REST surface
  *   4. docs/agent_output/01-architecture/function-reference.md          — defect-site signatures and source
  *   5. the Neo4j knowledge graph           — live service, module and call connections
- *      (falls back to docs/agent_output/.architect/artifacts.json when Neo4j is unreachable)
+ *      (falls back to .github/.architect/artifacts.json when Neo4j is unreachable)
  *
  * Writes:
- *   docs/agent_output/.architect/blast-radius/<id>.facts.json  — machine-readable, consumed by the renderer
- *   docs/agent_output/.architect/blast-radius/<id>.facts.md    — briefing for the agent
+ *   .github/.architect/blast-radius/<id>.facts.json  — machine-readable, consumed by the renderer
+ *   .github/.architect/blast-radius/<id>.facts.md    — briefing for the agent
  *
  * This script measures reach. It does not judge business impact — that is the agent's job.
  *

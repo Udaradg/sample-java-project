@@ -37,7 +37,7 @@ Per Compiled fix: `docs/agent_output/09-qa/qa_<id>.md` — Status (`Passed` / `F
 proves, the mocking strategy, and the gate's real per-test results (including any `SKIPPED`).
 `docs/agent_output/09-qa/README.md`'s index is rewritten on every render run.
 
-Intermediate files in `docs/agent_output/.architect/qa/` (gitignored): `<id>.test-plan.json` (your rationale),
+Intermediate files in `.github/.architect/qa/` (gitignored): `<id>.test-plan.json` (your rationale),
 `<id>.new-test.diff` (your drafted test, as a unified diff), `<id>.result.json` (the script's
 verdict — you write this file's contents by *running the script*, never by hand).
 
@@ -56,10 +56,10 @@ No `npm install` needed — zero dependencies.
 
 Read the fix report, the diff, and the current source of the affected file. Write **exactly one**
 new test file as a unified diff (git-diff format, `a/`/`b/`-prefixed paths — the format `git diff`
-produces for a new file) to `docs/agent_output/.architect/qa/<id>.new-test.diff`. The test should replay the original
+produces for a new file) to `.github/.architect/qa/<id>.new-test.diff`. The test should replay the original
 adversarial input (from the issue) as well as a benign one, asserting the *construction* the fix
 produces (e.g. the bound `Criteria`/`Query` shape), not the raw string filter the old code used to
-build. Then write `docs/agent_output/.architect/qa/<id>.test-plan.json` per
+build. Then write `.github/.architect/qa/<id>.test-plan.json` per
 [templates/test-plan.schema.json](./templates/test-plan.schema.json) — `requires_live_dependency`
 must be `false` unless you genuinely could not avoid it.
 

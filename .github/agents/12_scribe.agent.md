@@ -33,8 +33,8 @@ only when named.
 1. `node scripts/list-scribe-workload.js` from the skill folder.
 2. `node scripts/collect-chain.js --all` (or `--issue <ID>`) — gathers links and full text from every
    pipeline stage into a briefing.
-3. Per fix, read `docs/agent_output/.architect/scribe/<id>.chain.facts.md` in full. Write
-   `docs/agent_output/.architect/scribe/<id>.content.json` per `templates/content.schema.json`: an `audit_narrative`
+3. Per fix, read `.github/.architect/scribe/<id>.chain.facts.md` in full. Write
+   `.github/.architect/scribe/<id>.content.json` per `templates/content.schema.json`: an `audit_narrative`
    where every claim links to its source document, a `pr_title`, `pr_summary` bullets, and
    `pr_test_plan` bullets drawn from what the QA and build gates actually ran (and what they could
    not, e.g. anything needing a live dependency this sandbox doesn't have).
@@ -43,7 +43,7 @@ only when named.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything outside `docs/agent_output/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
+- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
   and `docs/agent_output/11-ship/audit_*.md`. Every other document you read — including `docs/agent_output/11-ship/verdict_*.md` — is
   read-only.
 - DO NOT run `git`, `gh`, or any command that touches the real repository or a remote, under any

@@ -47,7 +47,7 @@ Multi-value cells: **one entry per line** inside the cell (Alt+Enter in Excel). 
 | Column | Notes |
 |---|---|
 | `affected_services` | Maven module names, exactly as on disk |
-| `affected_symbols` | `Type.method` — resolved against `docs/agent_output/.architect/artifacts.json` and the Neo4j graph |
+| `affected_symbols` | `Type.method` — resolved against `.github/.architect/artifacts.json` and the Neo4j graph |
 | `affected_files` | Repo-relative paths |
 | `entry_points` | REST endpoints, as `METHOD /path` |
 

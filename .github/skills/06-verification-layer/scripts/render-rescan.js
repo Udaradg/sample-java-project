@@ -2,8 +2,8 @@
 /**
  * Re-scanner — Report Renderer
  *
- * Combines docs/agent_output/.architect/verify/<id>.rescan.facts.json (script) with
- * docs/agent_output/.architect/verify/<id>.rescan.verdict.json (agent) into docs/agent_output/06-verify/rescan_<id>.md.
+ * Combines .github/.architect/verify/<id>.rescan.facts.json (script) with
+ * .github/.architect/verify/<id>.rescan.verdict.json (agent) into docs/agent_output/06-verify/rescan_<id>.md.
  *
  * Usage:
  *   node scripts/render-rescan.js --all

@@ -14,7 +14,7 @@ const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
+  : path.join(REPO_ROOT, '.github', '.architect');
 
 const PATHS = {
   SKILL_DIR,

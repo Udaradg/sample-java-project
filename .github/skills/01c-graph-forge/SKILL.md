@@ -1,18 +1,18 @@
 ---
 name: 01c-graph-forge
 description: 'Loads Code Cartographer artifacts.json into a Neo4j graph database, modeling Modules, Packages, Types, Methods, Endpoints and Maven dependencies with relationships (CONTAINS, EXTENDS, IMPLEMENTS, DEPENDS_ON, EXPOSES, USES, HAS_METHOD), and attaches the Context Weaver semantic layer (what each node is for, how it fails, what it touches) onto the same nodes. Use when asked to build/update a knowledge graph, load the code graph into Neo4j, or visualize/query code connections in Neo4j.'
-argument-hint: 'None — reads docs/agent_output/.architect/artifacts.json and connection details from .env'
+argument-hint: 'None — reads .github/.architect/artifacts.json and connection details from .env'
 ---
 
 # Graph Forge
 
 Turns the static `artifacts.json` produced by [code-cartographer](../01a-code-cartographer/SKILL.md) into a connected graph in Neo4j, so architecture questions can be answered with Cypher instead of re-reading source files.
 
-If [context-weaver](../01b-context-weaver/SKILL.md) has produced `docs/agent_output/.architect/context/descriptions.json`, the same load also attaches the **semantic layer** — what each significant node is for, how it fails, what it touches — onto those nodes, so a single query returns both the shape and the meaning. That input is optional: a graph without it is still a valid, useful graph.
+If [context-weaver](../01b-context-weaver/SKILL.md) has produced `.github/.architect/context/descriptions.json`, the same load also attaches the **semantic layer** — what each significant node is for, how it fails, what it touches — onto those nodes, so a single query returns both the shape and the meaning. That input is optional: a graph without it is still a valid, useful graph.
 
 ## When to Use
 - The user asks to "build a graph", "load the code into Neo4j", "map connections/dependencies", or "visualize the architecture"
-- Requires `docs/agent_output/.architect/artifacts.json` to already exist — run Code Cartographer's scan first if it's missing or stale
+- Requires `.github/.architect/artifacts.json` to already exist — run Code Cartographer's scan first if it's missing or stale
 
 ## Graph Model
 | Node | Key property | Notes |
@@ -40,7 +40,7 @@ If [context-weaver](../01b-context-weaver/SKILL.md) has produced `docs/agent_out
 
 ## Semantic Layer (`ctx*` properties)
 
-Loaded from `docs/agent_output/.architect/context/descriptions.json` onto `Module`, `Package`, `Type`, `Method`, `Endpoint` and `ExternalType` nodes.
+Loaded from `.github/.architect/context/descriptions.json` onto `Module`, `Package`, `Type`, `Method`, `Endpoint` and `ExternalType` nodes.
 
 **Everything above this section is parser output. Everything in it is interpretation.** That distinction is why every property is namespaced `ctx*` — the prefix is load-bearing, not cosmetic. Nodes in this graph may already carry a generated `description` that only restates the AST (`"GenderType — enum in module sheduler-service. 0 methods"`); keeping the semantic layer in its own namespace means it never overwrites generated text, is never mistaken for it, and can be searched on its own without the boilerplate drowning it.
 
@@ -67,7 +67,7 @@ Loaded from `docs/agent_output/.architect/context/descriptions.json` onto `Modul
 Descriptions only ever annotate nodes the parser found — the loader uses `MATCH`, never `MERGE`, so a description with an unrecognized id is skipped rather than inventing a node behind it.
 
 ## Procedure
-1. Ensure `docs/agent_output/.architect/artifacts.json` exists (run Code Cartographer first).
+1. Ensure `.github/.architect/artifacts.json` exists (run Code Cartographer first).
 2. Set up connection details once: copy [.env.example](./.env.example) to `.env` in this folder and fill in your Neo4j instance (`NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`). Never commit the real `.env` — it's already gitignored.
 3. Install dependencies: `cd .github/skills/01c-graph-forge && npm install`
 4. Run: `npm run graph` (or `node scripts/build-graph.js`)

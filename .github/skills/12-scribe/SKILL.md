@@ -37,7 +37,7 @@ arbiter's verdict.
 `docs/agent_output/11-ship/README.md`'s index is owned by this skill (not by merge-arbiter) — it is rewritten on
 every render run and lists every verdict alongside whether its PR/audit content exists yet.
 
-Intermediate: `docs/agent_output/.architect/scribe/<id>.chain.facts.{json,md}` (script), `<id>.content.json` (agent).
+Intermediate: `.github/.architect/scribe/<id>.chain.facts.{json,md}` (script), `<id>.content.json` (agent).
 
 ## Procedure
 
@@ -57,12 +57,12 @@ No `npm install` needed — zero dependencies. Workload = every fix with a rende
 node scripts/collect-chain.js --all
 ```
 
-Gathers links and full text from every stage into `docs/agent_output/.architect/scribe/<id>.chain.facts.md` — facts
+Gathers links and full text from every stage into `.github/.architect/scribe/<id>.chain.facts.md` — facts
 only, no prose synthesis.
 
 ### Step 3 — Per fix: write the content
 
-Read the briefing in full, then write `docs/agent_output/.architect/scribe/<id>.content.json` per
+Read the briefing in full, then write `.github/.architect/scribe/<id>.content.json` per
 [templates/content.schema.json](./templates/content.schema.json): `audit_narrative` (every claim
 linked to its source document — do not restate a fact without the link), `pr_title`, `pr_summary`,
 `pr_test_plan` (drawn from what the QA and build gates actually ran, including anything they could
@@ -84,7 +84,7 @@ so plainly rather than downplaying it.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything outside `docs/agent_output/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
+- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
   and `docs/agent_output/11-ship/audit_*.md`. Every upstream document — including `docs/agent_output/11-ship/verdict_*.md` — is
   read-only.
 - DO NOT run `git`, `gh`, or any command that mutates the repository or a remote. This skill produces

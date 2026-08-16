@@ -1,7 +1,7 @@
 /**
  * QA Runner — shared path resolution, fix-report access, and the isolated test-execution
  * sandbox. docs/agent_output/05-fixes/ is read-only input. The only files this skill writes are under
- * docs/agent_output/.architect/qa/ and docs/agent_output/09-qa/.
+ * .github/.architect/qa/ and docs/agent_output/09-qa/.
  */
 const fs = require('fs');
 const path = require('path');
@@ -11,7 +11,7 @@ const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
+  : path.join(REPO_ROOT, '.github', '.architect');
 
 const KNOWN_MODULES = [
   'configuaration-server', 'discovery-service', 'department-service',

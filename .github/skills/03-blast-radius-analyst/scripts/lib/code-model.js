@@ -1,5 +1,5 @@
 /**
- * Blast Radius Analyst — code model built from docs/agent_output/.architect/artifacts.json.
+ * Blast Radius Analyst — code model built from .github/.architect/artifacts.json.
  *
  * Where the Root Cause Analyst needs depth (the exact call chain into one defect),
  * this skill needs breadth: every endpoint a service exposes, every job it schedules,

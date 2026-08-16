@@ -6,7 +6,7 @@
  * connections (inheritance, containment, REST endpoints, field-based usage).
  *
  * Structure is only half of what a downstream agent needs. If Context Weaver has
- * produced docs/agent_output/.architect/context/descriptions.json, this loader also attaches the
+ * produced .github/.architect/context/descriptions.json, this loader also attaches the
  * semantic layer — what each significant node is for, how it fails, what it touches —
  * onto the same nodes, so one Cypher query returns both the shape and the meaning.
  *
@@ -22,7 +22,7 @@ const neo4j = require('neo4j-driver');
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
+  : path.join(REPO_ROOT, '.github', '.architect');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
 const DESCRIPTIONS_FILE = path.join(DATA_DIR, 'context', 'descriptions.json');
 

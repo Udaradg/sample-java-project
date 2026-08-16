@@ -3,8 +3,8 @@
  * Root Cause Analyst — Report Renderer
  *
  * Combines two things into the final deliverable:
- *   - docs/agent_output/.architect/rca/<issue_id>.evidence.json   — facts, from collect-evidence.js
- *   - docs/agent_output/.architect/rca/<issue_id>.analysis.json   — reasoning, written by the agent
+ *   - .github/.architect/rca/<issue_id>.evidence.json   — facts, from collect-evidence.js
+ *   - .github/.architect/rca/<issue_id>.analysis.json   — reasoning, written by the agent
  *
  * Output: docs/agent_output/02-root-cause/root_cause_<issue_id>.md
  *
@@ -55,8 +55,8 @@ function usage() {
 Options:
   --all            Render every issue in docs/agent_output/00-issues/ that has evidence + analysis
   --issue, -i      Issue id, e.g. ISSUE-001
-  --analysis, -a   Analysis JSON path (default docs/agent_output/.architect/rca/<id>.analysis.json)
-  --evidence, -e   Evidence JSON path (default docs/agent_output/.architect/rca/<id>.evidence.json)
+  --analysis, -a   Analysis JSON path (default .github/.architect/rca/<id>.analysis.json)
+  --evidence, -e   Evidence JSON path (default .github/.architect/rca/<id>.evidence.json)
   --out, -o        Output path (default docs/agent_output/02-root-cause/root_cause_<id>.md)
   --help, -h       Show this message
 

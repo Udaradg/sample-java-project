@@ -15,7 +15,7 @@ const Parser = require('web-tree-sitter');
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
+  : path.join(REPO_ROOT, '.github', '.architect');
 const OUT_FILE = path.join(DATA_DIR, 'artifacts.json');
 
 const IGNORE_GLOBS = ['**/target/**', '**/node_modules/**', '**/.git/**', '**/.architect/**'];

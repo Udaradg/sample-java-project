@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Fix Rationale — agent rationale input",
-  "description": "The judgement half of a fix report. Written by the Fixer agent to docs/agent_output/.architect/fixer/<issue_id>.rationale.json after drafting the patch at docs/agent_output/.architect/fixer/<issue_id>.patch.diff and before running scripts/verify-patch.js. Consumed by scripts/render-fix-report.js, which merges it with the script-generated verification record. Describes the diff; it is not the diff itself.",
+  "description": "The judgement half of a fix report. Written by the Fixer agent to .github/.architect/fixer/<issue_id>.rationale.json after drafting the patch at .github/.architect/fixer/<issue_id>.patch.diff and before running scripts/verify-patch.js. Consumed by scripts/render-fix-report.js, which merges it with the script-generated verification record. Describes the diff; it is not the diff itself.",
   "type": "object",
   "required": ["issue_id", "summary", "files_changed", "matches_plan"],
   "additionalProperties": false,

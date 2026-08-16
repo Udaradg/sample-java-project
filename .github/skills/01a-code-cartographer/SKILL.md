@@ -20,7 +20,7 @@ Reads Java source across the workspace and turns it into structured, queryable d
 ## Procedure
 1. Install dependencies once: `cd .github/skills/01a-code-cartographer && npm install`
 2. Run the scan: `npm run scan` (or `node scripts/scan.js`)
-3. Output is written to `docs/agent_output/.architect/artifacts.json` at the repo root (override location via `ARCHITECT_DATA_DIR` env var)
+3. Output is written to `.github/.architect/artifacts.json` at the repo root (override location via `ARCHITECT_DATA_DIR` env var)
 4. Report a short summary to the user (module/file/type counts, printed by the script) — do not paste the full JSON into chat
 
 See [scan.js](./scripts/scan.js) for implementation details.

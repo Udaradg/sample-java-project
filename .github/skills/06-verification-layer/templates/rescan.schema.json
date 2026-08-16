@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Re-scan — agent verdict input",
-  "description": "Written by the re-scanner agent to docs/agent_output/.architect/verify/<id>.rescan.verdict.json after reading <id>.rescan.facts.md, then consumed by scripts/render-rescan.js. Answers: does the originally reported finding still trigger against the patched code?",
+  "description": "Written by the re-scanner agent to .github/.architect/verify/<id>.rescan.verdict.json after reading <id>.rescan.facts.md, then consumed by scripts/render-rescan.js. Answers: does the originally reported finding still trigger against the patched code?",
   "type": "object",
   "required": ["issue_id", "verdict", "plain_summary", "reasoning"],
   "additionalProperties": false,

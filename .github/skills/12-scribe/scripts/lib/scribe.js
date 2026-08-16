@@ -1,6 +1,6 @@
 /**
  * Scribe — shared path resolution and read-only access to the entire chain of custody. Every
- * docs/ folder this skill reads from is read-only input; only docs/agent_output/.architect/scribe/ and
+ * docs/ folder this skill reads from is read-only input; only .github/.architect/scribe/ and
  * docs/agent_output/11-ship/{pr,audit}_<id>.md are written here. Scribe never touches git or GitHub — its output
  * is content for a human to act on, always written, regardless of the merge arbiter's decision.
  */
@@ -12,7 +12,7 @@ const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
 const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, 'docs', 'agent_output', '.architect');
+  : path.join(REPO_ROOT, '.github', '.architect');
 
 const PATHS = {
   SKILL_DIR,

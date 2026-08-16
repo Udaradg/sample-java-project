@@ -187,7 +187,7 @@ The fix itself is in the root cause report: [Recommended Fix](../../../docs/agen
 | Issue report | [docs/agent_output/00-issues/issue-register.xlsx](../../../docs/agent_output/00-issues/issue-register.xlsx) |
 | Architecture document | [docs/agent_output/01-architecture/architecture.md](../../../docs/agent_output/01-architecture/architecture.md) |
 | Function reference | [docs/agent_output/01-architecture/function-reference.md](../../../docs/agent_output/01-architecture/function-reference.md) |
-| Code scan | `docs/agent_output/.architect/artifacts.json` |
+| Code scan | `.github/.architect/artifacts.json` |
 | Knowledge graph | Neo4j, traversal depth 6 |
 
 **Rules used to assign status**

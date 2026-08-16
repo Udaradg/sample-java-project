@@ -1,7 +1,7 @@
 ---
 name: 01b-context-weaver
 description: 'Adds the semantic layer to the code knowledge graph. Selects the architecturally significant nodes (modules, packages, types, methods, endpoints, framework base types), briefs an author on each with real evidence, validates the resulting contextual descriptions against the schema and against artifacts.json, and serves them back to downstream agents. Use when asked to describe/document/annotate the graph, explain what parts of the code mean, add context for other agents, or as the step between Code Cartographer and Graph Forge.'
-argument-hint: 'None — reads docs/agent_output/.architect/artifacts.json, writes docs/agent_output/.architect/context/'
+argument-hint: 'None — reads .github/.architect/artifacts.json, writes .github/.architect/context/'
 ---
 
 # Context Weaver
@@ -51,7 +51,7 @@ Graph Forge                           (attaches the ctx* layer to the graph)
    authoring brief containing each node's signature, annotations, collaborators, call edges and exact
    source. Skips anything already described at the same fingerprint.
 2. **Author** — the architect agent reads `context-workload.md` and writes
-   `docs/agent_output/.architect/context/descriptions.json` against [descriptions.schema.json](./templates/descriptions.schema.json).
+   `.github/.architect/context/descriptions.json` against [descriptions.schema.json](./templates/descriptions.schema.json).
    See [descriptions.example.json](./templates/descriptions.example.json) for the shape and the expected
    depth. For a workload too large for one agent context, `npm run generate` does the same job through the
    Messages API (see *Batch generation* below).
