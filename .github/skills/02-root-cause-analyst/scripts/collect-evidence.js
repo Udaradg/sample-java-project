@@ -7,11 +7,11 @@
  *   2. docs/agent_output/01-architecture/architecture.md         — module map, service topology, REST surface
  *   3. docs/agent_output/01-architecture/function-reference.md   — per-method signatures, locations, source, call graph
  *   4. the Neo4j knowledge graph    — live callers/callees, endpoints, fan-in, module impact
- *      (falls back to .github/.architect/artifacts.json when Neo4j is unreachable)
+ *      (falls back to .github/.pipeline-context/artifacts.json when Neo4j is unreachable)
  *
  * Writes a deterministic evidence bundle:
- *   .github/.architect/rca/<issue_id>.evidence.json   — machine-readable, consumed by render-root-cause.js
- *   .github/.architect/rca/<issue_id>.evidence.md     — human/agent-readable briefing
+ *   .github/.pipeline-context/rca/<issue_id>.evidence.json   — machine-readable, consumed by render-root-cause.js
+ *   .github/.pipeline-context/rca/<issue_id>.evidence.md     — human/agent-readable briefing
  *
  * This script never draws conclusions. It only collects facts.
  *
@@ -573,9 +573,9 @@ function renderEvidenceMarkdown(evidence) {
   out.push('| Input | Status |');
   out.push('|---|---|');
   out.push(`| Issue report | \`${issue.file}\` |`);
-  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.pipeline-contexture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| \`docs/agent_output/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
-  out.push(`| \`.github/.architect/artifacts.json\` | scanned ${sources.artifactsGeneratedAt} |`);
+  out.push(`| \`.github/.pipeline-context/artifacts.json\` | scanned ${sources.artifactsGeneratedAt} |`);
   out.push(`| Neo4j graph | ${graph.live ? `live (depth ${graph.depth})` : `not used — ${graph.reason}`} |`);
   out.push('');
   out.push(`_Resolution note: ${evidence.sources.dispatchEdges} interface → implementation dispatch edge(s) were bridged into the call graph, because Spring injects the implementation behind the interface. Neo4j's raw \`CALLS\` edges stop at the interface, so paths below may be one hop longer than the graph shows._`);
@@ -713,7 +713,7 @@ function renderEvidenceMarkdown(evidence) {
   if (!graph.live) {
     out.push(`_Neo4j not used: ${graph.reason}_`);
     out.push('');
-    out.push('All call-graph facts above come from `.github/.architect/artifacts.json` using the same resolution rules Graph Forge applies, so they remain valid — only live cross-checking is unavailable.');
+    out.push('All call-graph facts above come from `.github/.pipeline-context/artifacts.json` using the same resolution rules Graph Forge applies, so they remain valid — only live cross-checking is unavailable.');
     out.push('');
   } else {
     out.push(`Connected to \`${graph.host}\`, database traversal depth ${graph.depth}.`);
@@ -963,7 +963,7 @@ async function main() {
     architectureText: readIfPresent(ARCHITECTURE_MD),
     functionReferenceText: readIfPresent(FUNCTION_REFERENCE_MD),
   };
-  if (!context.architectureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for full architecture context.`);
+  if (!context.pipeline-contextureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for full architecture context.`);
   if (!context.functionReferenceText) console.warn(`Warning: ${rel(FUNCTION_REFERENCE_MD)} is missing — run Blueprint Scribe for function-level excerpts.`);
 
   // One issue failing must not abort the rest of the batch.

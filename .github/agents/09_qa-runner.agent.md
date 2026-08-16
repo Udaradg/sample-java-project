@@ -33,8 +33,8 @@ if that fix isn't `Compiled`.
 1. `node scripts/list-qa-workload.js` from the skill folder.
 2. Per Compiled fix: read the fix report, the diff, and the current source of the affected file(s).
    Draft exactly one new test file (mocked, replaying both the original adversarial input and a
-   benign one) as a unified diff to `.github/.architect/qa/<id>.new-test.diff`, and write
-   `.github/.architect/qa/<id>.test-plan.json` per `templates/test-plan.schema.json`.
+   benign one) as a unified diff to `.github/.pipeline-context/qa/<id>.new-test.diff`, and write
+   `.github/.pipeline-context/qa/<id>.test-plan.json` per `templates/test-plan.schema.json`.
 3. Run `node scripts/run-qa-gate.js --issue <ID>` (add `--existing-test <ClassName>` if a pre-existing
    test genuinely targets the same class and doesn't need a live dependency — the script checks and
    marks it `SKIPPED` rather than pretending otherwise if it does). This applies your test and the fix

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Blast Radius — agent narrative input",
-  "description": "The plain-language half of a blast radius report. Written by the Blast Radius Analyst agent to .github/.architect/blast-radius/<issue_id>.narrative.json after reading the facts briefing, then consumed by scripts/render-blast-radius.js. Write for a reader who has not seen the code: no class names where a capability name will do, no jargon where a plain word exists. Every claim must stay inside the reach the collector measured.",
+  "description": "The plain-language half of a blast radius report. Written by the Blast Radius Analyst agent to .github/.pipeline-context/blast-radius/<issue_id>.narrative.json after reading the facts briefing, then consumed by scripts/render-blast-radius.js. Write for a reader who has not seen the code: no class names where a capability name will do, no jargon where a plain word exists. Every claim must stay inside the reach the collector measured.",
   "type": "object",
   "required": ["issue_id", "scope", "headline", "what_is_broken", "ripple", "user_impact", "priority"],
   "additionalProperties": false,

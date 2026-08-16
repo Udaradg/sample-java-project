@@ -13,9 +13,9 @@ const register = require('../../../00-issue-register/scripts/lib/register');
 
 const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 
 const PATHS = {
   SKILL_DIR,

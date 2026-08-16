@@ -1,6 +1,6 @@
 /**
  * Build Gatekeeper — shared path resolution, fix-report access, and the isolated build sandbox.
- * docs/agent_output/05-fixes/ is read-only input. Only .github/.architect/build/ and docs/agent_output/10-build/ are written here.
+ * docs/agent_output/05-fixes/ is read-only input. Only .github/.pipeline-context/build/ and docs/agent_output/10-build/ are written here.
  *
  * This skill has no agent-authored judgment file anywhere in its pipeline — every fact in its
  * report comes straight from a script. That is deliberate: Phase C step 2 is meant to be
@@ -12,9 +12,9 @@ const { spawnSync } = require('child_process');
 
 const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 
 const KNOWN_MODULES = [
   'configuaration-server', 'discovery-service', 'department-service',

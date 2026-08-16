@@ -3,8 +3,8 @@
  * Root Cause Analyst — Report Renderer
  *
  * Combines two things into the final deliverable:
- *   - .github/.architect/rca/<issue_id>.evidence.json   — facts, from collect-evidence.js
- *   - .github/.architect/rca/<issue_id>.analysis.json   — reasoning, written by the agent
+ *   - .github/.pipeline-context/rca/<issue_id>.evidence.json   — facts, from collect-evidence.js
+ *   - .github/.pipeline-context/rca/<issue_id>.analysis.json   — reasoning, written by the agent
  *
  * Output: docs/agent_output/02-root-cause/root_cause_<issue_id>.md
  *
@@ -55,8 +55,8 @@ function usage() {
 Options:
   --all            Render every issue in docs/agent_output/00-issues/ that has evidence + analysis
   --issue, -i      Issue id, e.g. ISSUE-001
-  --analysis, -a   Analysis JSON path (default .github/.architect/rca/<id>.analysis.json)
-  --evidence, -e   Evidence JSON path (default .github/.architect/rca/<id>.evidence.json)
+  --analysis, -a   Analysis JSON path (default .github/.pipeline-context/rca/<id>.analysis.json)
+  --evidence, -e   Evidence JSON path (default .github/.pipeline-context/rca/<id>.evidence.json)
   --out, -o        Output path (default docs/agent_output/02-root-cause/root_cause_<id>.md)
   --help, -h       Show this message
 
@@ -320,15 +320,15 @@ function render(evidence, analysis) {
   out.push('| Input | Detail |');
   out.push('|---|---|');
   out.push(`| Issue report | ${docLink(issue.file, issue.file)} |`);
-  out.push(`| Architecture document | ${sources.architecture ? docLink('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.pipeline-contexture ? docLink('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
   out.push(`| Function reference | ${sources.functionReference ? docLink('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` (generated ${sources.artifactsGeneratedAt}) |`);
   out.push(`| Knowledge graph | ${graph.live ? `Neo4j, traversal depth ${graph.depth}` : `not used — ${graph.reason}`} |`);
   out.push('');
-  if (evidence.architectureContext && evidence.architectureContext.observations.length) {
+  if (evidence.pipeline-contextureContext && evidence.pipeline-contextureContext.observations.length) {
     out.push('<details><summary>Architecture observations considered</summary>');
     out.push('');
-    evidence.architectureContext.observations.forEach((o) => out.push(o));
+    evidence.pipeline-contextureContext.observations.forEach((o) => out.push(o));
     out.push('');
     out.push('</details>');
     out.push('');

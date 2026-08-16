@@ -45,11 +45,11 @@ Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alon
 1. `node scripts/list-workload.js` — your workload is every row not showing `report written` under
    RED-TEAM.
 2. `node scripts/collect-redteam.js --all` (or `--issue <ID>`).
-3. Per fix, read `.github/.architect/verify/<id>.redteam.facts.md` in full. Enumerate concrete vectors against
+3. Per fix, read `.github/.pipeline-context/verify/<id>.redteam.facts.md` in full. Enumerate concrete vectors against
    the *new* code specifically — a different request field, a different operator/character class, an
    unbounded input, a type-confusion angle — not a restatement of the original finding. For each,
    record whether it's `blocked`, `succeeds`, or `uncertain`, with your reasoning. Write
-   `.github/.architect/verify/<id>.redteam.verdict.json` per `templates/redteam.schema.json`; if any vector
+   `.github/.pipeline-context/verify/<id>.redteam.verdict.json` per `templates/redteam.schema.json`; if any vector
    actually succeeds, that fix's `bypasses_found` must be non-empty with a concrete proof sketch, not
    a vague assertion.
 4. `node scripts/render-redteam.js --all`.

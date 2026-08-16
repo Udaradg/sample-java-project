@@ -5,7 +5,7 @@
  * name so the three stay independently runnable and auditable.
  *
  * docs/agent_output/05-fixes/, docs/agent_output/04-fix-plans/, docs/agent_output/02-root-cause/ and docs/agent_output/00-issues/ are all READ-ONLY input here.
- * The only files this skill writes are under .github/.architect/verify/ and docs/agent_output/06-verify/.
+ * The only files this skill writes are under .github/.pipeline-context/verify/ and docs/agent_output/06-verify/.
  */
 const fs = require('fs');
 const path = require('path');
@@ -14,9 +14,9 @@ const { spawnSync } = require('child_process');
 
 const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 
 const PATHS = {
   SKILL_DIR,

@@ -3,8 +3,8 @@
  * Blast Radius Analyst — Report Renderer
  *
  * Combines:
- *   .github/.architect/blast-radius/<id>.facts.json     — measured reach, from collect-impact.js
- *   .github/.architect/blast-radius/<id>.narrative.json — plain-language judgement, from the agent
+ *   .github/.pipeline-context/blast-radius/<id>.facts.json     — measured reach, from collect-impact.js
+ *   .github/.pipeline-context/blast-radius/<id>.narrative.json — plain-language judgement, from the agent
  *
  * Output: docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md
  *
@@ -50,7 +50,7 @@ function usage() {
 Options:
   --all, -a         Render every root cause that has facts + narrative
   --issue, -i       A single issue id, e.g. ISSUE-001
-  --narrative, -n   Narrative JSON path (default .github/.architect/blast-radius/<id>.narrative.json)
+  --narrative, -n   Narrative JSON path (default .github/.pipeline-context/blast-radius/<id>.narrative.json)
   --out, -o         Output path (default docs/agent_output/03-blast-radius/blast_radius_<id>.md)
   --help, -h        Show this message`);
 }
@@ -340,7 +340,7 @@ function render(facts, narrative) {
   out.push('|---|---|');
   out.push(`| Root cause report | ${linkFromOutput(sources.rootCauseReport, sources.rootCauseReport)} |`);
   out.push(`| Issue report | ${sources.issueFile ? linkFromOutput(sources.issueFile, sources.issueFile) : 'not available'} |`);
-  out.push(`| Architecture document | ${sources.architecture ? linkFromOutput('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.pipeline-contexture ? linkFromOutput('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
   out.push(`| Function reference | ${sources.functionReference ? linkFromOutput('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` |`);
   out.push(`| Knowledge graph | ${facts.graph.live ? `Neo4j, traversal depth ${facts.graph.depth}` : `not used — ${facts.graph.reason}`} |`);

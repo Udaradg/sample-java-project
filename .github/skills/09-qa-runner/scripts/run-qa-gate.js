@@ -43,7 +43,7 @@ function usage() {
   node scripts/run-qa-gate.js --issue <ISSUE-ID> [--existing-test <ClassName>] [--keep]
   node scripts/run-qa-gate.js --all [--keep]
 
-Requires .github/.architect/qa/<id>.test-plan.json and <id>.new-test.diff to already exist (the agent's job).
+Requires .github/.pipeline-context/qa/<id>.test-plan.json and <id>.new-test.diff to already exist (the agent's job).
 Runs against any fix with a drafted diff (Compiled or Compile Failed) — this gate compiles the
 module itself, independently of Fixer's own compile check. Refuses only a "Refused" fix.`);
 }

@@ -1,7 +1,7 @@
 /**
  * Merge Arbiter — shared path resolution and read-only access to every Phase C upstream report.
  * docs/agent_output/05-fixes/, docs/agent_output/06-verify/, docs/agent_output/09-qa/, docs/agent_output/10-build/ and docs/agent_output/00-issues/ are all READ-ONLY input here.
- * Only .github/.architect/merge/ and docs/agent_output/11-ship/ are written by this skill.
+ * Only .github/.pipeline-context/merge/ and docs/agent_output/11-ship/ are written by this skill.
  */
 const fs = require('fs');
 const path = require('path');
@@ -9,9 +9,9 @@ const register = require('../../../00-issue-register/scripts/lib/register');
 
 const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 
 const PATHS = {
   SKILL_DIR,

@@ -1,7 +1,7 @@
 /**
  * QA Runner — shared path resolution, fix-report access, and the isolated test-execution
  * sandbox. docs/agent_output/05-fixes/ is read-only input. The only files this skill writes are under
- * .github/.architect/qa/ and docs/agent_output/09-qa/.
+ * .github/.pipeline-context/qa/ and docs/agent_output/09-qa/.
  */
 const fs = require('fs');
 const path = require('path');
@@ -9,9 +9,9 @@ const { spawnSync } = require('child_process');
 
 const SKILL_DIR = path.resolve(__dirname, '..', '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 
 const KNOWN_MODULES = [
   'configuaration-server', 'discovery-service', 'department-service',

@@ -63,9 +63,9 @@ wasn't Approved) is actually excluded from this skill's workload. Step 2 (`09_qa
 
 `docs/agent_output/06-verify/README.md`'s index is rewritten by whichever renderer last ran.
 
-Intermediate files land in `.github/.architect/verify/` (gitignored):
+Intermediate files land in `.github/.pipeline-context/verify/` (gitignored):
 `<id>.rescan.facts.{json,md}`, `<id>.redteam.facts.{json,md}`, `<id>.behavior.facts.{json,md}`, and
-the matching `<id>.<name>.verdict.json` the agent writes. `.github/.architect/verify/worktrees/<id>/` is
+the matching `<id>.<name>.verdict.json` the agent writes. `.github/.pipeline-context/verify/worktrees/<id>/` is
 transient — created and destroyed within a single collector run.
 
 ## Procedure (each check follows the same three steps)
@@ -91,13 +91,13 @@ node scripts/collect-behavior.js --all
 ```
 
 Each materializes the patched file(s) in an isolated worktree, gathers the relevant upstream
-documents, and writes `.github/.architect/verify/<id>.<name>.facts.md` — facts only, no verdict. If the
+documents, and writes `.github/.pipeline-context/verify/<id>.<name>.facts.md` — facts only, no verdict. If the
 worktree fails to apply, that is recorded as a fact (`worktree.applied: false`) for the agent to
 treat as `INCONCLUSIVE`, not silently retried or hidden.
 
 ### Step 3 — Per fix: read the briefing, write the verdict
 
-Read `.github/.architect/verify/<id>.<name>.facts.md` in full before writing anything.
+Read `.github/.pipeline-context/verify/<id>.<name>.facts.md` in full before writing anything.
 
 - **`06_re-scanner`**: absence of the old grep signature is a data point, not proof — reason about
   whether the *mechanism* the CWE describes is actually closed.
@@ -107,7 +107,7 @@ Read `.github/.architect/verify/<id>.<name>.facts.md` in full before writing any
 - **`08_behavior-guard`**: every change must trace to the fix plan's stated scope or land in
   `out_of_scope_changes`. The mechanical signature diff in the briefing is an aid, not the verdict.
 
-Write `.github/.architect/verify/<id>.<name>.verdict.json` per the matching `templates/<name>.schema.json`.
+Write `.github/.pipeline-context/verify/<id>.<name>.verdict.json` per the matching `templates/<name>.schema.json`.
 
 ### Step 4 — Render
 

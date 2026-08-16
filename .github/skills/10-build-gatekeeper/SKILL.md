@@ -32,8 +32,8 @@ override — you run the two scripts and relay exactly what they say.
 `docs/agent_output/10-build/build_<id>.md` — Status (`Passed` / `Failed` / `Refused`), full build output, and the
 dependency diff. `docs/agent_output/10-build/README.md`'s index is rewritten on every render run.
 
-Intermediate: `.github/.architect/build/<id>.result.json` (the script's own output — the only file this
-skill's report is built from) and a transient `.github/.architect/build/worktrees/<id>/`.
+Intermediate: `.github/.pipeline-context/build/<id>.result.json` (the script's own output — the only file this
+skill's report is built from) and a transient `.github/.pipeline-context/build/worktrees/<id>/`.
 
 ## Procedure
 

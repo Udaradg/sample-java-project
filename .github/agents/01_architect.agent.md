@@ -33,7 +33,7 @@ description more confidently than the source supports.**
 ## Skills (run in this order)
 
 1. **Code Cartographer** (`.github/skills/01a-code-cartographer/`) — parses every `pom.xml` and `.java` file
-   into `.github/.architect/artifacts.json` using tree-sitter. Always run this first; re-run whenever source has
+   into `.github/.pipeline-context/artifacts.json` using tree-sitter. Always run this first; re-run whenever source has
    changed since the last scan.
 2. **Context Weaver** (`.github/skills/01b-context-weaver/`) — selects the architecturally significant nodes,
    briefs you on them, and validates the descriptions you write. This is the step where your judgment is
@@ -53,9 +53,9 @@ independently. Read the relevant `SKILL.md` before running its script if you nee
 1. Confirm (or run) `npm install` in whichever skill folder(s) you're about to execute.
 2. **Scan** — `node scripts/scan.js` from `.github/skills/01a-code-cartographer/`.
 3. **Select** — `node scripts/list-context-workload.js` from `.github/skills/01b-context-weaver/`. This
-   writes `.github/.architect/context/context-workload.md`, the authoring brief. Re-runs are incremental: a node
+   writes `.github/.pipeline-context/context/context-workload.md`, the authoring brief. Re-runs are incremental: a node
    already described against unchanged code will not appear.
-4. **Describe** — read the brief and write `.github/.architect/context/descriptions.json`. This is the step that
+4. **Describe** — read the brief and write `.github/.pipeline-context/context/descriptions.json`. This is the step that
    matters; see *Writing descriptions* below. If the workload is too large for your context, batch it
    across several passes (the file merges by node id), or fall back to
    `node scripts/generate-descriptions.js`.

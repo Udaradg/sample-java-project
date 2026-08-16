@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Red-team Recon — agent verdict input",
-  "description": "Written by the red-team-recon agent to .github/.architect/verify/<id>.redteam.verdict.json after reading <id>.redteam.facts.md, then consumed by scripts/render-redteam.js. Answers: can the patch be bypassed?",
+  "description": "Written by the red-team-recon agent to .github/.pipeline-context/verify/<id>.redteam.verdict.json after reading <id>.redteam.facts.md, then consumed by scripts/render-redteam.js. Answers: can the patch be bypassed?",
   "type": "object",
   "required": ["issue_id", "verdict", "plain_summary", "attempted_vectors", "reasoning"],
   "additionalProperties": false,

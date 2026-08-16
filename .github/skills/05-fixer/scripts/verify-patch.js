@@ -6,7 +6,7 @@
  * compiles (and, where requested, passes a specific test), this script:
  *
  *   1. Requires the fix plan to be Status: Approved — refuses otherwise.
- *   2. Requires the agent to have already written .github/.architect/fixer/<id>.patch.diff.
+ *   2. Requires the agent to have already written .github/.pipeline-context/fixer/<id>.patch.diff.
  *   3. Creates a throwaway `git worktree` checked out from HEAD.
  *   4. Applies the patch inside that worktree only.
  *   5. Runs the affected Maven module's wrapper (`compile`, plus `test -Dtest=<Class>` if
@@ -15,8 +15,8 @@
  *      `git status` are never touched, at any point, by this script.
  *
  * Writes:
- *   .github/.architect/fixer/<id>.verification.json  — machine-readable, consumed by render-fix-report.js
- *   .github/.architect/fixer/<id>.verification.md    — human-readable summary
+ *   .github/.pipeline-context/fixer/<id>.verification.json  — machine-readable, consumed by render-fix-report.js
+ *   .github/.pipeline-context/fixer/<id>.verification.md    — human-readable summary
  *
  * This script is deterministic. It never judges whether the fix is *right* — only whether the
  * patch applies and the result builds (and, if asked, passes the named test).

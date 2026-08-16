@@ -6,7 +6,7 @@
  * score, entirely mechanically. Two hard gates (re-scanner STILL_VULNERABLE, build-gatekeeper
  * Failed) block regardless of score — no weight rescues either. This script decides the score
  * and the gate outcome; the agent may only contest the result afterward, explicitly and visibly
- * (see .github/.architect/merge/<id>.arbitration.json), never by editing this file.
+ * (see .github/.pipeline-context/merge/<id>.arbitration.json), never by editing this file.
  *
  * Usage:
  *   node scripts/compute-score.js --all
@@ -115,7 +115,7 @@ function main() {
       console.error(`\n${fix.id} — SKIPPED: ${err.message}`);
     }
   }
-  console.log(`\nNext: read each .github/.architect/merge/<id>.score.json, then write <id>.arbitration.json.`);
+  console.log(`\nNext: read each .github/.pipeline-context/merge/<id>.score.json, then write <id>.arbitration.json.`);
   if (failed.length) process.exitCode = 1;
 }
 

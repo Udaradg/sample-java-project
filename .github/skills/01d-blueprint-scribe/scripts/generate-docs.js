@@ -11,9 +11,9 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '01c-graph-forge', '.env') });
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
 const OUT_FILE = path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'architecture.md');
 

@@ -46,10 +46,10 @@ With no argument, process **every** root cause report in `docs/agent_output/02-r
 2. **Collect context for all of them.** Run `node scripts/collect-remediation-context.js --all` (or
    `--issue <ISSUE-ID>` for one). Each item is processed independently.
 3. **Per issue: read the briefing, then the catalog entry, then the actual source.** Read
-   `.github/.architect/fix-strategy/<id>.context.md` in full. If more than one CWE was detected, pick the one
+   `.github/.pipeline-context/fix-strategy/<id>.context.md` in full. If more than one CWE was detected, pick the one
    that names the root cause. If a detected CWE has no catalog entry, that is a **catalog gap** — say
    so explicitly rather than inventing a pattern to fill it.
-4. **Per issue: write the strategy.** Write `.github/.architect/fix-strategy/<id>.strategy.json` per the
+4. **Per issue: write the strategy.** Write `.github/.pipeline-context/fix-strategy/<id>.strategy.json` per the
    skill's `templates/strategy.schema.json`. One CWE per plan, strategy in prose (no diff), every
    recommendation traced to the catalog entry you cite, alternatives you rejected named with why, and
    a `verification_plan` concrete enough for the Fixer to act on directly.

@@ -13,12 +13,12 @@ const { XMLParser } = require('fast-xml-parser');
 const Parser = require('web-tree-sitter');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 const OUT_FILE = path.join(DATA_DIR, 'artifacts.json');
 
-const IGNORE_GLOBS = ['**/target/**', '**/node_modules/**', '**/.git/**', '**/.architect/**'];
+const IGNORE_GLOBS = ['**/target/**', '**/node_modules/**', '**/.git/**', '**/.pipeline-context/**'];
 
 function findWasm() {
   const pkgJson = require.resolve('tree-sitter-wasms/package.json');

@@ -7,9 +7,9 @@
  * call edges and the exact source text.
  *
  * Writes:
- *   .github/.architect/context/context-workload.json  — machine-readable, consumed by
+ *   .github/.pipeline-context/context/context-workload.json  — machine-readable, consumed by
  *                                               generate-descriptions.js
- *   .github/.architect/context/context-workload.md    — the authoring brief the architect
+ *   .github/.pipeline-context/context/context-workload.md    — the authoring brief the architect
  *                                               agent reads
  *
  * Re-runs are incremental. Every node carries a fingerprint of the code it describes;
@@ -57,7 +57,7 @@ Options:
   --min-package-types N   Skip packages holding fewer types (default ${DEFAULTS.minPackageTypes})
   --help, -h              Show this message
 
-Reads .github/.architect/artifacts.json. Writes the workload + authoring brief to .github/.architect/context/.`);
+Reads .github/.pipeline-context/artifacts.json. Writes the workload + authoring brief to .github/.pipeline-context/context/.`);
 }
 
 function loadExistingDescriptions() {
@@ -159,7 +159,7 @@ function renderBrief(workload) {
 
   out.push('## How to use this brief');
   out.push('');
-  out.push('Write one entry per node below into `.github/.architect/context/descriptions.json`, validating against');
+  out.push('Write one entry per node below into `.github/.pipeline-context/context/descriptions.json`, validating against');
   out.push('[descriptions.schema.json](../../../.github/skills/01b-context-weaver/templates/descriptions.schema.json).');
   out.push('Copy each node\'s `kind`, `id` and `fingerprint` verbatim — they are how the description binds to the graph.');
   out.push('');

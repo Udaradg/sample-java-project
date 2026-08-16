@@ -43,7 +43,7 @@ wrong and you want to see exactly how the pipeline parsed it.
 anything. It provides three scripts:
 
 - `scripts/list-issues.js` — the register and each issue's pipeline state
-- `scripts/collect-evidence.js --all` — gathers all four inputs into `.github/.architect/rca/<id>.evidence.{json,md}`
+- `scripts/collect-evidence.js --all` — gathers all four inputs into `.github/.pipeline-context/rca/<id>.evidence.{json,md}`
 - `scripts/render-root-cause.js --all` — merges your analysis with that evidence into
   `docs/agent_output/02-root-cause/root_cause_<id>.md`
 
@@ -55,11 +55,11 @@ anything. It provides three scripts:
 2. **Collect evidence for all of them.** Run `node scripts/collect-evidence.js --all` (or
    `--issue <ISSUE-ID>` for a single one). It processes each issue independently; a failure on one
    does not stop the rest.
-3. **Per issue: read the briefing, then read the code.** Read `.github/.architect/rca/<id>.evidence.md` in
+3. **Per issue: read the briefing, then read the code.** Read `.github/.pipeline-context/rca/<id>.evidence.md` in
    full, then open the source files it points to. Separate the defect site from the methods merely
    on the path to it. Note every endpoint, scheduled job, module and cross-service consumer in the
    affected area.
-4. **Per issue: analyse.** Write `.github/.architect/rca/<id>.analysis.json` per the skill's
+4. **Per issue: analyse.** Write `.github/.pipeline-context/rca/<id>.analysis.json` per the skill's
    `templates/analysis.schema.json`: one root cause, cited evidence, causal chain from trigger to
    symptom, impact consistent with the affected area in the evidence, a fix that addresses the cause, and
    verification steps. Also write `plain_summary` (one or two sentences a non-engineer understands,

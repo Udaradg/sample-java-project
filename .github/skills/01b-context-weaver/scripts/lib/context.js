@@ -29,9 +29,9 @@ try {
   // dotenv not installed yet — fine, env-driven config just falls back to defaults.
 }
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const DATA_DIR = process.env.ARCHITECT_DATA_DIR
-  ? path.resolve(process.env.ARCHITECT_DATA_DIR)
-  : path.join(REPO_ROOT, '.github', '.architect');
+const DATA_DIR = process.env.PIPELINE_CONTEXT_DATA_DIR
+  ? path.resolve(process.env.PIPELINE_CONTEXT_DATA_DIR)
+  : path.join(REPO_ROOT, '.github', '.pipeline-context');
 const CONTEXT_DIR = path.join(DATA_DIR, 'context');
 
 const PATHS = {
@@ -555,3 +555,4 @@ module.exports = {
   scoreMethod,
   selectNodes,
 };
+

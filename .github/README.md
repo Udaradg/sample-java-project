@@ -315,14 +315,14 @@ flowchart LR
 Because of this split, a reviewer reading any report can tell **which claims are measured and which
 are reasoned** — and the agent physically cannot overwrite a measured fact.
 
-The intermediate files live in [`.architect/`](./.architect/) (gitignored — regeneratable at any time):
+The intermediate files live in [`.pipeline-context/`](./.pipeline-context/) (gitignored — regeneratable at any time):
 
 | Folder | Contents |
 |:--|:--|
-| `.architect/artifacts.json` | The parsed code model |
-| `.architect/context/` | Semantic descriptions (the one tracked file — expensive to reproduce) |
-| `.architect/rca/` · `blast-radius/` · `fix-strategy/` | Facts + agent analysis per stage |
-| `.architect/verify/` · `merge/` · `scribe/` | Phase C facts, scores and narratives |
+| `.pipeline-context/artifacts.json` | The parsed code model |
+| `.pipeline-context/context/` | Semantic descriptions (the one tracked file — expensive to reproduce) |
+| `.pipeline-context/rca/` · `blast-radius/` · `fix-strategy/` | Facts + agent analysis per stage |
+| `.pipeline-context/verify/` · `merge/` · `scribe/` | Phase C facts, scores and narratives |
 
 ---
 
@@ -484,7 +484,7 @@ Everything the harness owns lives under `.github/`, and **all three listings are
 │   ├── architect-guide.md       full operator guide
 │   └── VULNERABILITY_REMEDIATION_SUMMARY.md
 │
-└── .architect/                  working data — gitignored, regeneratable
+└── .pipeline-context/                  working data — gitignored, regeneratable
 ```
 
 Each skill folder is self-contained (its own `package.json` and scripts) so it can be lifted into

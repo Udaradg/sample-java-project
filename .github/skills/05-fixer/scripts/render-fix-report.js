@@ -3,9 +3,9 @@
  * Fixer — Fix Report Renderer
  *
  * Combines three things into the final deliverable:
- *   .github/.architect/fixer/<id>.patch.diff         — the diff, drafted by the agent
- *   .github/.architect/fixer/<id>.rationale.json     — judgement, written by the agent
- *   .github/.architect/fixer/<id>.verification.json  — facts, from verify-patch.js (isolated worktree)
+ *   .github/.pipeline-context/fixer/<id>.patch.diff         — the diff, drafted by the agent
+ *   .github/.pipeline-context/fixer/<id>.rationale.json     — judgement, written by the agent
+ *   .github/.pipeline-context/fixer/<id>.verification.json  — facts, from verify-patch.js (isolated worktree)
  *
  * Output:
  *   docs/agent_output/05-fixes/fix_<id>.md   — the report

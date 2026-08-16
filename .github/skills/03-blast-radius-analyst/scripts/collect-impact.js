@@ -8,11 +8,11 @@
  *   3. docs/agent_output/01-architecture/architecture.md                — service topology and the full REST surface
  *   4. docs/agent_output/01-architecture/function-reference.md          — defect-site signatures and source
  *   5. the Neo4j knowledge graph           — live service, module and call connections
- *      (falls back to .github/.architect/artifacts.json when Neo4j is unreachable)
+ *      (falls back to .github/.pipeline-context/artifacts.json when Neo4j is unreachable)
  *
  * Writes:
- *   .github/.architect/blast-radius/<id>.facts.json  — machine-readable, consumed by the renderer
- *   .github/.architect/blast-radius/<id>.facts.md    — briefing for the agent
+ *   .github/.pipeline-context/blast-radius/<id>.facts.json  — machine-readable, consumed by the renderer
+ *   .github/.pipeline-context/blast-radius/<id>.facts.md    — briefing for the agent
  *
  * This script measures reach. It does not judge business impact — that is the agent's job.
  *
@@ -402,7 +402,7 @@ function renderBriefing(facts) {
   out.push('|---|---|');
   out.push(`| Root cause report | \`${sources.rootCauseReport}\` |`);
   out.push(`| Issue report | ${sources.issueFile ? `\`${sources.issueFile}\`` : '_not found — reach derived from the root cause report only_'} |`);
-  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.pipeline-contexture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| \`docs/agent_output/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| Knowledge graph | ${graph.live ? `live Neo4j (depth ${graph.depth})` : `not used — ${graph.reason}`} |`);
   out.push('');
@@ -596,7 +596,7 @@ async function main() {
     architectureText: readIfPresent(ARCHITECTURE_MD),
     functionReferenceText: readIfPresent(FUNCTION_REFERENCE_MD),
   };
-  if (!context.architectureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for the service topology.`);
+  if (!context.pipeline-contextureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for the service topology.`);
   if (!context.functionReferenceText) console.warn(`Warning: ${rel(FUNCTION_REFERENCE_MD)} is missing — run Blueprint Scribe for defect-site detail.`);
 
   const done = [];

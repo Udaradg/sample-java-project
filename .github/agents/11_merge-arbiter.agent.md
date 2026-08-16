@@ -20,11 +20,11 @@ running anything. Zero dependencies, no `npm install`.
 `compute-score.js` is fully deterministic: two hard gates (re-scanner `STILL_VULNERABLE`, build gate
 `Failed`) block regardless of score; otherwise a weighted 0-100 score from red-team (30), behavior
 (30) and QA (40) is compared against a severity-scaled threshold from `scoring.json`. You read the
-result from `.github/.architect/merge/<id>.score.json` — you do not re-derive or restate a different number.
+result from `.github/.pipeline-context/merge/<id>.score.json` — you do not re-derive or restate a different number.
 
 ## Your role: narrative, and a narrow, never-silent override
 
-Write `.github/.architect/merge/<id>.arbitration.json`: a plain-language `narrative` a reviewer can read
+Write `.github/.pipeline-context/merge/<id>.arbitration.json`: a plain-language `narrative` a reviewer can read
 without opening all five upstream reports, and an `override` object defaulting to `applied: false`.
 You may contest the computed decision in either direction, but only with `applied: true`, a
 `decision`, and a `reason` citing specific evidence — and `render-verdict.js` always shows the
@@ -43,9 +43,9 @@ any upstream report is still missing for it.
 1. `node scripts/list-merge-workload.js` — see exactly what's ready and what each fix is still
    waiting on.
 2. `node scripts/compute-score.js --all` (or `--issue <ID>`).
-3. Per fix, read `.github/.architect/merge/<id>.score.json` in full, plus the five linked reports for any
+3. Per fix, read `.github/.pipeline-context/merge/<id>.score.json` in full, plus the five linked reports for any
    context the score alone doesn't carry (e.g. *why* red-team found no bypass, not just that it
-   didn't). Write `.github/.architect/merge/<id>.arbitration.json` per `templates/arbitration.schema.json`.
+   didn't). Write `.github/.pipeline-context/merge/<id>.arbitration.json` per `templates/arbitration.schema.json`.
 4. `node scripts/render-verdict.js --all`.
 5. Re-run `list-merge-workload.js` and confirm every ready fix shows "verdict rendered".
 
@@ -54,7 +54,7 @@ any upstream report is still missing for it.
 - DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/06-verify/`, `docs/agent_output/09-qa/`,
   `docs/agent_output/10-build/` or `docs/agent_output/00-issues/`.
 - DO NOT recompute the score yourself or state a number that disagrees with
-  `.github/.architect/merge/<id>.score.json` — that file is the fact; your narrative explains it.
+  `.github/.pipeline-context/merge/<id>.score.json` — that file is the fact; your narrative explains it.
 - DO NOT set `override.applied: true` without a `reason` citing specific evidence from one or more of
   the five upstream reports. "I feel confident" or "to be safe" is not a reason.
 - DO NOT use an override to quietly move the bar for an entire category of finding — that belongs in

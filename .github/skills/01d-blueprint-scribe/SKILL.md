@@ -1,7 +1,7 @@
 ---
 name: 01d-blueprint-scribe
 description: 'Synthesizes Code Cartographer artifacts.json (and, if available, a live Neo4j graph from Graph Forge) into docs/agent_output/01-architecture/architecture.md — a Markdown document covering modules, REST API surface, layered type breakdown, class hierarchy and frameworks in play, with Mermaid diagrams. Use when asked to document the architecture, write a markdown overview of the code, or summarize "ideas about the code".'
-argument-hint: 'None — reads .github/.architect/artifacts.json, writes docs/agent_output/01-architecture/architecture.md'
+argument-hint: 'None — reads .github/.pipeline-context/artifacts.json, writes docs/agent_output/01-architecture/architecture.md'
 ---
 
 # Blueprint Scribe
@@ -28,7 +28,7 @@ Writes the human-readable deliverable: `docs/agent_output/01-architecture/archit
 - The exact method source code, for diagnosing issues without re-opening every file
 
 ## Procedure
-1. Ensure `.github/.architect/artifacts.json` exists (run Code Cartographer first).
+1. Ensure `.github/.pipeline-context/artifacts.json` exists (run Code Cartographer first).
 2. Install dependencies: `cd .github/skills/01d-blueprint-scribe && npm install`
 3. Run: `npm run docs` for the overview, `npm run function-ref` for the per-method deep-dive, or `npm run all` for both.
 4. Open [docs/agent_output/01-architecture/architecture.md](../../../docs/architecture.md) / [docs/agent_output/01-architecture/function-reference.md](../../../docs/function-reference.md) and share a short summary with the user rather than pasting the whole file into chat.

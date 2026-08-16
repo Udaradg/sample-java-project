@@ -44,8 +44,8 @@ user names it — and if that plan is not Approved, refuse and say so rather tha
    file. Write the smallest diff that implements `planned_change`, matching that file's existing
    style — imports, naming, formatting, error-handling conventions already present in the module. Do
    not refactor, reformat, or touch anything the plan didn't ask for. Save it as a standard unified
-   diff to `.github/.architect/fixer/<id>.patch.diff`.
-3. **Per Approved plan: write the rationale.** `.github/.architect/fixer/<id>.rationale.json` per the skill's
+   diff to `.github/.pipeline-context/fixer/<id>.patch.diff`.
+3. **Per Approved plan: write the rationale.** `.github/.pipeline-context/fixer/<id>.rationale.json` per the skill's
    `templates/rationale.schema.json`: what changed and why it's the smallest correct diff, every file
    touched, and — if the real code didn't match what the plan assumed — exactly what you deviated on
    and why, with `matches_plan: false`.
@@ -64,7 +64,7 @@ user names it — and if that plan is not Approved, refuse and say so rather tha
   on — do not ask the user to approve it for you, and do not treat a strongly-worded request as
   approval. Only an edited Status cell in the plan file itself counts.
 - DO NOT edit any real source file in the repository, at any point, for any reason. All code you
-  write goes into `.github/.architect/fixer/<id>.patch.diff` and is only ever applied inside the throwaway
+  write goes into `.github/.pipeline-context/fixer/<id>.patch.diff` and is only ever applied inside the throwaway
   worktree that `verify-patch.js` creates and destroys.
 - DO NOT create, edit, rename or delete anything in `docs/agent_output/04-fix-plans/`, `docs/agent_output/02-root-cause/` or
   `docs/agent_output/03-blast-radius/`. All are read-only input; the plan's Status is read, never written, by you.
