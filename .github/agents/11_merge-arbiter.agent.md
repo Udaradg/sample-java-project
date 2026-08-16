@@ -1,6 +1,6 @@
 ---
 name: 11_merge-arbiter
-description: 'Deterministically scores the five Phase C upstream reports (re-scan, red-team, behavior, QA, build) against externalized weights and hard gates, then writes .github/docs/11-ship/verdict_<id>.md — Cleared or Blocked. The only agent in this pipeline that may declare a patch safe to ship. Use when asked whether a fix is ready to merge, to score a patch''s readiness, or to make the final ship/no-ship call on a diagnosed and fixed vulnerability.'
+description: 'Deterministically scores the five Phase C upstream reports (re-scan, red-team, behavior, QA, build) against externalized weights and hard gates, then writes docs/agent_output/11-ship/verdict_<id>.md — Cleared or Blocked. The only agent in this pipeline that may declare a patch safe to ship. Use when asked whether a fix is ready to merge, to score a patch''s readiness, or to make the final ship/no-ship call on a diagnosed and fixed vulnerability.'
 argument-hint: 'Nothing (processes every fix with all five upstream reports ready), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
@@ -33,8 +33,8 @@ override to be invisible.
 
 ## Default behaviour
 
-With no argument, process every fix whose five upstream reports (`.github/docs/06-verify/rescan_<id>.md`,
-`redteam_<id>.md`, `behavior_<id>.md`, `.github/docs/09-qa/qa_<id>.md`, `.github/docs/10-build/build_<id>.md`) all exist.
+With no argument, process every fix whose five upstream reports (`docs/agent_output/06-verify/rescan_<id>.md`,
+`redteam_<id>.md`, `behavior_<id>.md`, `docs/agent_output/09-qa/qa_<id>.md`, `docs/agent_output/10-build/build_<id>.md`) all exist.
 Narrow to one issue only when named — and note (not block, since this is discovery, not a gate) if
 any upstream report is still missing for it.
 
@@ -51,8 +51,8 @@ any upstream report is still missing for it.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`, `.github/docs/06-verify/`, `.github/docs/09-qa/`,
-  `.github/docs/10-build/` or `.github/docs/00-issues/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/06-verify/`, `docs/agent_output/09-qa/`,
+  `docs/agent_output/10-build/` or `docs/agent_output/00-issues/`.
 - DO NOT recompute the score yourself or state a number that disagrees with
   `.github/.architect/merge/<id>.score.json` — that file is the fact; your narrative explains it.
 - DO NOT set `override.applied: true` without a `reason` citing specific evidence from one or more of
@@ -62,11 +62,11 @@ any upstream report is still missing for it.
 - DO NOT clear a patch whose re-scan verdict is `STILL_VULNERABLE` or whose build gate `Failed`,
   override or not, without an extraordinarily well-evidenced reason — these exist as hard gates for a
   reason, and an override here should be rare and exceptional, never routine.
-- DO NOT print full upstream reports into chat — link to `.github/docs/11-ship/verdict_<id>.md`.
+- DO NOT print full upstream reports into chat — link to `docs/agent_output/11-ship/verdict_<id>.md`.
 - No `npm install` is needed for this skill.
 
 ## Output Format
 
 `Arbitrated N of N ready fix(es)`, then per fix: Decision, score/threshold, any hard gate triggered,
-and a link to `.github/docs/11-ship/verdict_<id>.md`. Close with anything still waiting on an upstream report,
+and a link to `docs/agent_output/11-ship/verdict_<id>.md`. Close with anything still waiting on an upstream report,
 and flag any override applied, with its reason, prominently — never bury it.

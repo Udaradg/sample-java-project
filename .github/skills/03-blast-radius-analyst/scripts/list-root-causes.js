@@ -2,7 +2,7 @@
 /**
  * Blast Radius Analyst — Workload Listing
  *
- * Discovery step. Every root cause report in .github/docs/02-root-cause/ needs exactly one blast
+ * Discovery step. Every root cause report in docs/agent_output/02-root-cause/ needs exactly one blast
  * radius report; this prints that list with each one's current pipeline state.
  *
  * Root cause reports and issues are read-only input — this skill never edits them.

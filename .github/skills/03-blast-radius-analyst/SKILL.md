@@ -1,6 +1,6 @@
 ---
 name: 03-blast-radius-analyst
-description: 'Measures how far each diagnosed defect reaches across the workspace — services, REST endpoints, scheduled jobs, cross-service HTTP calls and shared infrastructure — by combining .github/docs/02-root-cause/ reports, .github/docs/00-issues/, .github/docs/01-architecture/architecture.md, .github/docs/01-architecture/function-reference.md and the Neo4j knowledge graph, then writes one diagram-led .github/docs/03-blast-radius/blast_radius_<issue_id>.md per root cause. Use when asked what a defect affects, what breaks if it ships, which services or endpoints are impacted, or for an impact/blast radius assessment.'
+description: 'Measures how far each diagnosed defect reaches across the workspace — services, REST endpoints, scheduled jobs, cross-service HTTP calls and shared infrastructure — by combining docs/agent_output/02-root-cause/ reports, docs/agent_output/00-issues/, docs/agent_output/01-architecture/architecture.md, docs/agent_output/01-architecture/function-reference.md and the Neo4j knowledge graph, then writes one diagram-led docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md per root cause. Use when asked what a defect affects, what breaks if it ships, which services or endpoints are impacted, or for an impact/blast radius assessment.'
 argument-hint: 'Nothing (processes every root cause report), or a specific issue id such as ISSUE-001'
 ---
 
@@ -13,8 +13,8 @@ in language and diagrams a non-engineer can follow.
 Scripts measure the reach so it cannot be overstated or understated. You supply the plain-language
 judgement on top. The two are kept in separate files and merged into one report.
 
-**Root cause reports and issues are read-only input.** Nothing here writes to `.github/docs/02-root-cause/` or
-`.github/docs/00-issues/`. If a root cause report does not exist for an issue, that issue is not in scope —
+**Root cause reports and issues are read-only input.** Nothing here writes to `docs/agent_output/02-root-cause/` or
+`docs/agent_output/00-issues/`. If a root cause report does not exist for an issue, that issue is not in scope —
 the Root Cause Analyst agent has to run first.
 
 ## When to Use
@@ -28,10 +28,10 @@ the Root Cause Analyst agent has to run first.
 
 | # | Input | What it contributes |
 |---|---|---|
-| 1 | `.github/docs/02-root-cause/root_cause_<id>.md` | The confirmed diagnosis. Defines the workload — one blast radius per root cause |
-| 2 | `.github/docs/00-issues/<id>*.md` | The reported symptom, affected symbols and entry points |
-| 3 | `.github/docs/01-architecture/architecture.md` | Service topology and the complete REST surface to measure against |
-| 4 | `.github/docs/01-architecture/function-reference.md` | Defect-site signatures, locations and source |
+| 1 | `docs/agent_output/02-root-cause/root_cause_<id>.md` | The confirmed diagnosis. Defines the workload — one blast radius per root cause |
+| 2 | `docs/agent_output/00-issues/<id>*.md` | The reported symptom, affected symbols and entry points |
+| 3 | `docs/agent_output/01-architecture/architecture.md` | Service topology and the complete REST surface to measure against |
+| 4 | `docs/agent_output/01-architecture/function-reference.md` | Defect-site signatures, locations and source |
 | 5 | Neo4j knowledge graph | Live connections: which endpoints reach the defect, which modules depend on which, what infrastructure is shared |
 
 Inputs 3-5 are produced by the **Architect** agent
@@ -41,7 +41,7 @@ Inputs 3-5 are produced by the **Architect** agent
 
 ## Output
 
-One report per root cause: `.github/docs/03-blast-radius/blast_radius_<issue_id>.md`.
+One report per root cause: `docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md`.
 
 Written to be read top-down by someone who has not seen the code:
 
@@ -139,7 +139,7 @@ node scripts/render-blast-radius.js --issue ISSUE-001  # or just one
 
 The renderer validates each narrative, fails with a precise message on any missing field, applies
 `scope` to decide endpoint status, generates the diagrams, and writes
-`.github/docs/03-blast-radius/blast_radius_<issue_id>.md`. In `--all` mode it renders what is ready and lists
+`docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md`. In `--all` mode it renders what is ready and lists
 what is still pending. Re-running overwrites, so iterate freely.
 
 Finish by re-running `node scripts/list-root-causes.js` and confirming every row reads
@@ -168,6 +168,6 @@ The colour in every diagram and table follows one rule set, applied by the scrip
   Analyst's, so neither skill breaks if the other moves
 - Neo4j credentials are read from `../01c-graph-forge/.env`; add a local `.env` here only to override.
   Never print the password or commit an `.env`
-- Read-only against the codebase, `.github/docs/00-issues/` and `.github/docs/02-root-cause/`. The only files written are
-  `.github/.architect/blast-radius/*` and `.github/docs/03-blast-radius/*.md`
-- `.github/.architect/` is gitignored — only `.github/docs/03-blast-radius/*.md` is meant to be committed
+- Read-only against the codebase, `docs/agent_output/00-issues/` and `docs/agent_output/02-root-cause/`. The only files written are
+  `.github/.architect/blast-radius/*` and `docs/agent_output/03-blast-radius/*.md`
+- `.github/.architect/` is gitignored — only `docs/agent_output/03-blast-radius/*.md` is meant to be committed

@@ -1,6 +1,6 @@
 ---
 name: 12-scribe
-description: 'Writes .github/docs/11-ship/pr_<id>.md (PR-ready title/body/checklist) and .github/docs/11-ship/audit_<id>.md (full chain-of-custody audit trail from issue through merge verdict) for every fix with a rendered merge-arbiter verdict — always, regardless of whether it Cleared or was Blocked. Never touches git or GitHub; content only, for a human to act on. Phase C step 3, second half. Use when asked to write up a fix for review, produce PR content, or document the full trail behind a shipped or blocked patch.'
+description: 'Writes docs/agent_output/11-ship/pr_<id>.md (PR-ready title/body/checklist) and docs/agent_output/11-ship/audit_<id>.md (full chain-of-custody audit trail from issue through merge verdict) for every fix with a rendered merge-arbiter verdict — always, regardless of whether it Cleared or was Blocked. Never touches git or GitHub; content only, for a human to act on. Phase C step 3, second half. Use when asked to write up a fix for review, produce PR content, or document the full trail behind a shipped or blocked patch.'
 argument-hint: 'Nothing (processes every fix with a rendered merge-arbiter verdict), or a specific issue id such as ISSUE-001'
 ---
 
@@ -11,14 +11,14 @@ Blocked one still gets a PR draft (clearly marked not to use) and, either way, a
 linking every stage from the original issue to the final decision. **This skill never runs `git` or
 `gh` — everything it produces is content for a human to act on themselves.**
 
-**`.github/docs/05-fixes/`, `.github/docs/04-fix-plans/`, `.github/docs/02-root-cause/`, `.github/docs/03-blast-radius/`, `.github/docs/00-issues/`,
-`.github/docs/06-verify/`, `.github/docs/09-qa/`, `.github/docs/10-build/` and `.github/docs/11-ship/verdict_*.md` are all read-only input.**
+**`docs/agent_output/05-fixes/`, `docs/agent_output/04-fix-plans/`, `docs/agent_output/02-root-cause/`, `docs/agent_output/03-blast-radius/`, `docs/agent_output/00-issues/`,
+`docs/agent_output/06-verify/`, `docs/agent_output/09-qa/`, `docs/agent_output/10-build/` and `docs/agent_output/11-ship/verdict_*.md` are all read-only input.**
 Nothing here writes to any of them — the Scribe only ever adds `pr_<id>.md` and `audit_<id>.md`
 alongside the merge arbiter's verdict.
 
 ## Why the decision always comes from the verdict file, never from you
 
-`render-scribe.js` reads `Decision` straight out of `.github/docs/11-ship/verdict_<id>.md` — never from what you
+`render-scribe.js` reads `Decision` straight out of `docs/agent_output/11-ship/verdict_<id>.md` — never from what you
 write. This means the Blocked banner on a PR draft cannot be silently omitted by an agent choosing
 not to mention it; it is mechanically driven by the merge arbiter's actual output, every time.
 
@@ -30,11 +30,11 @@ arbiter's verdict.
 
 ## Output
 
-- `.github/docs/11-ship/audit_<id>.md` — chronological chain of custody, every claim linked to its source.
-- `.github/docs/11-ship/pr_<id>.md` — PR title, summary, and test-plan checklist. Opens with a
+- `docs/agent_output/11-ship/audit_<id>.md` — chronological chain of custody, every claim linked to its source.
+- `docs/agent_output/11-ship/pr_<id>.md` — PR title, summary, and test-plan checklist. Opens with a
   `⚠️ BLOCKED — do not open this PR` banner when the linked verdict is not `Cleared`.
 
-`.github/docs/11-ship/README.md`'s index is owned by this skill (not by merge-arbiter) — it is rewritten on
+`docs/agent_output/11-ship/README.md`'s index is owned by this skill (not by merge-arbiter) — it is rewritten on
 every render run and lists every verdict alongside whether its PR/audit content exists yet.
 
 Intermediate: `.github/.architect/scribe/<id>.chain.facts.{json,md}` (script), `<id>.content.json` (agent).
@@ -49,7 +49,7 @@ node scripts/list-scribe-workload.js
 ```
 
 No `npm install` needed — zero dependencies. Workload = every fix with a rendered
-`.github/docs/11-ship/verdict_<id>.md`, Cleared or Blocked alike.
+`docs/agent_output/11-ship/verdict_<id>.md`, Cleared or Blocked alike.
 
 ### Step 2 — Collect the chain of custody
 
@@ -75,7 +75,7 @@ directly.
 node scripts/render-scribe.js --all
 ```
 
-Writes both files for every fix with content ready, and rewrites `.github/docs/11-ship/README.md`'s index.
+Writes both files for every fix with content ready, and rewrites `docs/agent_output/11-ship/README.md`'s index.
 
 ### Step 5 — Report back
 
@@ -84,8 +84,8 @@ so plainly rather than downplaying it.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `.github/docs/11-ship/pr_*.md`
-  and `.github/docs/11-ship/audit_*.md`. Every upstream document — including `.github/docs/11-ship/verdict_*.md` — is
+- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
+  and `docs/agent_output/11-ship/audit_*.md`. Every upstream document — including `docs/agent_output/11-ship/verdict_*.md` — is
   read-only.
 - DO NOT run `git`, `gh`, or any command that mutates the repository or a remote. This skill produces
   content, never actions.

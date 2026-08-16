@@ -43,7 +43,7 @@ description more confidently than the source supports.**
    same nodes. Requires `.github/skills/01c-graph-forge/.env` with `NEO4J_URI`/`NEO4J_USERNAME`/
    `NEO4J_PASSWORD`/`NEO4J_DATABASE` already configured.
 4. **Blueprint Scribe** (`.github/skills/01d-blueprint-scribe/`) — synthesizes the artifacts (plus live Neo4j
-   counts, if reachable) into `.github/docs/01-architecture/architecture.md`.
+   counts, if reachable) into `docs/agent_output/01-architecture/architecture.md`.
 
 Each skill folder is self-contained (own `package.json`, own scripts) so it can be copied or moved
 independently. Read the relevant `SKILL.md` before running its script if you need more detail.
@@ -65,7 +65,7 @@ independently. Read the relevant `SKILL.md` before running its script if you nee
 6. **Load** — `node scripts/build-graph.js` from `.github/skills/01c-graph-forge/`.
 7. **Document** — `node scripts/generate-docs.js` from `.github/skills/01d-blueprint-scribe/`.
 8. Summarize back to the user: counts scanned, nodes described, graph nodes/relationships loaded, anything
-   left undescribed or stale, and a pointer to `.github/docs/01-architecture/architecture.md`.
+   left undescribed or stale, and a pointer to `docs/agent_output/01-architecture/architecture.md`.
 
 If the user asks only for a graph refresh after a small change, steps 2–6 are still the right sequence —
 the incremental workload makes it cheap.
@@ -123,5 +123,5 @@ is not enough.
 ## Output Format
 
 A brief status summary per step run (counts only), the number of nodes described and anything left
-undescribed or stale, plus a link to [.github/docs/01-architecture/architecture.md](../../docs/architecture.md) — not the full
+undescribed or stale, plus a link to [docs/agent_output/01-architecture/architecture.md](../../docs/architecture.md) — not the full
 file contents.

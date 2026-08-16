@@ -1,7 +1,7 @@
 ---
 name: 02-root-cause-analyst
-description: 'Reads every issue already present in .github/docs/00-issues/ and diagnoses each one by correlating four inputs — the issue markdown, .github/docs/01-architecture/architecture.md, .github/docs/01-architecture/function-reference.md, and the Neo4j knowledge graph (file/service dependencies and the method call graph) — then writes one .github/docs/02-root-cause/root_cause_<issue_id>.md per issue. Use when asked to find root causes for reported issues, analyze the issue register, diagnose a defect or vulnerability, or trace why something fails.'
-argument-hint: 'Nothing (processes every issue in .github/docs/00-issues/), or a specific issue id such as ISSUE-001'
+description: 'Reads every issue already present in docs/agent_output/00-issues/ and diagnoses each one by correlating four inputs — the issue markdown, docs/agent_output/01-architecture/architecture.md, docs/agent_output/01-architecture/function-reference.md, and the Neo4j knowledge graph (file/service dependencies and the method call graph) — then writes one docs/agent_output/02-root-cause/root_cause_<issue_id>.md per issue. Use when asked to find root causes for reported issues, analyze the issue register, diagnose a defect or vulnerability, or trace why something fails.'
+argument-hint: 'Nothing (processes every issue in docs/agent_output/00-issues/), or a specific issue id such as ISSUE-001'
 ---
 
 # Root Cause Analyst
@@ -12,13 +12,13 @@ report per issue, so every factual claim in the output is traceable to a scan, a
 graph query.
 
 **The issue register is read-only input.** Issues live in the spreadsheet
-`.github/docs/00-issues/issue-register.xlsx`, one row each, written by whoever reports them. Nothing
+`docs/agent_output/00-issues/issue-register.xlsx`, one row each, written by whoever reports them. Nothing
 in this skill creates, edits or deletes a row — the scripts only read them, and neither should you.
 If the register is empty, there is nothing to analyse; say so rather than drafting an issue.
 
 ## When to Use
 
-- "Find the root cause of every issue in .github/docs/00-issues/" — the default, whole-register run
+- "Find the root cause of every issue in docs/agent_output/00-issues/" — the default, whole-register run
 - "What is the root cause of ISSUE-001?" — a single-issue run
 - "Analyze the defect in department-service", "why does the create endpoint fail?"
 - After the Architect pipeline has run — this skill consumes its outputs
@@ -27,9 +27,9 @@ If the register is empty, there is nothing to analyse; say so rather than drafti
 
 | # | Input | Why it is needed |
 |---|---|---|
-| 1 | `.github/docs/00-issues/issue-register.xlsx` | The symptoms: what fails, how to reproduce, observed vs expected. Supplied externally; read-only |
-| 2 | `.github/docs/01-architecture/architecture.md` | Module topology, service map, REST surface — places each defect in the system |
-| 3 | `.github/docs/01-architecture/function-reference.md` | Exact signatures, source locations, method source, resolved callers/callees |
+| 1 | `docs/agent_output/00-issues/issue-register.xlsx` | The symptoms: what fails, how to reproduce, observed vs expected. Supplied externally; read-only |
+| 2 | `docs/agent_output/01-architecture/architecture.md` | Module topology, service map, REST surface — places each defect in the system |
+| 3 | `docs/agent_output/01-architecture/function-reference.md` | Exact signatures, source locations, method source, resolved callers/callees |
 | 4 | Neo4j knowledge graph | Live traversal: who calls the defect, what it reaches, which modules and endpoints are on a path, cross-service dependencies |
 
 Inputs 2-4 are produced by the **Architect** agent's skills
@@ -40,12 +40,12 @@ A row is picked up when it carries an `issue_id`; rows without one (spacers, rep
 ignored. Reading the spreadsheet is owned by the [00-issue-register](../00-issue-register/SKILL.md)
 skill, which also rebuilds each row into the `## Summary` / `## Observed Behavior` /
 `## Detection Notes` markdown this pipeline extracts. The full column contract is documented in
-[.github/docs/00-issues/README.md](../../docs/00-issues/README.md).
+[docs/agent_output/00-issues/README.md](../../docs/00-issues/README.md).
 
 ## Output
 
-One report per issue: `.github/docs/02-root-cause/root_cause_<issue_id>.md` — for example
-`.github/docs/02-root-cause/root_cause_ISSUE-001.md`.
+One report per issue: `docs/agent_output/02-root-cause/root_cause_<issue_id>.md` — for example
+`docs/agent_output/02-root-cause/root_cause_ISSUE-001.md`.
 
 Written to be read top-down by whoever has to decide what to do about the defect, not only by the
 engineer who will fix it — plain language and diagrams first, source and graph detail folded into
@@ -105,7 +105,7 @@ In `--all` mode each issue is processed independently — one failure does not a
 the run ends with a list of what succeeded and what did not.
 
 **Prerequisites.** If the collector reports a missing `artifacts.json`, run the Code Cartographer
-scan first. If it warns that `.github/docs/01-architecture/architecture.md` or `.github/docs/01-architecture/function-reference.md` is missing, run
+scan first. If it warns that `docs/agent_output/01-architecture/architecture.md` or `docs/agent_output/01-architecture/function-reference.md` is missing, run
 Blueprint Scribe. If it reports an unresolved symbol, the issue's `affected_symbols` does not match
 the code — report that back to whoever filed the issue; do not edit the issue file, and do not
 analyse around the gap.
@@ -163,7 +163,7 @@ node scripts/render-root-cause.js --issue ISSUE-001  # or just one
 ```
 
 The renderer validates each analysis JSON, fails with a precise message on any missing required
-field, and writes `.github/docs/02-root-cause/root_cause_<issue_id>.md`. In `--all` mode it renders what is
+field, and writes `docs/agent_output/02-root-cause/root_cause_<issue_id>.md`. In `--all` mode it renders what is
 ready and lists the issues still pending an analysis. Re-running overwrites, so iterate freely: fix
 the analysis JSON, re-render.
 
@@ -183,6 +183,6 @@ one sentence, and a link to the generated file. Lead with a coverage line
   scripts
 - Neo4j credentials are read from `../01c-graph-forge/.env`; add a local `.env` here only to override.
   Never print the password or commit an `.env`
-- Every script is read-only against the codebase and against `.github/docs/00-issues/`; the only files written
-  are `.github/.architect/rca/*` and `.github/docs/02-root-cause/*.md`
-- `.github/.architect/` is gitignored — only `.github/docs/02-root-cause/*.md` is meant to be committed
+- Every script is read-only against the codebase and against `docs/agent_output/00-issues/`; the only files written
+  are `.github/.architect/rca/*` and `docs/agent_output/02-root-cause/*.md`
+- `.github/.architect/` is gitignored — only `docs/agent_output/02-root-cause/*.md` is meant to be committed

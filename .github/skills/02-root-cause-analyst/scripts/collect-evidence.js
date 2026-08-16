@@ -3,9 +3,9 @@
  * Root Cause Analyst — Evidence Collector
  *
  * Gathers everything needed to diagnose one issue, from four inputs:
- *   1. .github/docs/00-issues/<ISSUE>.md      — the reported symptom (front matter + body)
- *   2. .github/docs/01-architecture/architecture.md         — module map, service topology, REST surface
- *   3. .github/docs/01-architecture/function-reference.md   — per-method signatures, locations, source, call graph
+ *   1. docs/agent_output/00-issues/<ISSUE>.md      — the reported symptom (front matter + body)
+ *   2. docs/agent_output/01-architecture/architecture.md         — module map, service topology, REST surface
+ *   3. docs/agent_output/01-architecture/function-reference.md   — per-method signatures, locations, source, call graph
  *   4. the Neo4j knowledge graph    — live callers/callees, endpoints, fan-in, module impact
  *      (falls back to .github/.architect/artifacts.json when Neo4j is unreachable)
  *
@@ -18,9 +18,9 @@
  * The issue register is read-only input — this script never creates or edits an issue file.
  *
  * Usage:
- *   node scripts/collect-evidence.js --all                      # every issue in .github/docs/00-issues/
+ *   node scripts/collect-evidence.js --all                      # every issue in docs/agent_output/00-issues/
  *   node scripts/collect-evidence.js --issue ISSUE-001 [--depth 4] [--no-graph]
- *   node scripts/collect-evidence.js --issue .github/docs/00-issues/ISSUE-001-....md
+ *   node scripts/collect-evidence.js --issue docs/agent_output/00-issues/ISSUE-001-....md
  */
 const fs = require('fs');
 const path = require('path');
@@ -66,7 +66,7 @@ function usage() {
   node scripts/collect-evidence.js --issue <ISSUE-ID | path/to/issue.md> [options]
 
 Options:
-  --all, -a     Collect evidence for every issue in .github/docs/00-issues/
+  --all, -a     Collect evidence for every issue in docs/agent_output/00-issues/
   --issue, -i   Issue id (e.g. ISSUE-001) or a path to the issue markdown file
   --depth, -d   Call-graph traversal depth in each direction (1-8, default 4)
   --no-graph    Skip Neo4j and use artifacts.json only
@@ -573,8 +573,8 @@ function renderEvidenceMarkdown(evidence) {
   out.push('| Input | Status |');
   out.push('|---|---|');
   out.push(`| Issue report | \`${issue.file}\` |`);
-  out.push(`| \`.github/docs/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
-  out.push(`| \`.github/docs/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| \`.github/.architect/artifacts.json\` | scanned ${sources.artifactsGeneratedAt} |`);
   out.push(`| Neo4j graph | ${graph.live ? `live (depth ${graph.depth})` : `not used — ${graph.reason}`} |`);
   out.push('');
@@ -675,7 +675,7 @@ function renderEvidenceMarkdown(evidence) {
   out.push('## 4. Architecture Context');
   out.push('');
   if (!architectureContext) {
-    out.push('_`.github/docs/01-architecture/architecture.md` is missing — run Blueprint Scribe to regenerate it._');
+    out.push('_`docs/agent_output/01-architecture/architecture.md` is missing — run Blueprint Scribe to regenerate it._');
     out.push('');
   } else {
     if (architectureContext.moduleRows.length) {
@@ -751,7 +751,7 @@ function renderEvidenceMarkdown(evidence) {
   out.push('## 6. Function Reference Excerpts');
   out.push('');
   if (!excerpts.length) {
-    out.push('_No matching entries found in `.github/docs/01-architecture/function-reference.md`._');
+    out.push('_No matching entries found in `docs/agent_output/01-architecture/function-reference.md`._');
     out.push('');
   } else {
     for (const e of excerpts) {
@@ -780,7 +780,7 @@ function renderEvidenceMarkdown(evidence) {
 async function collectForIssue(registerEntry, args, context) {
   const { model, artifacts, architectureText, functionReferenceText } = context;
   if (!registerEntry || !registerEntry.id) {
-    throw new Error(`A register row has no "issue_id". See .github/docs/00-issues/README.md for the expected columns.`);
+    throw new Error(`A register row has no "issue_id". See docs/agent_output/00-issues/README.md for the expected columns.`);
   }
 
   // The register loader already normalized every column; `file` points at the
@@ -940,12 +940,12 @@ async function main() {
   if (args.help) return usage();
 
   // Work out which issues to process. The register is read-only input: whatever is in
-  // .github/docs/00-issues/ is the workload, and this script never adds to it.
+  // docs/agent_output/00-issues/ is the workload, and this script never adds to it.
   let workload;
   if (args.all) {
     workload = listIssues();
     if (!workload.length) {
-      throw new Error(`No issues found in ${rel(ISSUE_REGISTER_FILE)}. Every row must carry an "issue_id" — see .github/docs/00-issues/README.md.`);
+      throw new Error(`No issues found in ${rel(ISSUE_REGISTER_FILE)}. Every row must carry an "issue_id" — see docs/agent_output/00-issues/README.md.`);
     }
     console.log(`Root Cause Analyst — ${workload.length} issue(s) in the register: ${workload.map((i) => i.id).join(', ')}`);
   } else {

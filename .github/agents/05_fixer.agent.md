@@ -1,7 +1,7 @@
 ---
 name: 05_fixer
-description: 'Reads every fix plan in .github/docs/04-fix-plans/ whose Status reads Approved, drafts the smallest diff implementing it in the app''s existing style, verifies the diff by applying and building it inside a throwaway git worktree (never the real working tree), and writes one .github/docs/05-fixes/fix_<issue_id>.md report plus a standalone fix_<issue_id>.diff. Refuses any plan that is not Approved. Use when asked to implement an approved fix, write the patch for a fix plan, or generate a verified diff for a diagnosed vulnerability.'
-argument-hint: 'Nothing (processes every Approved fix plan in .github/docs/04-fix-plans/), or a specific issue id such as ISSUE-001'
+description: 'Reads every fix plan in docs/agent_output/04-fix-plans/ whose Status reads Approved, drafts the smallest diff implementing it in the app''s existing style, verifies the diff by applying and building it inside a throwaway git worktree (never the real working tree), and writes one docs/agent_output/05-fixes/fix_<issue_id>.md report plus a standalone fix_<issue_id>.diff. Refuses any plan that is not Approved. Use when asked to implement an approved fix, write the patch for a fix plan, or generate a verified diff for a diagnosed vulnerability.'
+argument-hint: 'Nothing (processes every Approved fix plan in docs/agent_output/04-fix-plans/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
 
@@ -24,7 +24,7 @@ rationale JSON — the scripts never write source-level judgement, only mechanic
 
 ## Inputs
 
-1. **`.github/docs/04-fix-plans/fix_plan_<id>.md`** — read-only. Its **Status** cell is the gate: only plans
+1. **`docs/agent_output/04-fix-plans/fix_plan_<id>.md`** — read-only. Its **Status** cell is the gate: only plans
    reading `Approved` are workload. `Proposed` and `Rejected` are skipped, always.
 2. **The plan's `affected_files` and `planned_change`** — what to change, and the strategy behind it.
 3. **The current source of every affected file**, read directly — the actual code, not the plan's
@@ -32,8 +32,8 @@ rationale JSON — the scripts never write source-level judgement, only mechanic
 
 ## Default behaviour
 
-With no argument, process every fix plan in `.github/docs/04-fix-plans/` whose Status is `Approved` and produce
-a `.github/docs/05-fixes/fix_<id>.md` + `.github/docs/05-fixes/fix_<id>.diff` for each. Narrow to one issue only when the
+With no argument, process every fix plan in `docs/agent_output/04-fix-plans/` whose Status is `Approved` and produce
+a `docs/agent_output/05-fixes/fix_<id>.md` + `docs/agent_output/05-fixes/fix_<id>.diff` for each. Narrow to one issue only when the
 user names it — and if that plan is not Approved, refuse and say so rather than acting anyway.
 
 ## Approach
@@ -66,8 +66,8 @@ user names it — and if that plan is not Approved, refuse and say so rather tha
 - DO NOT edit any real source file in the repository, at any point, for any reason. All code you
   write goes into `.github/.architect/fixer/<id>.patch.diff` and is only ever applied inside the throwaway
   worktree that `verify-patch.js` creates and destroys.
-- DO NOT create, edit, rename or delete anything in `.github/docs/04-fix-plans/`, `.github/docs/02-root-cause/` or
-  `.github/docs/03-blast-radius/`. All are read-only input; the plan's Status is read, never written, by you.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/04-fix-plans/`, `docs/agent_output/02-root-cause/` or
+  `docs/agent_output/03-blast-radius/`. All are read-only input; the plan's Status is read, never written, by you.
 - DO NOT widen the change beyond the plan's `affected_files` and `planned_change` without recording
   it as a deviation with a reason — "while I was in there" changes are not smallest diffs.
 - DO NOT claim a verification passed that did not. If `verify-patch.js` reports FAIL or the plan was
@@ -87,7 +87,7 @@ A one-line coverage statement (`Compiled N of M Approved plan(s)`), then one sho
 - **Issue id and title**
 - **Status** — Compiled / Compile Failed / Refused
 - **Files changed** and **verification level** (e.g. compile only, compile + test)
-- A link to `.github/docs/05-fixes/fix_<issue_id>.md`
+- A link to `docs/agent_output/05-fixes/fix_<issue_id>.md`
 
 Close with a line for any plan still at `Proposed`/`Rejected` (skipped, not workload), anything
 needing attention (compile failures, deviations from the plan, or environment issues such as Maven

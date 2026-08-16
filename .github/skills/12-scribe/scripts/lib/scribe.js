@@ -1,7 +1,7 @@
 /**
  * Scribe — shared path resolution and read-only access to the entire chain of custody. Every
  * docs/ folder this skill reads from is read-only input; only .github/.architect/scribe/ and
- * .github/docs/11-ship/{pr,audit}_<id>.md are written here. Scribe never touches git or GitHub — its output
+ * docs/agent_output/11-ship/{pr,audit}_<id>.md are written here. Scribe never touches git or GitHub — its output
  * is content for a human to act on, always written, regardless of the merge arbiter's decision.
  */
 const fs = require('fs');
@@ -19,16 +19,16 @@ const PATHS = {
   REPO_ROOT,
   DATA_DIR,
   WORK_DIR: path.join(DATA_DIR, 'scribe'),
-  ISSUES_DIR: path.join(REPO_ROOT, '.github', 'docs', '00-issues'),
-  ROOT_CAUSE_DIR: path.join(REPO_ROOT, '.github', 'docs', '02-root-cause'),
-  BLAST_RADIUS_DIR: path.join(REPO_ROOT, '.github', 'docs', '03-blast-radius'),
-  FIX_PLANS_DIR: path.join(REPO_ROOT, '.github', 'docs', '04-fix-plans'),
-  FIXES_DIR: path.join(REPO_ROOT, '.github', 'docs', '05-fixes'),
-  VERIFY_DIR: path.join(REPO_ROOT, '.github', 'docs', '06-verify'),
-  QA_DIR: path.join(REPO_ROOT, '.github', 'docs', '09-qa'),
-  BUILD_DIR: path.join(REPO_ROOT, '.github', 'docs', '10-build'),
-  SHIP_DIR: path.join(REPO_ROOT, '.github', 'docs', '11-ship'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '11-ship', 'README.md'),
+  ISSUES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues'),
+  ROOT_CAUSE_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '02-root-cause'),
+  BLAST_RADIUS_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '03-blast-radius'),
+  FIX_PLANS_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '04-fix-plans'),
+  FIXES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes'),
+  VERIFY_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '06-verify'),
+  QA_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '09-qa'),
+  BUILD_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '10-build'),
+  SHIP_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '11-ship'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '11-ship', 'README.md'),
 };
 
 function rel(target) {

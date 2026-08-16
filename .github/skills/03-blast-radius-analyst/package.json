@@ -2,7 +2,7 @@
   "name": "03-blast-radius-analyst",
   "version": "1.0.0",
   "private": true,
-  "description": "Measures how far each diagnosed defect reaches across services, endpoints and jobs, and renders .github/docs/03-blast-radius/blast_radius_<issue_id>.md",
+  "description": "Measures how far each diagnosed defect reaches across services, endpoints and jobs, and renders docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md",
   "type": "commonjs",
   "scripts": {
     "workload": "node scripts/list-root-causes.js",

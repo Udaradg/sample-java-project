@@ -1,6 +1,6 @@
 ---
 name: 11-merge-arbiter
-description: 'Deterministically scores the five Phase C upstream reports (re-scan, red-team, behavior, QA, build) against externalized weights and hard gates in scoring.json, then writes .github/docs/11-ship/verdict_<id>.md — Cleared or Blocked. Only place in the whole pipeline where a patch is declared safe to ship. Use when asked whether a patch is ready to merge, to score a fix''s readiness, or to make the final ship/no-ship call.'
+description: 'Deterministically scores the five Phase C upstream reports (re-scan, red-team, behavior, QA, build) against externalized weights and hard gates in scoring.json, then writes docs/agent_output/11-ship/verdict_<id>.md — Cleared or Blocked. Only place in the whole pipeline where a patch is declared safe to ship. Use when asked whether a patch is ready to merge, to score a fix''s readiness, or to make the final ship/no-ship call.'
 argument-hint: 'Nothing (processes every fix with all five upstream reports ready), or a specific issue id such as ISSUE-001'
 ---
 
@@ -11,7 +11,7 @@ build-gatekeeper into one scored decision. **This is the only agent in the entir
 to say a patch is safe to ship.** Nothing upstream — not Fixer's `Compiled`, not any individual Step
 1/2 check — is a merge signal on its own.
 
-**`.github/docs/05-fixes/`, `.github/docs/06-verify/`, `.github/docs/09-qa/`, `.github/docs/10-build/` and `.github/docs/00-issues/` are all read-only
+**`docs/agent_output/05-fixes/`, `docs/agent_output/06-verify/`, `docs/agent_output/09-qa/`, `docs/agent_output/10-build/` and `docs/agent_output/00-issues/` are all read-only
 input.** Nothing here writes to any of them.
 
 ## How scoring works
@@ -40,9 +40,9 @@ no path in this system for an override to be invisible.
 
 ## Output
 
-`.github/docs/11-ship/verdict_<id>.md` — Decision (`Cleared`/`Blocked`), score breakdown, hard-gate table, links
+`docs/agent_output/11-ship/verdict_<id>.md` — Decision (`Cleared`/`Blocked`), score breakdown, hard-gate table, links
 to all five upstream reports, the narrative, and the override section if one was applied.
-`.github/docs/11-ship/README.md`'s index is owned by the **12-scribe** skill, not this one — it is written once
+`docs/agent_output/11-ship/README.md`'s index is owned by the **12-scribe** skill, not this one — it is written once
 scribe runs, since scribe's own workload already covers every rendered verdict.
 
 Intermediate: `.github/.architect/merge/<id>.score.json` (script), `<id>.arbitration.json` (agent).
@@ -86,12 +86,12 @@ node scripts/render-verdict.js --all
 ### Step 5 — Report back
 
 Per fix: Decision, score/threshold, which (if any) hard gate triggered, and a link to
-`.github/docs/11-ship/verdict_<id>.md`.
+`docs/agent_output/11-ship/verdict_<id>.md`.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`, `.github/docs/06-verify/`, `.github/docs/09-qa/`,
-  `.github/docs/10-build/` or `.github/docs/00-issues/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/06-verify/`, `docs/agent_output/09-qa/`,
+  `docs/agent_output/10-build/` or `docs/agent_output/00-issues/`.
 - DO NOT recompute or restate the score differently from what `compute-score.js` produced — read it,
   don't re-derive it.
 - DO NOT set `override.applied: true` without a `reason` citing specific evidence from the upstream
@@ -100,5 +100,5 @@ Per fix: Decision, score/threshold, which (if any) hard gate triggered, and a li
   shows the computed decision next to yours; there is no way to hide the gap.
 - DO NOT edit `scoring.json`'s weights/thresholds as part of a single arbitration — that is a
   standing policy change for the user to make deliberately, not something to adjust per-patch.
-- DO NOT print the full upstream reports into chat — link to `.github/docs/11-ship/verdict_<id>.md`.
+- DO NOT print the full upstream reports into chat — link to `docs/agent_output/11-ship/verdict_<id>.md`.
 - No `npm install` is needed for this skill.

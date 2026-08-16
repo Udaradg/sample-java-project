@@ -1,6 +1,6 @@
 /**
  * Build Gatekeeper — shared path resolution, fix-report access, and the isolated build sandbox.
- * .github/docs/05-fixes/ is read-only input. Only .github/.architect/build/ and .github/docs/10-build/ are written here.
+ * docs/agent_output/05-fixes/ is read-only input. Only .github/.architect/build/ and docs/agent_output/10-build/ are written here.
  *
  * This skill has no agent-authored judgment file anywhere in its pipeline — every fact in its
  * report comes straight from a script. That is deliberate: Phase C step 2 is meant to be
@@ -27,9 +27,9 @@ const PATHS = {
   DATA_DIR,
   WORK_DIR: path.join(DATA_DIR, 'build'),
   WORKTREES_DIR: path.join(DATA_DIR, 'build', 'worktrees'),
-  FIXES_DIR: path.join(REPO_ROOT, '.github', 'docs', '05-fixes'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '10-build'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '10-build', 'README.md'),
+  FIXES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '10-build'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '10-build', 'README.md'),
 };
 
 function rel(target) {

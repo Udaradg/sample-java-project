@@ -6,7 +6,7 @@
  *   .github/.architect/blast-radius/<id>.facts.json     — measured reach, from collect-impact.js
  *   .github/.architect/blast-radius/<id>.narrative.json — plain-language judgement, from the agent
  *
- * Output: .github/docs/03-blast-radius/blast_radius_<issue_id>.md
+ * Output: docs/agent_output/03-blast-radius/blast_radius_<issue_id>.md
  *
  * The report is written for someone who has not read the code: diagrams first, short
  * tables second, jargon last. Every number in it comes from the facts file.
@@ -51,7 +51,7 @@ Options:
   --all, -a         Render every root cause that has facts + narrative
   --issue, -i       A single issue id, e.g. ISSUE-001
   --narrative, -n   Narrative JSON path (default .github/.architect/blast-radius/<id>.narrative.json)
-  --out, -o         Output path (default .github/docs/03-blast-radius/blast_radius_<id>.md)
+  --out, -o         Output path (default docs/agent_output/03-blast-radius/blast_radius_<id>.md)
   --help, -h        Show this message`);
 }
 
@@ -340,8 +340,8 @@ function render(facts, narrative) {
   out.push('|---|---|');
   out.push(`| Root cause report | ${linkFromOutput(sources.rootCauseReport, sources.rootCauseReport)} |`);
   out.push(`| Issue report | ${sources.issueFile ? linkFromOutput(sources.issueFile, sources.issueFile) : 'not available'} |`);
-  out.push(`| Architecture document | ${sources.architecture ? linkFromOutput('.github/docs/01-architecture/architecture.md', '.github/docs/01-architecture/architecture.md') : 'not available'} |`);
-  out.push(`| Function reference | ${sources.functionReference ? linkFromOutput('.github/docs/01-architecture/function-reference.md', '.github/docs/01-architecture/function-reference.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.architecture ? linkFromOutput('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Function reference | ${sources.functionReference ? linkFromOutput('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` |`);
   out.push(`| Knowledge graph | ${facts.graph.live ? `Neo4j, traversal depth ${facts.graph.depth}` : `not used — ${facts.graph.reason}`} |`);
   out.push('');
@@ -419,7 +419,7 @@ function main() {
 
   if (args.all) {
     const targets = listRootCauses();
-    if (!targets.length) throw new Error('No root cause reports in .github/docs/02-root-cause/. Nothing to render.');
+    if (!targets.length) throw new Error('No root cause reports in docs/agent_output/02-root-cause/. Nothing to render.');
 
     const written = [];
     const skipped = [];

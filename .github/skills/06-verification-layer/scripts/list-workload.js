@@ -7,7 +7,7 @@
  * pipeline state of all three Step 1 checks side by side, so each agent knows exactly what its
  * own workload is without re-deriving the fix register three times.
  *
- * .github/docs/05-fixes/ is read-only input; nothing here writes to it.
+ * docs/agent_output/05-fixes/ is read-only input; nothing here writes to it.
  *
  * Usage:
  *   node scripts/list-workload.js            # table for humans

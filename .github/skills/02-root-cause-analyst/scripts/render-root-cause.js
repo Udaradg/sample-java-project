@@ -6,7 +6,7 @@
  *   - .github/.architect/rca/<issue_id>.evidence.json   — facts, from collect-evidence.js
  *   - .github/.architect/rca/<issue_id>.analysis.json   — reasoning, written by the agent
  *
- * Output: .github/docs/02-root-cause/root_cause_<issue_id>.md
+ * Output: docs/agent_output/02-root-cause/root_cause_<issue_id>.md
  *
  * Keeping the two apart is deliberate: every factual section (locations, call
  * chains, affected area, graph queries) is rendered straight from the evidence
@@ -53,11 +53,11 @@ function usage() {
   node scripts/render-root-cause.js --issue <ISSUE-ID> [options]
 
 Options:
-  --all            Render every issue in .github/docs/00-issues/ that has evidence + analysis
+  --all            Render every issue in docs/agent_output/00-issues/ that has evidence + analysis
   --issue, -i      Issue id, e.g. ISSUE-001
   --analysis, -a   Analysis JSON path (default .github/.architect/rca/<id>.analysis.json)
   --evidence, -e   Evidence JSON path (default .github/.architect/rca/<id>.evidence.json)
-  --out, -o        Output path (default .github/docs/02-root-cause/root_cause_<id>.md)
+  --out, -o        Output path (default docs/agent_output/02-root-cause/root_cause_<id>.md)
   --help, -h       Show this message
 
 Exactly one of --all or --issue is required.`);
@@ -103,7 +103,7 @@ function chainStep(step, index) {
 const UP_TO_ROOT = path.relative(OUT_DIR, REPO_ROOT).replace(/\\/g, '/');
 
 function relativeFromOutput(repoRelativePath) {
-  // .github/docs/02-root-cause/x.md -> ../../../<path>
+  // docs/agent_output/02-root-cause/x.md -> ../../../<path>
   return `${UP_TO_ROOT}/${repoRelativePath}`.replace(/\\/g, '/');
 }
 
@@ -320,8 +320,8 @@ function render(evidence, analysis) {
   out.push('| Input | Detail |');
   out.push('|---|---|');
   out.push(`| Issue report | ${docLink(issue.file, issue.file)} |`);
-  out.push(`| Architecture document | ${sources.architecture ? docLink('.github/docs/01-architecture/architecture.md', '.github/docs/01-architecture/architecture.md') : 'not available'} |`);
-  out.push(`| Function reference | ${sources.functionReference ? docLink('.github/docs/01-architecture/function-reference.md', '.github/docs/01-architecture/function-reference.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.architecture ? docLink('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Function reference | ${sources.functionReference ? docLink('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` (generated ${sources.artifactsGeneratedAt}) |`);
   out.push(`| Knowledge graph | ${graph.live ? `Neo4j, traversal depth ${graph.depth}` : `not used — ${graph.reason}`} |`);
   out.push('');
@@ -408,7 +408,7 @@ function main() {
   // --- Batch: one report per issue in the register --------------------------
   if (args.all) {
     const issues = listIssues();
-    if (!issues.length) throw new Error(`No issues found in .github/docs/00-issues/. Nothing to render.`);
+    if (!issues.length) throw new Error(`No issues found in docs/agent_output/00-issues/. Nothing to render.`);
 
     const written = [];
     const skipped = [];

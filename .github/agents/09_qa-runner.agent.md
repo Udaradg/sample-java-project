@@ -1,7 +1,7 @@
 ---
 name: 09_qa-runner
 description: 'Drafts exactly one new regression test per Status: Compiled fix, mocking Spring Data types instead of using a live database, then hands off to a deterministic script that applies it and runs it for real inside an isolated git worktree. Phase C step 2, first half — execution and pass/fail are decided entirely by the script, never by agent judgment. Use when asked to write a regression test for a fix, run the test suite scoped to a change, or gate a patch on tests before it can ship.'
-argument-hint: 'Nothing (processes every Status: Compiled fix in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+argument-hint: 'Nothing (processes every Status: Compiled fix in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
 
@@ -45,7 +45,7 @@ if that fix isn't `Compiled`.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`.
 - DO NOT run the gate against a fix whose Status is `Refused` (the gate itself compiles independently, so `Compile Failed` fixes are still in scope).
 - DO NOT hand-edit `<id>.result.json` — that file is the deterministic gate's output.
 - DO NOT claim a test "should pass" instead of actually running it via `run-qa-gate.js`.
@@ -59,7 +59,7 @@ if that fix isn't `Compiled`.
 ## Output Format
 
 `Ran the QA gate on N of N Compiled fix(es)`, then per fix: Status (Passed/Failed/Refused), the new
-test's file, one sentence on what it proves, and a link to `.github/docs/09-qa/qa_<id>.md`. Close with anything
+test's file, one sentence on what it proves, and a link to `docs/agent_output/09-qa/qa_<id>.md`. Close with anything
 needing attention — a SKIPPED existing test and why, or an unrelated compile failure (check whether
 the error touches the fix's own `filesChanged` before blaming the patch; it may be the known JDK/
 Lombok toolchain mismatch documented in this skill's `SKILL.md`).

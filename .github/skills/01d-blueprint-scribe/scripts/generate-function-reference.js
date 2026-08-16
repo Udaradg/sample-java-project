@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Blueprint Scribe — Function Reference
- * Reads Code Cartographer artifacts.json and writes .github/docs/01-architecture/function-reference.md:
+ * Reads Code Cartographer artifacts.json and writes docs/agent_output/01-architecture/function-reference.md:
  * a per-module, per-class, per-method breakdown (signature, source location,
  * REST mapping, resolved callers/callees, and the exact method source) meant
  * for deep-dive diagnosis rather than a high-level overview.
@@ -14,7 +14,7 @@ const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
   : path.join(REPO_ROOT, '.github', '.architect');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
-const OUT_FILE = path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'function-reference.md');
+const OUT_FILE = path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'function-reference.md');
 
 const MAPPING_ANNOTATIONS = {
   GetMapping: 'GET',

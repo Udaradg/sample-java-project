@@ -1,7 +1,7 @@
 ---
 name: 10_build-gatekeeper
 description: 'Runs mvn verify and a before/after dependency-tree diff for every Status: Compiled fix inside an isolated git worktree — fully deterministic, no agent judgment anywhere in the output. Phase C step 2, second half. Use when asked to confirm a fix builds cleanly, check for dependency drift, or gate a patch on the build before it can ship.'
-argument-hint: 'Nothing (processes every Status: Compiled fix in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+argument-hint: 'Nothing (processes every Status: Compiled fix in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, todo]
 ---
 
@@ -33,7 +33,7 @@ With no argument, process every `Status: Compiled` fix. Narrow to one issue only
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`.
 - DO NOT run against a fix whose Status is `Refused` (the gate itself compiles independently, so `Compile Failed` fixes are still in scope).
 - DO NOT add your own analysis, judgment JSON, or narrative to a build result — there is no schema
   for that in this skill, deliberately. If something needs explaining, that belongs to the merge
@@ -41,12 +41,12 @@ With no argument, process every `Status: Compiled` fix. Narrow to one issue only
 - DO NOT reclassify a Failed build as acceptable, even when you're confident the cause is the known
   JDK/Lombok mismatch — report the result exactly as the script produced it and name the caveat, but
   the Status stays what the script said.
-- DO NOT print the full build log into chat — link to `.github/docs/10-build/build_<id>.md`.
+- DO NOT print the full build log into chat — link to `docs/agent_output/10-build/build_<id>.md`.
 - No `npm install` is needed for this skill.
 
 ## Output Format
 
 `Ran the build gate on N of N Compiled fix(es)`, then per fix: Status, modules built, whether a
-dependency change was detected, and a link to `.github/docs/10-build/build_<id>.md`. If a failure's errors sit
+dependency change was detected, and a link to `docs/agent_output/10-build/build_<id>.md`. If a failure's errors sit
 outside the fix's `filesChanged`, note that plainly as a possible environment issue (see the skill's
 Known caveat) — but still report the Status as Failed, since that is what actually happened.

@@ -1,7 +1,7 @@
 /**
  * Merge Arbiter — shared path resolution and read-only access to every Phase C upstream report.
- * .github/docs/05-fixes/, .github/docs/06-verify/, .github/docs/09-qa/, .github/docs/10-build/ and .github/docs/00-issues/ are all READ-ONLY input here.
- * Only .github/.architect/merge/ and .github/docs/11-ship/ are written by this skill.
+ * docs/agent_output/05-fixes/, docs/agent_output/06-verify/, docs/agent_output/09-qa/, docs/agent_output/10-build/ and docs/agent_output/00-issues/ are all READ-ONLY input here.
+ * Only .github/.architect/merge/ and docs/agent_output/11-ship/ are written by this skill.
  */
 const fs = require('fs');
 const path = require('path');
@@ -18,13 +18,13 @@ const PATHS = {
   REPO_ROOT,
   DATA_DIR,
   WORK_DIR: path.join(DATA_DIR, 'merge'),
-  FIXES_DIR: path.join(REPO_ROOT, '.github', 'docs', '05-fixes'),
-  VERIFY_DIR: path.join(REPO_ROOT, '.github', 'docs', '06-verify'),
-  QA_DIR: path.join(REPO_ROOT, '.github', 'docs', '09-qa'),
-  BUILD_DIR: path.join(REPO_ROOT, '.github', 'docs', '10-build'),
-  ISSUES_DIR: path.join(REPO_ROOT, '.github', 'docs', '00-issues'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '11-ship'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '11-ship', 'README.md'),
+  FIXES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes'),
+  VERIFY_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '06-verify'),
+  QA_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '09-qa'),
+  BUILD_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '10-build'),
+  ISSUES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '11-ship'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '11-ship', 'README.md'),
   SCORING_FILE: path.join(SKILL_DIR, 'scoring.json'),
 };
 

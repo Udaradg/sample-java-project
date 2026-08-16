@@ -1,6 +1,6 @@
 ---
 name: 06-verification-layer
-description: 'Shared skill behind Phase C Step 1 — three independent, parallel, static/reasoning-based checks against every fix in .github/docs/05-fixes/ that Fixer drafted a diff for, Compiled or Compile Failed alike: re-scanner (does the finding still trigger?), red-team-recon (can the patch be bypassed?), behavior-guard (did real behavior change?). No live database or deployed instance is used — this repo has no embedded-Mongo/Testcontainers dependency. Use when asked to re-verify a fix, check whether a patch can be bypassed, or confirm a patch did not change unrelated behavior.'
+description: 'Shared skill behind Phase C Step 1 — three independent, parallel, static/reasoning-based checks against every fix in docs/agent_output/05-fixes/ that Fixer drafted a diff for, Compiled or Compile Failed alike: re-scanner (does the finding still trigger?), red-team-recon (can the patch be bypassed?), behavior-guard (did real behavior change?). No live database or deployed instance is used — this repo has no embedded-Mongo/Testcontainers dependency. Use when asked to re-verify a fix, check whether a patch can be bypassed, or confirm a patch did not change unrelated behavior.'
 argument-hint: 'Nothing (processes every fix with a drafted diff), or a specific issue id such as ISSUE-001'
 ---
 
@@ -13,7 +13,7 @@ agent-authored verdict, and its own rendered report, so the three stay independe
 in parallel, in any order — and independently auditable. None of them decides whether a patch
 ships; the **merge arbiter** (Phase C step 3) reads all three.
 
-**`.github/docs/05-fixes/`, `.github/docs/04-fix-plans/`, `.github/docs/02-root-cause/` and `.github/docs/00-issues/` are all read-only input.**
+**`docs/agent_output/05-fixes/`, `docs/agent_output/04-fix-plans/`, `docs/agent_output/02-root-cause/` and `docs/agent_output/00-issues/` are all read-only input.**
 Nothing in this skill writes to any of them.
 
 ## Why static, not dynamic
@@ -47,8 +47,8 @@ wasn't Approved) is actually excluded from this skill's workload. Step 2 (`09_qa
 
 | Input | re-scanner | red-team-recon | behavior-guard |
 |---|---|---|---|
-| Fix report (`.github/docs/05-fixes/fix_<id>.md`), Status `Compiled` or `Compile Failed` | required | required | required |
-| Fix diff (`.github/docs/05-fixes/fix_<id>.diff`) | via patched-file materialization | full text + patched files | full text + patched files |
+| Fix report (`docs/agent_output/05-fixes/fix_<id>.md`), Status `Compiled` or `Compile Failed` | required | required | required |
+| Fix diff (`docs/agent_output/05-fixes/fix_<id>.diff`) | via patched-file materialization | full text + patched files | full text + patched files |
 | Fix plan (approach, risk notes) | — | yes | yes (scope to compare against) |
 | Root cause report (statement, explanation) | yes | — | — |
 | Issue's Detection Notes (signatures) | yes | — | — |
@@ -57,11 +57,11 @@ wasn't Approved) is actually excluded from this skill's workload. Step 2 (`09_qa
 
 ## Output
 
-- `.github/docs/06-verify/rescan_<id>.md` — `FIXED` / `STILL_VULNERABLE` / `INCONCLUSIVE`
-- `.github/docs/06-verify/redteam_<id>.md` — `NO_BYPASS_FOUND` / `BYPASS_FOUND` / `INCONCLUSIVE`
-- `.github/docs/06-verify/behavior_<id>.md` — `BEHAVIOR_PRESERVED` / `BEHAVIOR_CHANGED` / `INCONCLUSIVE`
+- `docs/agent_output/06-verify/rescan_<id>.md` — `FIXED` / `STILL_VULNERABLE` / `INCONCLUSIVE`
+- `docs/agent_output/06-verify/redteam_<id>.md` — `NO_BYPASS_FOUND` / `BYPASS_FOUND` / `INCONCLUSIVE`
+- `docs/agent_output/06-verify/behavior_<id>.md` — `BEHAVIOR_PRESERVED` / `BEHAVIOR_CHANGED` / `INCONCLUSIVE`
 
-`.github/docs/06-verify/README.md`'s index is rewritten by whichever renderer last ran.
+`docs/agent_output/06-verify/README.md`'s index is rewritten by whichever renderer last ran.
 
 Intermediate files land in `.github/.architect/verify/` (gitignored):
 `<id>.rescan.facts.{json,md}`, `<id>.redteam.facts.{json,md}`, `<id>.behavior.facts.{json,md}`, and
@@ -117,12 +117,12 @@ node scripts/render-redteam.js --all
 node scripts/render-behavior.js --all
 ```
 
-Each validates its own verdict JSON and writes the matching `.github/docs/06-verify/<name>_<id>.md`.
+Each validates its own verdict JSON and writes the matching `docs/agent_output/06-verify/<name>_<id>.md`.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`, `.github/docs/04-fix-plans/`,
-  `.github/docs/02-root-cause/` or `.github/docs/00-issues/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/04-fix-plans/`,
+  `docs/agent_output/02-root-cause/` or `docs/agent_output/00-issues/`.
 - DO NOT run against a fix whose Status is `Refused` — Fixer never drafted a diff, so there is
   nothing to analyze.
 - DO NOT add live-database test infrastructure to make these checks dynamic — that is an explicit,

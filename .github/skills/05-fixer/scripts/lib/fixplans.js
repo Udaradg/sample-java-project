@@ -1,8 +1,8 @@
 /**
  * Fixer — shared path resolution and read-only access to fix plans.
  *
- * The workload is fix plans in .github/docs/04-fix-plans/ whose Status cell reads "Approved" — a plan
- * still at "Proposed" or set to "Rejected" is never acted on. .github/docs/04-fix-plans/ is READ-ONLY
+ * The workload is fix plans in docs/agent_output/04-fix-plans/ whose Status cell reads "Approved" — a plan
+ * still at "Proposed" or set to "Rejected" is never acted on. docs/agent_output/04-fix-plans/ is READ-ONLY
  * input here: nothing in this skill edits a plan file. The human-editable Status cell is the
  * one piece of that file this skill reads as a gate, never writes.
  */
@@ -21,9 +21,9 @@ const PATHS = {
   DATA_DIR,
   WORK_DIR: path.join(DATA_DIR, 'fixer'),
   WORKTREES_DIR: path.join(DATA_DIR, 'fixer', 'worktrees'),
-  FIX_PLANS_DIR: path.join(REPO_ROOT, '.github', 'docs', '04-fix-plans'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '05-fixes'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '05-fixes', 'README.md'),
+  FIX_PLANS_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '04-fix-plans'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes', 'README.md'),
 };
 
 function rel(target) {
@@ -36,7 +36,7 @@ function readIfPresent(file) {
 
 // ---------------------------------------------------------------------------
 // Fix plan parsing — plans carry no front matter, same "At a glance table + bold
-// labels" convention .github/docs/02-root-cause and .github/docs/03-blast-radius use for their own facts.
+// labels" convention docs/agent_output/02-root-cause and docs/agent_output/03-blast-radius use for their own facts.
 // ---------------------------------------------------------------------------
 
 function sectionBody(text, headingPattern) {
@@ -119,7 +119,7 @@ function listApprovedFixPlans() {
 
 function resolveFixPlan(idOrPath) {
   if (!idOrPath) {
-    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every Approved fix plan in .github/docs/04-fix-plans/.');
+    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every Approved fix plan in docs/agent_output/04-fix-plans/.');
   }
   const all = listFixPlans();
   const byId = all.find((p) => p.id.toLowerCase() === String(idOrPath).toLowerCase());

@@ -1,7 +1,7 @@
 ---
 name: 09-qa-runner
-description: 'Drafts exactly one new regression test per Status: Compiled fix in .github/docs/05-fixes/, mocking Spring Data types rather than using a live database (this repo has no embedded-MongoDB dependency), then runs it deterministically inside an isolated git worktree alongside any named existing test. Execution and pass/fail are entirely script-decided, never agent-judged. Use when asked to write a regression test for a fix, run the test suite scoped to a change, or confirm a patch is covered by a test.'
-argument-hint: 'Nothing (processes every Status: Compiled fix in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+description: 'Drafts exactly one new regression test per Status: Compiled fix in docs/agent_output/05-fixes/, mocking Spring Data types rather than using a live database (this repo has no embedded-MongoDB dependency), then runs it deterministically inside an isolated git worktree alongside any named existing test. Execution and pass/fail are entirely script-decided, never agent-judged. Use when asked to write a regression test for a fix, run the test suite scoped to a change, or confirm a patch is covered by a test.'
+argument-hint: 'Nothing (processes every Status: Compiled fix in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 ---
 
 # QA Runner
@@ -13,7 +13,7 @@ for real, and decides PASS/FAIL/SKIPPED from the actual exit code. **You never s
 decision after the fact — you cannot upgrade a FAIL, and you must not re-run the gate hoping for a
 different result without changing the test itself.**
 
-**`.github/docs/05-fixes/` is read-only input.** Nothing here writes to it.
+**`docs/agent_output/05-fixes/` is read-only input.** Nothing here writes to it.
 
 ## Why mocked, not database-backed
 
@@ -26,16 +26,16 @@ for this specific class of fix and actually executable here.
 
 ## Inputs
 
-1. **`.github/docs/05-fixes/fix_<id>.md`**, Status must be `Compiled`.
+1. **`docs/agent_output/05-fixes/fix_<id>.md`**, Status must be `Compiled`.
 2. **The fix diff and the current source** of the affected file(s) — what the new test targets.
 3. **The reported symptom / injection payload** from the issue and root cause report — what the test
    should replay as its adversarial input.
 
 ## Output
 
-Per Compiled fix: `.github/docs/09-qa/qa_<id>.md` — Status (`Passed` / `Failed` / `Refused`), what the new test
+Per Compiled fix: `docs/agent_output/09-qa/qa_<id>.md` — Status (`Passed` / `Failed` / `Refused`), what the new test
 proves, the mocking strategy, and the gate's real per-test results (including any `SKIPPED`).
-`.github/docs/09-qa/README.md`'s index is rewritten on every render run.
+`docs/agent_output/09-qa/README.md`'s index is rewritten on every render run.
 
 Intermediate files in `.github/.architect/qa/` (gitignored): `<id>.test-plan.json` (your rationale),
 `<id>.new-test.diff` (your drafted test, as a unified diff), `<id>.result.json` (the script's
@@ -88,11 +88,11 @@ script's output — this step cannot change it.
 
 ### Step 5 — Report back
 
-Per fix: Status, the new test's file, what it proves, and a link to `.github/docs/09-qa/qa_<id>.md`.
+Per fix: Status, the new test's file, what it proves, and a link to `docs/agent_output/09-qa/qa_<id>.md`.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`.
 - DO NOT run the gate against a fix whose Status is `Refused` (the gate itself compiles independently, so `Compile Failed` fixes are still in scope).
 - DO NOT write a test that needs a live dependency this sandbox doesn't have unless truly
   unavoidable — and even then, never assume it passes; let the gate report the real outcome.

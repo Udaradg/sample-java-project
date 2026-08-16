@@ -1,6 +1,6 @@
 ---
 name: 12_scribe
-description: 'Writes .github/docs/11-ship/pr_<id>.md (PR-ready title/body/checklist) and .github/docs/11-ship/audit_<id>.md (full chain-of-custody audit trail) for every fix with a rendered merge-arbiter verdict — always, regardless of Cleared or Blocked. Never runs git or gh; content only, for a human to act on. Phase C step 3, second half. Use when asked to write up a fix for review, prepare PR content, or document the full trail behind a shipped or blocked patch.'
+description: 'Writes docs/agent_output/11-ship/pr_<id>.md (PR-ready title/body/checklist) and docs/agent_output/11-ship/audit_<id>.md (full chain-of-custody audit trail) for every fix with a rendered merge-arbiter verdict — always, regardless of Cleared or Blocked. Never runs git or gh; content only, for a human to act on. Phase C step 3, second half. Use when asked to write up a fix for review, prepare PR content, or document the full trail behind a shipped or blocked patch.'
 argument-hint: 'Nothing (processes every fix with a rendered merge-arbiter verdict), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
@@ -19,13 +19,13 @@ next are all their calls, not yours.
 
 ## The Decision is never yours to state
 
-`render-scribe.js` reads `Decision` directly from `.github/docs/11-ship/verdict_<id>.md` — you do not restate,
+`render-scribe.js` reads `Decision` directly from `docs/agent_output/11-ship/verdict_<id>.md` — you do not restate,
 infer, or soften it. The Blocked banner on a PR draft is applied mechanically by the render script,
 not by your judgment call about whether to mention it.
 
 ## Default behaviour
 
-With no argument, process every fix with a rendered `.github/docs/11-ship/verdict_<id>.md`. Narrow to one issue
+With no argument, process every fix with a rendered `docs/agent_output/11-ship/verdict_<id>.md`. Narrow to one issue
 only when named.
 
 ## Approach
@@ -38,13 +38,13 @@ only when named.
    where every claim links to its source document, a `pr_title`, `pr_summary` bullets, and
    `pr_test_plan` bullets drawn from what the QA and build gates actually ran (and what they could
    not, e.g. anything needing a live dependency this sandbox doesn't have).
-4. `node scripts/render-scribe.js --all` — writes both files and the `.github/docs/11-ship/README.md` index.
+4. `node scripts/render-scribe.js --all` — writes both files and the `docs/agent_output/11-ship/README.md` index.
 5. Re-run `list-scribe-workload.js` and confirm every fix shows "pr + audit written".
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `.github/docs/11-ship/pr_*.md`
-  and `.github/docs/11-ship/audit_*.md`. Every other document you read — including `.github/docs/11-ship/verdict_*.md` — is
+- DO NOT create, edit, rename or delete anything outside `.github/.architect/scribe/`, `docs/agent_output/11-ship/pr_*.md`
+  and `docs/agent_output/11-ship/audit_*.md`. Every other document you read — including `docs/agent_output/11-ship/verdict_*.md` — is
   read-only.
 - DO NOT run `git`, `gh`, or any command that touches the real repository or a remote, under any
   circumstance. If asked to "just open the PR," decline and point to the written `pr_<id>.md` — that
@@ -60,5 +60,5 @@ only when named.
 ## Output Format
 
 `Wrote up N of N fix(es)`, then per fix: Decision (as read from the verdict), and links to
-`.github/docs/11-ship/pr_<id>.md` and `.github/docs/11-ship/audit_<id>.md`. For anything Blocked, say so plainly and name
+`docs/agent_output/11-ship/pr_<id>.md` and `docs/agent_output/11-ship/audit_<id>.md`. For anything Blocked, say so plainly and name
 the reason from the verdict's narrative — do not bury it in a neutral status line.

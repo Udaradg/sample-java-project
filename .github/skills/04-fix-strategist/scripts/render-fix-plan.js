@@ -6,10 +6,10 @@
  *   .github/.architect/fix-strategy/<id>.context.json  — facts, from collect-remediation-context.js
  *   .github/.architect/fix-strategy/<id>.strategy.json — judgement, written by the agent
  *
- * Output: .github/docs/04-fix-plans/fix_plan_<id>.md
+ * Output: docs/agent_output/04-fix-plans/fix_plan_<id>.md
  *
  * The rendered plan carries its approval state as a table cell (**Status**), not YAML front
- * matter — the same convention .github/docs/02-root-cause and .github/docs/03-blast-radius use for their own facts,
+ * matter — the same convention docs/agent_output/02-root-cause and docs/agent_output/03-blast-radius use for their own facts,
  * kept here for consistency. A human approves a plan by hand-editing that one cell from
  * `Proposed` to `Approved` (or `Rejected`) directly in the generated file.
  *
@@ -255,7 +255,7 @@ function defaultReadmeContract() {
   return `# Fix Plans
 
 Remediation strategies proposed by the **Fix Strategist** agent, one per root cause report in
-[\`.github/docs/02-root-cause/\`](../root-cause/). Each plan cites a CWE-aligned pattern from
+[\`docs/agent_output/02-root-cause/\`](../root-cause/). Each plan cites a CWE-aligned pattern from
 [\`.github/skills/04-fix-strategist/catalog/cwe-patterns.json\`](../../../.github/skills/04-fix-strategist/catalog/cwe-patterns.json)
 and lists the files it expects to change — it never contains an actual diff.
 
@@ -269,7 +269,7 @@ out). This is a deliberate pause point between choosing a remediation strategy a
 
 Run \`node .github/skills/04-fix-strategist/scripts/list-remediation-workload.js\` for the live pipeline
 state of every root cause report — this table is for humans; the pipeline itself discovers plans by
-scanning \`.github/docs/04-fix-plans/fix_plan_*.md\`.
+scanning \`docs/agent_output/04-fix-plans/fix_plan_*.md\`.
 
 `;
 }

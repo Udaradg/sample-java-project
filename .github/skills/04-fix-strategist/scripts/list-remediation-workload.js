@@ -2,12 +2,12 @@
 /**
  * Fix Strategist — Remediation Workload Listing
  *
- * Discovery step. Prints every root cause report in .github/docs/02-root-cause/ — the workload, one
+ * Discovery step. Prints every root cause report in docs/agent_output/02-root-cause/ — the workload, one
  * fix plan per root cause — with its current pipeline state and, once a plan exists, its
  * approval status.
  *
  * Root cause and blast radius reports are read-only input; this script never writes to
- * .github/docs/02-root-cause/ or .github/docs/03-blast-radius/.
+ * docs/agent_output/02-root-cause/ or docs/agent_output/03-blast-radius/.
  *
  * Usage:
  *   node scripts/list-remediation-workload.js            # table for humans
@@ -65,7 +65,7 @@ function main() {
   console.log(widths.map((w) => '-'.repeat(w)).join('  '));
   rows.forEach((r) => console.log(line(r)));
   console.log(`\nNext: node scripts/collect-remediation-context.js --all`);
-  console.log(`A plan already rendered stays at Proposed until a human edits its Status cell to Approved — see .github/docs/04-fix-plans/README.md.`);
+  console.log(`A plan already rendered stays at Proposed until a human edits its Status cell to Approved — see docs/agent_output/04-fix-plans/README.md.`);
 }
 
 try {

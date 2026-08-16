@@ -3,9 +3,9 @@
  * Fix Strategist — Remediation Context Collector
  *
  * Gathers everything needed to propose a fix for one root cause, from:
- *   1. .github/docs/02-root-cause/root_cause_<id>.md   — the confirmed diagnosis (defines the workload)
- *   2. .github/docs/03-blast-radius/blast_radius_<id>.md — reach/priority, if it exists (optional)
- *   3. .github/docs/00-issues/<id>*.md                 — affected files, entry points
+ *   1. docs/agent_output/02-root-cause/root_cause_<id>.md   — the confirmed diagnosis (defines the workload)
+ *   2. docs/agent_output/03-blast-radius/blast_radius_<id>.md — reach/priority, if it exists (optional)
+ *   3. docs/agent_output/00-issues/<id>*.md                 — affected files, entry points
  *   4. the current source of every affected file, read straight off disk
  *   5. .github/skills/04-fix-strategist/catalog/cwe-patterns.json — the remediation pattern catalog
  *
@@ -53,7 +53,7 @@ function usage() {
   node scripts/collect-remediation-context.js --issue <ISSUE-ID>
 
 Options:
-  --all, -a     Collect context for every root cause report in .github/docs/02-root-cause/
+  --all, -a     Collect context for every root cause report in docs/agent_output/02-root-cause/
   --issue, -i   A single issue id, e.g. ISSUE-001
   --help, -h    Show this message
 
@@ -185,7 +185,7 @@ function renderBriefing(context) {
 function collectForRootCause(rootCause, catalog) {
   const issue = rootCause.issue;
   if (!issue) {
-    throw new Error(`Root cause report ${rootCause.relativeReportFile} has no matching issue in .github/docs/00-issues/ (looked for issue_id "${rootCause.id}"). Cannot resolve affected_files without it.`);
+    throw new Error(`Root cause report ${rootCause.relativeReportFile} has no matching issue in docs/agent_output/00-issues/ (looked for issue_id "${rootCause.id}"). Cannot resolve affected_files without it.`);
   }
 
   const blastRadius = readBlastRadiusReport(rootCause.id);

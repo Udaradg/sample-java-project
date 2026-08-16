@@ -1,6 +1,6 @@
 ---
 name: 00-issue-register
-description: 'Reads the Excel issue register at .github/docs/00-issues/issue-register.xlsx — one row per reported vulnerability — and serves it to every agent that consumes issues (02 root-cause, 03 blast-radius, 04 fix-strategist, 06-08 verification, 11 merge-arbiter, 12 scribe). Owns the column contract and rebuilds each row into the markdown body downstream extractors expect. Use when asked what issues are in the register, to check how a row parses, or when adding a new issue.'
+description: 'Reads the Excel issue register at docs/agent_output/00-issues/issue-register.xlsx — one row per reported vulnerability — and serves it to every agent that consumes issues (02 root-cause, 03 blast-radius, 04 fix-strategist, 06-08 verification, 11 merge-arbiter, 12 scribe). Owns the column contract and rebuilds each row into the markdown body downstream extractors expect. Use when asked what issues are in the register, to check how a row parses, or when adding a new issue.'
 argument-hint: 'Nothing (lists the whole register), or --full to include the synthesized markdown body'
 ---
 
@@ -76,13 +76,13 @@ node scripts/list-register.js --issue ISSUE-003
 ## Column contract
 
 Defined in `scripts/lib/register.js` and documented for reporters in
-[`.github/docs/00-issues/README.md`](../../docs/00-issues/README.md). Row 1 is the header; column
+[`docs/agent_output/00-issues/README.md`](../../docs/00-issues/README.md). Row 1 is the header; column
 names are the contract, order does not matter, unknown columns are ignored, and a row with a blank
 `issue_id` is skipped.
 
 ## Adding a new issue
 
-1. Open `.github/docs/00-issues/issue-register.xlsx` in Excel.
+1. Open `docs/agent_output/00-issues/issue-register.xlsx` in Excel.
 2. Append a row. `issue_id` is the only strictly required cell, but `affected_symbols` and
    `affected_files` are what let the Root Cause Analyst locate the defect in the graph, and
    `detection_notes` is what the re-scanner re-checks after a fix — a row without them still runs,

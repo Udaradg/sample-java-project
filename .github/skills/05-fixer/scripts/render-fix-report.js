@@ -8,8 +8,8 @@
  *   .github/.architect/fixer/<id>.verification.json  — facts, from verify-patch.js (isolated worktree)
  *
  * Output:
- *   .github/docs/05-fixes/fix_<id>.md   — the report
- *   .github/docs/05-fixes/fix_<id>.diff — the raw patch, copied verbatim, directly `git apply`-able
+ *   docs/agent_output/05-fixes/fix_<id>.md   — the report
+ *   docs/agent_output/05-fixes/fix_<id>.diff — the raw patch, copied verbatim, directly `git apply`-able
  *
  * Status in the rendered report reflects the verification record honestly — a failed or
  * refused verification is still rendered, marked as such, never silently upgraded to a pass.
@@ -192,7 +192,7 @@ function render(plan, rationale, verification, patchText) {
   out.push('');
   out.push('_"Compiled" here means the level stated above (compile-only unless a targeted test was '
     + 'run) — it is not a claim of full regression coverage, and it is not a merge signal. Only '
-    + 'Phase C\'s merge arbiter (`.github/docs/11-ship/verdict_<id>.md`) can clear a patch to ship. '
+    + 'Phase C\'s merge arbiter (`docs/agent_output/11-ship/verdict_<id>.md`) can clear a patch to ship. '
     + 'See Residual risk for what was not checked here._');
   out.push('');
 
@@ -273,13 +273,13 @@ function defaultReadmeContract() {
   return `# Fixes
 
 Compiled patches produced by the **Fixer** agent, one per **Approved** fix plan in
-[\`.github/docs/04-fix-plans/\`](../fix-plans/). Each entry is a report (\`fix_<id>.md\`) plus a standalone,
+[\`docs/agent_output/04-fix-plans/\`](../fix-plans/). Each entry is a report (\`fix_<id>.md\`) plus a standalone,
 directly \`git apply\`-able patch (\`fix_<id>.diff\`) — the Fixer never edits the real working tree
 itself.
 
 **A Compiled patch is not a merge signal.** It only means the module builds. Whether the patch
 actually closes the vulnerability, survives adversarial re-testing, passes a real test/build gate,
-and is safe to ship is decided entirely by Phase C — see [\`.github/docs/11-ship/\`](../ship/) for the merge
+and is safe to ship is decided entirely by Phase C — see [\`docs/agent_output/11-ship/\`](../ship/) for the merge
 arbiter's verdict. Nothing here clears a patch to merge.
 
 ## Reading Status
@@ -289,7 +289,7 @@ arbiter's verdict. Nothing here clears a patch to merge.
 - **Compile Failed** — the patch was drafted but did not apply cleanly, or the build/test failed.
   The report and diff are still published for review; do not apply a patch marked this way.
 - **Refused** — the Fixer would not act because the linked fix plan was not \`Status: Approved\` at
-  the time. This should not normally appear here — see [\`.github/docs/04-fix-plans/\`](../fix-plans/README.md).
+  the time. This should not normally appear here — see [\`docs/agent_output/04-fix-plans/\`](../fix-plans/README.md).
 
 "Compiled" states the verification *level* recorded in each report (commonly compile-only) — read
 the report's Residual risk section before treating a patch as production-ready.
@@ -298,7 +298,7 @@ the report's Residual risk section before treating a patch as production-ready.
 
 Run \`node .github/skills/05-fixer/scripts/list-fix-workload.js\` for the live pipeline state of every
 fix plan — this table is for humans; the pipeline itself discovers fixes by scanning
-\`.github/docs/05-fixes/fix_*.md\`.
+\`docs/agent_output/05-fixes/fix_*.md\`.
 
 `;
 }

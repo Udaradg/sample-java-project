@@ -1,9 +1,9 @@
 /**
  * Fix Strategist — shared path resolution and read-only access to upstream reports.
  *
- * The workload is the set of root cause reports in .github/docs/02-root-cause/: one fix plan per root
+ * The workload is the set of root cause reports in docs/agent_output/02-root-cause/: one fix plan per root
  * cause. A blast radius report for the same id is read if present, but is not required.
- * .github/docs/00-issues/, .github/docs/02-root-cause/ and .github/docs/03-blast-radius/ are all READ-ONLY input here — nothing
+ * docs/agent_output/00-issues/, docs/agent_output/02-root-cause/ and docs/agent_output/03-blast-radius/ are all READ-ONLY input here — nothing
  * in this skill writes to them.
  */
 const fs = require('fs');
@@ -22,13 +22,13 @@ const PATHS = {
   DATA_DIR,
   ARTIFACTS_FILE: path.join(DATA_DIR, 'artifacts.json'),
   WORK_DIR: path.join(DATA_DIR, 'fix-strategy'),
-  ISSUES_DIR: path.join(REPO_ROOT, '.github', 'docs', '00-issues'),
-  ROOT_CAUSE_DIR: path.join(REPO_ROOT, '.github', 'docs', '02-root-cause'),
-  BLAST_RADIUS_DIR: path.join(REPO_ROOT, '.github', 'docs', '03-blast-radius'),
-  ARCHITECTURE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'architecture.md'),
-  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'function-reference.md'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '04-fix-plans'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '04-fix-plans', 'README.md'),
+  ISSUES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues'),
+  ROOT_CAUSE_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '02-root-cause'),
+  BLAST_RADIUS_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '03-blast-radius'),
+  ARCHITECTURE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'architecture.md'),
+  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'function-reference.md'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '04-fix-plans'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '04-fix-plans', 'README.md'),
   CATALOG_FILE: path.join(SKILL_DIR, 'catalog', 'cwe-patterns.json'),
 };
 
@@ -154,7 +154,7 @@ function listRootCauseReports() {
 
 function resolveRootCauseReport(idOrPath) {
   if (!idOrPath) {
-    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every root cause report in .github/docs/02-root-cause/.');
+    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every root cause report in docs/agent_output/02-root-cause/.');
   }
   const all = listRootCauseReports();
   const byId = all.find((r) => r.id.toLowerCase() === String(idOrPath).toLowerCase());

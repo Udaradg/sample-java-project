@@ -34,7 +34,7 @@ recommending a fix that addresses the symptom rather than the CWE.
 
 ## Scope
 
-This catalog covers the CWEs already cited in `.github/docs/00-issues/` (CWE-943, CWE-306/CWE-284, CWE-532,
+This catalog covers the CWEs already cited in `docs/agent_output/00-issues/` (CWE-943, CWE-306/CWE-284, CWE-532,
 CWE-200, CWE-770/CWE-400) plus a handful of common web-application CWEs (CWE-89, CWE-79, CWE-798) for
 issues not yet reported. Extend it as new issue classes show up — it is meant to grow with the
 register, not be exhaustive on day one.

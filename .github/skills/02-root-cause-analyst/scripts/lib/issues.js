@@ -1,7 +1,7 @@
 /**
  * Root Cause Analyst — shared issue-register access.
  *
- * The issue register (.github/docs/00-issues/issue-register.xlsx) is READ-ONLY input,
+ * The issue register (docs/agent_output/00-issues/issue-register.xlsx) is READ-ONLY input,
  * supplied by whoever reports the issue. Nothing in this skill writes to it. Reading
  * and parsing the spreadsheet is owned by the 00-issue-register skill so the column
  * contract lives in exactly one place; these helpers wrap it and resolve the paths of
@@ -23,11 +23,11 @@ const PATHS = {
   DATA_DIR,
   ARTIFACTS_FILE: path.join(DATA_DIR, 'artifacts.json'),
   RCA_DIR: path.join(DATA_DIR, 'rca'),
-  ISSUES_DIR: path.join(REPO_ROOT, '.github', 'docs', '00-issues'),
-  ISSUE_REGISTER_FILE: register.registerPath(path.join(REPO_ROOT, '.github', 'docs', '00-issues')),
-  ARCHITECTURE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'architecture.md'),
-  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'function-reference.md'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '02-root-cause'),
+  ISSUES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues'),
+  ISSUE_REGISTER_FILE: register.registerPath(path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues')),
+  ARCHITECTURE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'architecture.md'),
+  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'function-reference.md'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '02-root-cause'),
 };
 
 /** Repo-relative, forward-slashed — for display and for markdown links. */

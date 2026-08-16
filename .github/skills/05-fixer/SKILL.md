@@ -1,7 +1,7 @@
 ---
 name: 05-fixer
-description: 'Reads every fix plan in .github/docs/04-fix-plans/ whose Status cell reads Approved, drafts the smallest diff that implements the plan in the app''s existing style, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes one .github/docs/05-fixes/fix_<issue_id>.md report plus a standalone fix_<issue_id>.diff. Refuses any plan not Approved. Use when asked to implement an approved fix, apply a remediation, write the patch for a fix plan, or generate a verified diff for a vulnerability.'
-argument-hint: 'Nothing (processes every Approved fix plan in .github/docs/04-fix-plans/), or a specific issue id such as ISSUE-001'
+description: 'Reads every fix plan in docs/agent_output/04-fix-plans/ whose Status cell reads Approved, drafts the smallest diff that implements the plan in the app''s existing style, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes one docs/agent_output/05-fixes/fix_<issue_id>.md report plus a standalone fix_<issue_id>.diff. Refuses any plan not Approved. Use when asked to implement an approved fix, apply a remediation, write the patch for a fix plan, or generate a verified diff for a vulnerability.'
+argument-hint: 'Nothing (processes every Approved fix plan in docs/agent_output/04-fix-plans/), or a specific issue id such as ISSUE-001'
 ---
 
 # Fixer
@@ -16,10 +16,10 @@ and `git status` are untouched at every point in this pipeline.
 actually closes the vulnerability, survives adversarial re-testing, passes a real test/build gate, and
 is safe to ship is decided entirely by **Phase C** (`06_re-scanner`, `07_red-team-recon`, `08_behavior-guard`,
 `09_qa-runner`, `10_build-gatekeeper`, `11_merge-arbiter`, `12_scribe`) — see
-[`.github/docs/architect-guide.md`](../../../docs/architect-guide.md). Nothing in this skill clears a patch
+[`docs/agent_output/architect-guide.md`](../../../docs/architect-guide.md). Nothing in this skill clears a patch
 to merge.
 
-**`.github/docs/04-fix-plans/` is read-only input.** This skill reads a plan's Status cell as a gate; nothing
+**`docs/agent_output/04-fix-plans/` is read-only input.** This skill reads a plan's Status cell as a gate; nothing
 here ever writes to a plan file, and nothing here sets a plan's Status.
 
 ## When to Use
@@ -33,14 +33,14 @@ here ever writes to a plan file, and nothing here sets a plan's Status.
 
 | # | Input | Why it is needed |
 |---|---|---|
-| 1 | `.github/docs/04-fix-plans/fix_plan_<id>.md`, **Status: Approved only** | The gate. Anything else is skipped, not acted on |
+| 1 | `docs/agent_output/04-fix-plans/fix_plan_<id>.md`, **Status: Approved only** | The gate. Anything else is skipped, not acted on |
 | 2 | The plan's `affected_files` and `planned_change` per file | What to change and why |
 | 3 | Current source of each affected file, read straight off disk | What to diff against |
 | 4 | An isolated `git worktree` created from `HEAD` | Where the patch is applied and built — never the real tree |
 
 ## Output
 
-Per Approved plan: `.github/docs/05-fixes/fix_<issue_id>.md` and a sibling `.github/docs/05-fixes/fix_<issue_id>.diff`
+Per Approved plan: `docs/agent_output/05-fixes/fix_<issue_id>.md` and a sibling `docs/agent_output/05-fixes/fix_<issue_id>.diff`
 (the raw patch, directly `git apply`-able — not just a fenced code block in the report).
 
 1. Plain-language summary of the change
@@ -54,7 +54,7 @@ Per Approved plan: `.github/docs/05-fixes/fix_<issue_id>.md` and a sibling `.git
 8. **Residual risk** and open questions
 9. **How to apply this patch** — the literal `git apply` command
 
-`.github/docs/05-fixes/README.md`'s index is fully rewritten on every render run.
+`docs/agent_output/05-fixes/README.md`'s index is fully rewritten on every render run.
 
 Intermediate files land in `.github/.architect/fixer/` (gitignored):
 `<id>.patch.diff`, `<id>.rationale.json`, `<id>.verification.{json,md}`, and transiently
@@ -117,8 +117,8 @@ node scripts/render-fix-report.js --all              # every Approved plan with 
 node scripts/render-fix-report.js --issue ISSUE-001   # or just one
 ```
 
-Writes `.github/docs/05-fixes/fix_<issue_id>.md` and `.github/docs/05-fixes/fix_<issue_id>.diff`, and rewrites the
-auto-generated index in `.github/docs/05-fixes/README.md`. The rendered Status always reflects the actual
+Writes `docs/agent_output/05-fixes/fix_<issue_id>.md` and `docs/agent_output/05-fixes/fix_<issue_id>.diff`, and rewrites the
+auto-generated index in `docs/agent_output/05-fixes/README.md`. The rendered Status always reflects the actual
 verification result — a failed or refused verification is still published, marked as such, never
 upgraded to a pass.
 
@@ -157,7 +157,7 @@ needing attention: plans still waiting on approval, verification failures, or en
 
 - Self-contained folder — zero dependencies, nothing to `npm install`.
 - `scripts/lib/fixplans.js` holds shared path resolution and the fix-plan table parser.
-- Every script here is read-only against `.github/docs/04-fix-plans/`; the only files written are
-  `.github/.architect/fixer/*` and `.github/docs/05-fixes/*`. Nothing here ever edits a file under `.github/docs/04-fix-plans/`,
-  `.github/docs/02-root-cause/` or `.github/docs/03-blast-radius/`, and nothing here edits the real application source.
-- `.github/.architect/` is gitignored — only `.github/docs/05-fixes/*` is meant to be committed.
+- Every script here is read-only against `docs/agent_output/04-fix-plans/`; the only files written are
+  `.github/.architect/fixer/*` and `docs/agent_output/05-fixes/*`. Nothing here ever edits a file under `docs/agent_output/04-fix-plans/`,
+  `docs/agent_output/02-root-cause/` or `docs/agent_output/03-blast-radius/`, and nothing here edits the real application source.
+- `.github/.architect/` is gitignored — only `docs/agent_output/05-fixes/*` is meant to be committed.

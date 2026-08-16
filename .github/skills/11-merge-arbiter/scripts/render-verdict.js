@@ -4,7 +4,7 @@
  *
  * Combines .github/.architect/merge/<id>.score.json (script: the deterministic score/gates/computed
  * decision) with .github/.architect/merge/<id>.arbitration.json (agent: narrative + optional override)
- * into .github/docs/11-ship/verdict_<id>.md. The final Decision is the override's decision when applied,
+ * into docs/agent_output/11-ship/verdict_<id>.md. The final Decision is the override's decision when applied,
  * otherwise the computed one — and when an override is applied, BOTH are always shown, never just
  * the final answer, so nothing here is silent.
  *
@@ -115,7 +115,7 @@ function relLink(reportRelPath) {
   return `${UP_TO_ROOT}/${reportRelPath}`.replace(/\\/g, '/');
 }
 
-// .github/docs/11-ship/README.md's index is owned entirely by the scribe skill (render-scribe.js) — its
+// docs/agent_output/11-ship/README.md's index is owned entirely by the scribe skill (render-scribe.js) — its
 // workload already covers every rendered verdict, so it is the single writer for this file,
 // avoiding two scripts racing to rewrite the same auto-generated section differently.
 
@@ -157,7 +157,7 @@ function main() {
   if (!args.issue) throw new Error('Missing --issue or --all.');
   const r = renderOne(args.issue);
   console.log(`Merge Arbiter — wrote ${r.report} (${r.decision})`);
-  console.log('Note: .github/docs/11-ship/README.md\'s index is written by the scribe skill, not here — run the scribe agent to update it.');
+  console.log('Note: docs/agent_output/11-ship/README.md\'s index is written by the scribe skill, not here — run the scribe agent to update it.');
 }
 
 try { main(); } catch (err) { console.error('Rendering failed:', err.message); process.exit(1); }

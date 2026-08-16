@@ -1,18 +1,18 @@
 ---
 name: 10-build-gatekeeper
 description: 'Runs mvn verify and a dependency-tree diff for every Status: Compiled fix inside an isolated git worktree — fully deterministic, no agent-authored judgment anywhere in the output. Phase C step 2, second half. Use when asked to confirm a fix builds cleanly, check for dependency drift introduced by a patch, or run the build gate before a patch can ship.'
-argument-hint: 'Nothing (processes every Status: Compiled fix in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+argument-hint: 'Nothing (processes every Status: Compiled fix in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 ---
 
 # Build Gatekeeper
 
 Phase C step 2, second half — and the one skill in this whole pipeline with **no agent-authored
-content anywhere in its output**. Every fact in `.github/docs/10-build/build_<id>.md` comes straight from
+content anywhere in its output**. Every fact in `docs/agent_output/10-build/build_<id>.md` comes straight from
 `run-build-gate.js`. This is deliberate: the user asked for "deterministic CI/CD execution, not
 open-ended agentic reasoning" here, so there is nothing for an agent to interpret, soften, or
 override — you run the two scripts and relay exactly what they say.
 
-**`.github/docs/05-fixes/` is read-only input.** Nothing here writes to it.
+**`docs/agent_output/05-fixes/` is read-only input.** Nothing here writes to it.
 
 ## What it checks
 
@@ -24,13 +24,13 @@ override — you run the two scripts and relay exactly what they say.
 
 ## Inputs
 
-1. `.github/docs/05-fixes/fix_<id>.md`, Status must be `Compiled`.
-2. The fix's diff (`.github/docs/05-fixes/fix_<id>.diff`).
+1. `docs/agent_output/05-fixes/fix_<id>.md`, Status must be `Compiled`.
+2. The fix's diff (`docs/agent_output/05-fixes/fix_<id>.diff`).
 
 ## Output
 
-`.github/docs/10-build/build_<id>.md` — Status (`Passed` / `Failed` / `Refused`), full build output, and the
-dependency diff. `.github/docs/10-build/README.md`'s index is rewritten on every render run.
+`docs/agent_output/10-build/build_<id>.md` — Status (`Passed` / `Failed` / `Refused`), full build output, and the
+dependency diff. `docs/agent_output/10-build/README.md`'s index is rewritten on every render run.
 
 Intermediate: `.github/.architect/build/<id>.result.json` (the script's own output — the only file this
 skill's report is built from) and a transient `.github/.architect/build/worktrees/<id>/`.
@@ -49,7 +49,7 @@ dependency diff (if any). Do not add interpretation the script's output doesn't 
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`.
 - DO NOT run against a fix whose Status is `Refused` (the gate itself compiles independently, so `Compile Failed` fixes are still in scope) — the script refuses on its own;
   do not work around that refusal.
 - DO NOT write any judgment file for this skill — there is no schema/template here, on purpose. If

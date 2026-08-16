@@ -1,7 +1,7 @@
 ---
 name: 08_behavior-guard
 description: 'Separates the changes a patch was supposed to make from anything it changed that the fix plan does not explain — log format, exception types, return values, field visibility — by comparing pre-patch and patched source materialized inside a throwaway git worktree. One of three parallel Phase C Step 1 checks against every fix Fixer drafted a diff for, Compiled or Compile Failed alike. Use when asked whether a patch changed unrelated behavior, to check for regressions in a fix, or to confirm a diff stayed in scope.'
-argument-hint: 'Nothing (processes every fix with a drafted diff in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+argument-hint: 'Nothing (processes every fix with a drafted diff in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
 
@@ -26,7 +26,7 @@ as an aid — treat it as a starting point, not the verdict.
 
 ## Inputs
 
-1. **`.github/docs/05-fixes/fix_<id>.md`**, Status `Compiled` or `Compile Failed` — you don't compile anything
+1. **`docs/agent_output/05-fixes/fix_<id>.md`**, Status `Compiled` or `Compile Failed` — you don't compile anything
    yourself, so a failed build doesn't stop this stage; only `Refused` is outside your workload.
 2. **Pre-patch and patched source** for every changed file, plus the raw diff.
 3. **The fix plan's stated scope** (`affected_files`, `planned_change`, `approach`) — the yardstick
@@ -38,7 +38,7 @@ All read-only.
 ## Default behaviour
 
 With no argument, process every fix with a drafted diff and produce one
-`.github/docs/06-verify/behavior_<id>.md` each. Narrow to one issue only when named — and refuse if that fix's
+`docs/agent_output/06-verify/behavior_<id>.md` each. Narrow to one issue only when named — and refuse if that fix's
 Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alongside your verdict.
 
 ## Approach
@@ -57,8 +57,8 @@ Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alon
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`, `.github/docs/04-fix-plans/`,
-  `.github/docs/02-root-cause/` or `.github/docs/00-issues/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/04-fix-plans/`,
+  `docs/agent_output/02-root-cause/` or `docs/agent_output/00-issues/`.
 - DO NOT run against a fix whose Status is `Refused`. (`Compile Failed` IS in scope.)
 - DO NOT wave through a change as "probably fine" without tracing it to `planned_change` — if it
   isn't explained, it goes in `out_of_scope_changes`, full stop.
@@ -72,5 +72,5 @@ Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alon
 ## Output Format
 
 `Checked N of N fix(es)`, then per fix: the verdict, the count of out-of-scope changes (if
-any), and a link to `.github/docs/06-verify/behavior_<id>.md`. Close with anything needing attention (worktree
+any), and a link to `docs/agent_output/06-verify/behavior_<id>.md`. Close with anything needing attention (worktree
 apply failures, a fix plan with no stated scope to compare against).

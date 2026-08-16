@@ -1,9 +1,9 @@
 /**
  * Blast Radius Analyst — shared input access.
  *
- * The workload is the set of root cause reports in .github/docs/02-root-cause/: one blast radius
+ * The workload is the set of root cause reports in docs/agent_output/02-root-cause/: one blast radius
  * report per root cause. Issues and root cause reports are READ-ONLY input — nothing in
- * this skill writes to .github/docs/00-issues/ or .github/docs/02-root-cause/.
+ * this skill writes to docs/agent_output/00-issues/ or docs/agent_output/02-root-cause/.
  */
 const fs = require('fs');
 const path = require('path');
@@ -21,11 +21,11 @@ const PATHS = {
   DATA_DIR,
   ARTIFACTS_FILE: path.join(DATA_DIR, 'artifacts.json'),
   WORK_DIR: path.join(DATA_DIR, 'blast-radius'),
-  ISSUES_DIR: path.join(REPO_ROOT, '.github', 'docs', '00-issues'),
-  ROOT_CAUSE_DIR: path.join(REPO_ROOT, '.github', 'docs', '02-root-cause'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '03-blast-radius'),
-  ARCHITECTURE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'architecture.md'),
-  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'function-reference.md'),
+  ISSUES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues'),
+  ROOT_CAUSE_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '02-root-cause'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '03-blast-radius'),
+  ARCHITECTURE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'architecture.md'),
+  FUNCTION_REFERENCE_MD: path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'function-reference.md'),
 };
 
 function rel(target) {
@@ -125,7 +125,7 @@ function parseRootCauseReport(text) {
 }
 
 /**
- * Every root cause report in .github/docs/02-root-cause/, sorted by issue id. This is the
+ * Every root cause report in docs/agent_output/02-root-cause/, sorted by issue id. This is the
  * workload: one blast radius report per root cause, no more and no fewer.
  */
 function listRootCauses() {
@@ -154,7 +154,7 @@ function listRootCauses() {
 
 function resolveRootCause(idOrPath) {
   if (!idOrPath) {
-    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every root cause report in .github/docs/02-root-cause/.');
+    throw new Error('Missing --issue. Pass an issue id (ISSUE-001) or --all for every root cause report in docs/agent_output/02-root-cause/.');
   }
   const all = listRootCauses();
   const byId = all.find((r) => r.id.toLowerCase() === String(idOrPath).toLowerCase());

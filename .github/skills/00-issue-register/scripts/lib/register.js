@@ -1,7 +1,7 @@
 /**
  * Issue register — the pipeline's single input, read from Excel.
  *
- * The register lives at .github/docs/00-issues/issue-register.xlsx, one row per
+ * The register lives at docs/agent_output/00-issues/issue-register.xlsx, one row per
  * reported vulnerability. It is READ-ONLY input: whoever reports the issue owns
  * that file, and nothing in this pipeline writes to it.
  *

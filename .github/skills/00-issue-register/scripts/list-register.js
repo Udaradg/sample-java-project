@@ -14,7 +14,7 @@ const { listIssues, registerPath, COLUMNS, SECTIONS } = require('./lib/register'
 
 const SKILL_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(SKILL_DIR, '..', '..', '..');
-const ISSUES_DIR = path.join(REPO_ROOT, '.github', 'docs', '00-issues');
+const ISSUES_DIR = path.join(REPO_ROOT, 'docs', 'agent_output', '00-issues');
 
 const rel = (t) => path.relative(REPO_ROOT, t).replace(/\\/g, '/');
 

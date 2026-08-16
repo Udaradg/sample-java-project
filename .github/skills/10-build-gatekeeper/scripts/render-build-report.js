@@ -2,7 +2,7 @@
 /**
  * Build Gatekeeper — Report Renderer
  *
- * Turns run-build-gate.js's own JSON result straight into .github/docs/10-build/build_<id>.md. No agent
+ * Turns run-build-gate.js's own JSON result straight into docs/agent_output/10-build/build_<id>.md. No agent
  * writes anything into this pipeline — there is nothing to validate or merge here beyond the
  * script's own output, by design: this is the one report in the whole system that is 100%
  * machine-generated, end to end.

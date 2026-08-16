@@ -2,7 +2,7 @@
 /**
  * Scribe — Workload Listing
  *
- * Workload = every fix with a rendered merge-arbiter verdict (.github/docs/11-ship/verdict_<id>.md),
+ * Workload = every fix with a rendered merge-arbiter verdict (docs/agent_output/11-ship/verdict_<id>.md),
  * regardless of Cleared/Blocked — the Scribe always writes both output files either way.
  *
  * Usage:

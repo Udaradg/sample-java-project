@@ -2,7 +2,7 @@
 /**
  * Blueprint Scribe
  * Reads Code Cartographer artifacts.json (and, best-effort, live stats from
- * the Neo4j graph built by Graph Forge) and writes .github/docs/01-architecture/architecture.md:
+ * the Neo4j graph built by Graph Forge) and writes docs/agent_output/01-architecture/architecture.md:
  * a narrative overview of modules, REST surface, class hierarchy and
  * frameworks in play.
  */
@@ -15,7 +15,7 @@ const DATA_DIR = process.env.ARCHITECT_DATA_DIR
   ? path.resolve(process.env.ARCHITECT_DATA_DIR)
   : path.join(REPO_ROOT, '.github', '.architect');
 const ARTIFACTS_FILE = path.join(DATA_DIR, 'artifacts.json');
-const OUT_FILE = path.join(REPO_ROOT, '.github', 'docs', '01-architecture', 'architecture.md');
+const OUT_FILE = path.join(REPO_ROOT, 'docs', 'agent_output', '01-architecture', 'architecture.md');
 
 const MAPPING_ANNOTATIONS = {
   GetMapping: 'GET',

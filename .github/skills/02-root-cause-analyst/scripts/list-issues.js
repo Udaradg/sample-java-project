@@ -2,7 +2,7 @@
 /**
  * Root Cause Analyst — Issue Register Listing
  *
- * Discovery step. Prints every issue found in .github/docs/00-issues/ with its current pipeline
+ * Discovery step. Prints every issue found in docs/agent_output/00-issues/ with its current pipeline
  * state, so the agent knows exactly what to analyse and what is already done.
  *
  * The register is read-only input supplied by the reporting party — this skill never

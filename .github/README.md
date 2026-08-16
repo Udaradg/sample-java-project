@@ -188,7 +188,7 @@ flowchart LR
 ## How the agents connect
 
 **The pipeline is wired through files, not through direct calls.** Each stage writes a document into
-`.github/docs/`, and the next stage's workload is simply "every file the previous stage wrote."
+`docs/agent_output/`, and the next stage's workload is simply "every file the previous stage wrote."
 
 ```mermaid
 flowchart TD

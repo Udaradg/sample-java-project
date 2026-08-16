@@ -2,11 +2,11 @@
 /**
  * Fixer — Fix Workload Listing
  *
- * Discovery step. Prints every fix plan in .github/docs/04-fix-plans/ with its approval Status and its
+ * Discovery step. Prints every fix plan in docs/agent_output/04-fix-plans/ with its approval Status and its
  * own fixer pipeline state. Only plans at Status: Approved are real workload — everything else
  * is listed for visibility but is never acted on.
  *
- * .github/docs/04-fix-plans/ is read-only input to this skill; nothing here edits a plan's Status.
+ * docs/agent_output/04-fix-plans/ is read-only input to this skill; nothing here edits a plan's Status.
  *
  * Usage:
  *   node scripts/list-fix-workload.js            # table for humans
@@ -68,7 +68,7 @@ function main() {
 
   const notApproved = items.filter((i) => i.status !== 'Approved').length;
   console.log(`\nNext: node scripts/verify-patch.js --issue <ISSUE-ID>  (only plans at Status: Approved are ever acted on)`);
-  if (notApproved) console.log(`${notApproved} plan(s) are not Approved yet and will be skipped — see .github/docs/04-fix-plans/README.md for how to approve one.`);
+  if (notApproved) console.log(`${notApproved} plan(s) are not Approved yet and will be skipped — see docs/agent_output/04-fix-plans/README.md for how to approve one.`);
 }
 
 try {

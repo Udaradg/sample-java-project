@@ -1,7 +1,7 @@
 ---
 name: 04-fix-strategist
-description: 'Reads every root cause report in .github/docs/02-root-cause/ (and the matching blast radius report, if one exists), matches the defect against a curated CWE-aligned remediation pattern catalog, and writes one .github/docs/04-fix-plans/fix_plan_<issue_id>.md per root cause — a strategy document, not a diff. Every plan starts at Status: Proposed and is a checkpoint: the Fixer agent will not act on it until a human hand-edits that Status to Approved. Use when asked to propose a fix, plan a remediation, pick a CWE-aligned fix strategy, or decide how a reported vulnerability should be fixed.'
-argument-hint: 'Nothing (processes every root cause report in .github/docs/02-root-cause/), or a specific issue id such as ISSUE-001'
+description: 'Reads every root cause report in docs/agent_output/02-root-cause/ (and the matching blast radius report, if one exists), matches the defect against a curated CWE-aligned remediation pattern catalog, and writes one docs/agent_output/04-fix-plans/fix_plan_<issue_id>.md per root cause — a strategy document, not a diff. Every plan starts at Status: Proposed and is a checkpoint: the Fixer agent will not act on it until a human hand-edits that Status to Approved. Use when asked to propose a fix, plan a remediation, pick a CWE-aligned fix strategy, or decide how a reported vulnerability should be fixed.'
+argument-hint: 'Nothing (processes every root cause report in docs/agent_output/02-root-cause/), or a specific issue id such as ISSUE-001'
 ---
 
 # Fix Strategist
@@ -11,7 +11,7 @@ half of Phase B — deciding *how* a defect should be fixed, before any code is 
 writes a diff. That split exists on purpose: it creates a checkpoint where a human signs off on the
 remediation approach before the Fixer agent touches anything.
 
-**`.github/docs/02-root-cause/`, `.github/docs/03-blast-radius/` and `.github/docs/00-issues/` are all read-only input.** Nothing in
+**`docs/agent_output/02-root-cause/`, `docs/agent_output/03-blast-radius/` and `docs/agent_output/00-issues/` are all read-only input.** Nothing in
 this skill creates, edits or deletes a file in any of them.
 
 ## When to Use
@@ -25,9 +25,9 @@ this skill creates, edits or deletes a file in any of them.
 
 | # | Input | Why it is needed |
 |---|---|---|
-| 1 | `.github/docs/02-root-cause/root_cause_<id>.md` | The confirmed diagnosis — defines the workload, one plan per report |
-| 2 | `.github/docs/03-blast-radius/blast_radius_<id>.md` | Priority/reach context, if available. Not required — its absence just means the plan proceeds without it |
-| 3 | `.github/docs/00-issues/<id>*.md` | `affected_files`, entry points, the reported symptom text |
+| 1 | `docs/agent_output/02-root-cause/root_cause_<id>.md` | The confirmed diagnosis — defines the workload, one plan per report |
+| 2 | `docs/agent_output/03-blast-radius/blast_radius_<id>.md` | Priority/reach context, if available. Not required — its absence just means the plan proceeds without it |
+| 3 | `docs/agent_output/00-issues/<id>*.md` | `affected_files`, entry points, the reported symptom text |
 | 4 | Current source of every affected file, read straight off disk | What actually needs to change |
 | 5 | `catalog/cwe-patterns.json` | The only source of remediation strategy — see [catalog/README.md](./catalog/README.md) |
 
@@ -38,7 +38,7 @@ cause reports. This skill's own output follows the identical convention (see Out
 
 ## Output
 
-One plan per root cause report: `.github/docs/04-fix-plans/fix_plan_<issue_id>.md`.
+One plan per root cause report: `docs/agent_output/04-fix-plans/fix_plan_<issue_id>.md`.
 
 1. Plain-language headline, then an **At a glance** table: Status, CWE (+ OWASP category), affected
    file count, confidence, links to the root cause and blast radius reports
@@ -51,8 +51,8 @@ One plan per root cause report: `.github/docs/04-fix-plans/fix_plan_<issue_id>.m
 7. **Approval** — explicit instructions for the human checkpoint
 8. **Appendix** — inputs used
 
-`.github/docs/04-fix-plans/README.md`'s index table is fully rewritten on every render run, scanning whatever is
-currently in `.github/docs/04-fix-plans/` — it always reflects the real state of every plan's Status cell.
+`docs/agent_output/04-fix-plans/README.md`'s index table is fully rewritten on every render run, scanning whatever is
+currently in `docs/agent_output/04-fix-plans/` — it always reflects the real state of every plan's Status cell.
 
 Intermediate files land in `.github/.architect/fix-strategy/` (gitignored):
 `<issue_id>.context.json`, `<issue_id>.context.md`, `<issue_id>.strategy.json`.
@@ -90,7 +90,7 @@ mentions, looking each one up in the catalog. It records catalog matches **and c
 never guesses a pattern for a CWE the catalog doesn't have. In `--all` mode one failure does not
 abort the batch.
 
-**Prerequisites.** If a root cause report has no matching issue in `.github/docs/00-issues/`, the collector
+**Prerequisites.** If a root cause report has no matching issue in `docs/agent_output/00-issues/`, the collector
 fails loudly for that item rather than guessing `affected_files`.
 
 ### Step 3 — Read the briefing, then the catalog entry in full (per issue)
@@ -123,7 +123,7 @@ Rules for this file:
 5. **Write `verification_plan` as steps the Fixer can actually execute** — what to compile, what
    existing behaviour must be unchanged, and how to confirm the original symptom/exploit from the
    issue no longer reproduces.
-6. **Never touch `.github/docs/04-fix-plans/*.md` Status directly**, and never mark your own plan `Approved`.
+6. **Never touch `docs/agent_output/04-fix-plans/*.md` Status directly**, and never mark your own plan `Approved`.
 
 ### Step 5 — Render the plans
 
@@ -133,8 +133,8 @@ node scripts/render-fix-plan.js --issue ISSUE-001  # or just one
 ```
 
 The renderer validates each strategy JSON, fails with a precise message on any missing required
-field, and writes `.github/docs/04-fix-plans/fix_plan_<issue_id>.md` plus the auto-generated index table in
-`.github/docs/04-fix-plans/README.md`. In `--all` mode it renders what is ready and lists what is still pending.
+field, and writes `docs/agent_output/04-fix-plans/fix_plan_<issue_id>.md` plus the auto-generated index table in
+`docs/agent_output/04-fix-plans/README.md`. In `--all` mode it renders what is ready and lists what is still pending.
 
 Finish by re-running `node scripts/list-remediation-workload.js` and confirming every root cause
 report reads `plan rendered (...)`.
@@ -152,7 +152,7 @@ paste whole plans into chat. Close by reminding the user that a plan sits at `Pr
   independently.
 - `scripts/lib/plans.js` holds shared path resolution, the front-matter/table parser, and read-only
   access to the issue register, root cause reports, blast radius reports and the CWE catalog.
-- Every script here is read-only against `.github/docs/00-issues/`, `.github/docs/02-root-cause/` and
-  `.github/docs/03-blast-radius/`; the only files written are `.github/.architect/fix-strategy/*` and
-  `.github/docs/04-fix-plans/*.md`.
-- `.github/.architect/` is gitignored — only `.github/docs/04-fix-plans/*.md` is meant to be committed.
+- Every script here is read-only against `docs/agent_output/00-issues/`, `docs/agent_output/02-root-cause/` and
+  `docs/agent_output/03-blast-radius/`; the only files written are `.github/.architect/fix-strategy/*` and
+  `docs/agent_output/04-fix-plans/*.md`.
+- `.github/.architect/` is gitignored — only `docs/agent_output/04-fix-plans/*.md` is meant to be committed.

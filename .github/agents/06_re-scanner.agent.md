@@ -1,7 +1,7 @@
 ---
 name: 06_re-scanner
 description: 'Re-derives the original issue''s Detection Notes and checks whether they still match the patched code, materialized by applying the fix diff inside a throwaway git worktree — then reasons about whether the underlying injection mechanism is actually closed, not just the literal grep pattern. One of three parallel Phase C Step 1 checks against every fix Fixer drafted a diff for, Compiled or Compile Failed alike. Use when asked whether a reported finding still triggers, to re-verify a fix, or to re-scan a patched file for the original vulnerability.'
-argument-hint: 'Nothing (processes every fix with a drafted diff in .github/docs/05-fixes/), or a specific issue id such as ISSUE-001'
+argument-hint: 'Nothing (processes every fix with a drafted diff in docs/agent_output/05-fixes/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
 ---
 
@@ -26,10 +26,10 @@ materialized text, never over a running service, and the real working tree is ne
 
 ## Inputs
 
-1. **`.github/docs/05-fixes/fix_<id>.md`**, Status `Compiled` or `Compile Failed` — you never invoke a compiler
+1. **`docs/agent_output/05-fixes/fix_<id>.md`**, Status `Compiled` or `Compile Failed` — you never invoke a compiler
    yourself, so a failed build doesn't stop this stage; only `Refused` (Fixer drafted nothing) is
    outside your workload.
-2. **The issue's Detection Notes** (`.github/docs/00-issues/<id>*.md`) — the original grep-able signature(s).
+2. **The issue's Detection Notes** (`docs/agent_output/00-issues/<id>*.md`) — the original grep-able signature(s).
 3. **The patched file content**, materialized via the worktree helper.
 4. **The root cause report's statement/explanation**, for context on the mechanism, not just the pattern.
 
@@ -38,7 +38,7 @@ All of the above are read-only to you.
 ## Default behaviour
 
 With no argument, process every fix with a drafted diff and produce one
-`.github/docs/06-verify/rescan_<id>.md` each. Narrow to one issue only when named — and refuse (clearly, once)
+`docs/agent_output/06-verify/rescan_<id>.md` each. Narrow to one issue only when named — and refuse (clearly, once)
 if that fix's Status is `Refused`. If it is `Compile Failed`, proceed, but say so plainly alongside
 your verdict so nobody mistakes your report for a claim that the patch builds.
 
@@ -58,8 +58,8 @@ your verdict so nobody mistakes your report for a claim that the patch builds.
 
 ## Constraints
 
-- DO NOT create, edit, rename or delete anything in `.github/docs/05-fixes/`, `.github/docs/04-fix-plans/`,
-  `.github/docs/02-root-cause/` or `.github/docs/00-issues/`.
+- DO NOT create, edit, rename or delete anything in `docs/agent_output/05-fixes/`, `docs/agent_output/04-fix-plans/`,
+  `docs/agent_output/02-root-cause/` or `docs/agent_output/00-issues/`.
 - DO NOT run against a fix whose Status is `Refused` — refuse once, plainly, and move on. (A
   `Compile Failed` fix IS in scope — you don't compile anything.)
 - DO NOT treat an absent signature as automatic proof of `FIXED` — say so in your reasoning, and use
@@ -72,5 +72,5 @@ your verdict so nobody mistakes your report for a claim that the patch builds.
 ## Output Format
 
 `Re-scanned N of N fix(es)`, then per fix: the verdict, one or two sentences of reasoning,
-and a link to `.github/docs/06-verify/rescan_<id>.md`. Close with anything needing attention (worktree apply
+and a link to `docs/agent_output/06-verify/rescan_<id>.md`. Close with anything needing attention (worktree apply
 failures, missing Detection Notes to check against).

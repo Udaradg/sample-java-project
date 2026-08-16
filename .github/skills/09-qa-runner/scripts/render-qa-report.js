@@ -4,7 +4,7 @@
  *
  * Combines .github/.architect/qa/<id>.test-plan.json (agent: what the test proves) with
  * .github/.architect/qa/<id>.result.json (script: the real PASS/FAIL/SKIPPED, from run-qa-gate.js) into
- * .github/docs/09-qa/qa_<id>.md. The rendered Status is taken directly from the script's result — this
+ * docs/agent_output/09-qa/qa_<id>.md. The rendered Status is taken directly from the script's result — this
  * renderer does not, and cannot, upgrade a FAIL into a PASS.
  *
  * Usage:

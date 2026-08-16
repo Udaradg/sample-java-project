@@ -3,10 +3,10 @@
  * Blast Radius Analyst — Impact Collector
  *
  * Computes how far one defect reaches, from five inputs:
- *   1. .github/docs/02-root-cause/root_cause_<id>.md  — the confirmed diagnosis (defines the workload)
- *   2. .github/docs/00-issues/<id>*.md                — the reported symptom and affected symbols
- *   3. .github/docs/01-architecture/architecture.md                — service topology and the full REST surface
- *   4. .github/docs/01-architecture/function-reference.md          — defect-site signatures and source
+ *   1. docs/agent_output/02-root-cause/root_cause_<id>.md  — the confirmed diagnosis (defines the workload)
+ *   2. docs/agent_output/00-issues/<id>*.md                — the reported symptom and affected symbols
+ *   3. docs/agent_output/01-architecture/architecture.md                — service topology and the full REST surface
+ *   4. docs/agent_output/01-architecture/function-reference.md          — defect-site signatures and source
  *   5. the Neo4j knowledge graph           — live service, module and call connections
  *      (falls back to .github/.architect/artifacts.json when Neo4j is unreachable)
  *
@@ -57,7 +57,7 @@ function usage() {
   node scripts/collect-impact.js --issue <ISSUE-ID> [options]
 
 Options:
-  --all, -a     Measure reach for every root cause report in .github/docs/02-root-cause/
+  --all, -a     Measure reach for every root cause report in docs/agent_output/02-root-cause/
   --issue, -i   A single issue id, e.g. ISSUE-001
   --depth, -d   Call-graph traversal depth (1-10, default 6)
   --no-graph    Skip Neo4j and use artifacts.json only
@@ -199,7 +199,7 @@ function architectureContext(text) {
   return context;
 }
 
-/** The defect site's entry in .github/docs/01-architecture/function-reference.md (input 4). */
+/** The defect site's entry in docs/agent_output/01-architecture/function-reference.md (input 4). */
 function functionReferenceExcerpt(text, methodLabels) {
   if (!text) return [];
   const wanted = new Set(methodLabels);
@@ -402,8 +402,8 @@ function renderBriefing(facts) {
   out.push('|---|---|');
   out.push(`| Root cause report | \`${sources.rootCauseReport}\` |`);
   out.push(`| Issue report | ${sources.issueFile ? `\`${sources.issueFile}\`` : '_not found — reach derived from the root cause report only_'} |`);
-  out.push(`| \`.github/docs/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
-  out.push(`| \`.github/docs/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| Knowledge graph | ${graph.live ? `live Neo4j (depth ${graph.depth})` : `not used — ${graph.reason}`} |`);
   out.push('');
   if (reach.unresolvedSymbols.length) {

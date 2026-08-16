@@ -1,7 +1,7 @@
 /**
  * QA Runner — shared path resolution, fix-report access, and the isolated test-execution
- * sandbox. .github/docs/05-fixes/ is read-only input. The only files this skill writes are under
- * .github/.architect/qa/ and .github/docs/09-qa/.
+ * sandbox. docs/agent_output/05-fixes/ is read-only input. The only files this skill writes are under
+ * .github/.architect/qa/ and docs/agent_output/09-qa/.
  */
 const fs = require('fs');
 const path = require('path');
@@ -24,9 +24,9 @@ const PATHS = {
   DATA_DIR,
   WORK_DIR: path.join(DATA_DIR, 'qa'),
   WORKTREES_DIR: path.join(DATA_DIR, 'qa', 'worktrees'),
-  FIXES_DIR: path.join(REPO_ROOT, '.github', 'docs', '05-fixes'),
-  OUT_DIR: path.join(REPO_ROOT, '.github', 'docs', '09-qa'),
-  OUT_README: path.join(REPO_ROOT, '.github', 'docs', '09-qa', 'README.md'),
+  FIXES_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '05-fixes'),
+  OUT_DIR: path.join(REPO_ROOT, 'docs', 'agent_output', '09-qa'),
+  OUT_README: path.join(REPO_ROOT, 'docs', 'agent_output', '09-qa', 'README.md'),
 };
 
 function rel(target) {
@@ -38,7 +38,7 @@ function readIfPresent(file) {
 }
 
 // ---------------------------------------------------------------------------
-// .github/docs/05-fixes/fix_<id>.md — same parser as verification-layer/fixer, duplicated
+// docs/agent_output/05-fixes/fix_<id>.md — same parser as verification-layer/fixer, duplicated
 // ---------------------------------------------------------------------------
 
 function sectionBody(text, headingPattern) {
