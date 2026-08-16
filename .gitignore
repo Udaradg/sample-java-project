@@ -65,6 +65,13 @@ application-local.yml
 hs_err_pid*
 replay_pid*
 
-### Architect agent (code-cartographer / graph-forge / blueprint-scribe) ###
+### Agentic harness (.github/agents + .github/skills) ###
 node_modules/
-/.architect/
+# Everything under .github/.architect/ is a regeneratable build output (scan results,
+# blast radius, rca, verify, graph-context) EXCEPT descriptions.json — that file is
+# authored interpretive content (agent-written or paid-API-generated), not cheap to
+# reproduce, so it is tracked even though the rest of .github/.architect/ is not.
+/.github/.architect/*
+!/.github/.architect/context/
+/.github/.architect/context/*
+!/.github/.architect/context/descriptions.json
