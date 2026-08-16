@@ -123,5 +123,5 @@ is not enough.
 ## Output Format
 
 A brief status summary per step run (counts only), the number of nodes described and anything left
-undescribed or stale, plus a link to [docs/agent_output/01-architecture/architecture.md](../../docs/architecture.md) — not the full
+undescribed or stale, plus a link to [docs/agent_output/01-architecture/architecture.md](../../docs/agent_output/01-architecture/architecture.md) — not the full
 file contents.
