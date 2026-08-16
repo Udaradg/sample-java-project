@@ -4,7 +4,7 @@
  *
  * Computes how far one defect reaches, from five inputs:
  *   1. docs/agent_output/02-root-cause/root_cause_<id>.md  — the confirmed diagnosis (defines the workload)
- *   2. docs/agent_output/00-issues/<id>*.md                — the reported symptom and affected symbols
+ *   2. issue-register.xlsx via 00-issue-register            — the reported symptom and affected symbols
  *   3. docs/agent_output/01-architecture/architecture.md                — service topology and the full REST surface
  *   4. docs/agent_output/01-architecture/function-reference.md          — defect-site signatures and source
  *   5. the Neo4j knowledge graph           — live service, module and call connections

@@ -29,7 +29,7 @@ the Root Cause Analyst agent has to run first.
 | # | Input | What it contributes |
 |---|---|---|
 | 1 | `docs/agent_output/02-root-cause/root_cause_<id>.md` | The confirmed diagnosis. Defines the workload — one blast radius per root cause |
-| 2 | `docs/agent_output/00-issues/<id>*.md` | The reported symptom, affected symbols and entry points |
+| 2 | Issue row from `docs/agent_output/00-issues/issue-register.xlsx`, read through `00-issue-register` | The reported symptom, affected symbols and entry points |
 | 3 | `docs/agent_output/01-architecture/architecture.md` | Service topology and the complete REST surface to measure against |
 | 4 | `docs/agent_output/01-architecture/function-reference.md` | Defect-site signatures, locations and source |
 | 5 | Neo4j knowledge graph | Live connections: which endpoints reach the defect, which modules depend on which, what infrastructure is shared |

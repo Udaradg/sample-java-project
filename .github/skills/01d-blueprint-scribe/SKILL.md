@@ -10,7 +10,7 @@ Writes the human-readable deliverable: `docs/agent_output/01-architecture/archit
 
 ## When to Use
 - The user asks for "a markdown doc about the code", "document the architecture", or "ideas about the codebase"
-- As the final step of the full pipeline: Code Cartographer → Graph Forge → Blueprint Scribe
+- As the final step of the full pipeline: Code Cartographer → Context Weaver → Graph Forge → Blueprint Scribe
 
 ## What It Produces
 **`docs/agent_output/01-architecture/architecture.md`** — the high-level overview:

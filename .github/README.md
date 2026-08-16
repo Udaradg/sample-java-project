@@ -2,14 +2,14 @@
 
 # Agentic Remediation Harness
 
-**A 7-stage, 12-agent pipeline that takes a reported vulnerability from raw source code
-all the way to a scored, auditable ship decision — without ever touching your working tree.**
+**A 3-phase, 7-agent pipeline that takes a reported vulnerability from raw source code
+to a scored, auditable ship decision, with optional cleared-only PR publication on explicit request.**
 
-![Agents](https://img.shields.io/badge/Agents-12-1F3864?style=for-the-badge)
+![Agents](https://img.shields.io/badge/Agents-7-1F3864?style=for-the-badge)
 ![Skills](https://img.shields.io/badge/Skills-14-2E5FD9?style=for-the-badge)
-![Stages](https://img.shields.io/badge/Stages-7-6E86E8?style=for-the-badge)
+![Pipeline stages](https://img.shields.io/badge/Pipeline_stages-9-6E86E8?style=for-the-badge)
 ![Zero-dependency skills](https://img.shields.io/badge/Zero--dep_skills-8_of_14-3DA35B?style=for-the-badge)
-![Working tree](https://img.shields.io/badge/Working_tree-never_modified-A0399B?style=for-the-badge)
+![PR publication](https://img.shields.io/badge/PR_publish-explicit%20cleared--only-A0399B?style=for-the-badge)
 
 </div>
 
@@ -21,16 +21,20 @@ Most "AI fixes your code" demos stop at generating a patch. The hard part is eve
 *does the patch actually close the vulnerability? can it be bypassed a different way? did it quietly
 change something else? does it build? is it safe to ship?*
 
-This harness answers those questions with **twelve specialised agents**, each with one job, each
-leaving a written artifact the next agent reads. No agent decides more than it should, and exactly
-one agent is allowed to say a patch is safe to ship.
+This harness answers those questions with **seven specialised agents** driving **nine distinct
+pipeline stages**, each leaving a written artifact the next stage reads. Agents `01`–`03` each own
+one stage; agents `04`–`07` each own a small, strictly gated *group* of stages (e.g. `04_fix-generator`
+still separates *planning* from *coding* internally, with a human approval checkpoint between them —
+consolidating the agent that runs a stage never blurs the boundary between the stages themselves). No
+stage decides more than it should, and exactly one stage is allowed to say a patch is safe to ship.
 
 > **Two ideas do most of the work here.**
 > 1. **Facts are collected by scripts; judgement is written by agents.** They live in separate files
 >    and are merged into the final report, so every factual claim is traceable and no agent can
 >    quietly invent evidence.
-> 2. **Nothing ever edits the real repository.** Patches are applied inside throwaway `git worktree`
->    copies that are destroyed immediately. `git status` stays clean from end to end.
+> 2. **Normal analysis never edits the real repository.** Patches are applied inside throwaway `git
+>    worktree` copies that are destroyed immediately. Only an explicit, cleared-only PR-publish request
+>    creates and pushes a branch after revalidating the rendered diff in an isolated worktree.
 
 ---
 
@@ -52,17 +56,17 @@ flowchart LR
 
   subgraph B[" PHASE B · FIX "]
     direction LR
-    B1["04<br/>Fix<br/>Strategist"]
+    B1["04<br/>Fix Generator<br/>(strategize)"]
     HC{{"⏸ HUMAN<br/>approves plan"}}
-    B2["05<br/>Fixer"]
+    B2["04<br/>Fix Generator<br/>(implement)"]
     B1 --> HC --> B2
   end
 
   subgraph C[" PHASE C · VERIFY & SHIP "]
     direction LR
-    C1["06·07·08<br/>Multi-layer<br/>Verify"]
-    C2["09·10<br/>Test &<br/>Build Gate"]
-    C3["11·12<br/>Judge &<br/>Merge"]
+    C1["05<br/>Existing App<br/>Test Agent"]
+    C2["06<br/>Additional Test<br/>Execution"]
+    C3["07<br/>Audit & PR"]
     C1 --> C2 --> C3
   end
 
@@ -92,17 +96,21 @@ flowchart LR
   class OUT out
 ```
 
-| Phase | Stages | Question it answers |
+| Phase | Agent(s) | Question it answers |
 |:--|:--|:--|
 | 🔵 **A · Understand** | 01 – 03 | What does this codebase look like, *why* is this defect real, and *how far* does it reach? |
-| 🟢 **B · Fix** | 04 – 05 | *How* should it be fixed, and what is the smallest diff that does it? |
-| 🟣 **C · Verify & Ship** | 06 – 12 | Is the fix actually closed, bypass-proof, side-effect-free, tested, buildable — and shippable? |
+| 🟢 **B · Fix** | 04 | *How* should it be fixed, and what is the smallest diff that does it? |
+| 🟣 **C · Verify & Ship** | 05 – 07 | Is the fix actually closed, bypass-proof, side-effect-free, tested, buildable — and shippable? |
 
 ---
 
-## The 12 agents
+## The 7 agents
 
-Each agent is a markdown persona in [`agents/`](./agents/), numbered in execution order.
+Each agent is a markdown persona in [`agents/`](./agents/), numbered in execution order. Agents `04`
+onward each drive more than one of the original nine pipeline stages internally — every constraint
+and gate the original, more granular agents enforced (the human approval checkpoint, the "never edit
+the real working tree" rule, "zero agent-authored judgment" for the build gate, "never runs `git` or
+`gh`") still applies exactly as before; only the number of separate personas you invoke changed.
 
 ### 🔵 Phase A — Understand
 
@@ -116,23 +124,19 @@ Each agent is a markdown persona in [`agents/`](./agents/), numbered in executio
 
 | # | Agent | What it does | Writes |
 |:--|:--|:--|:--|
-| **04** | `04_fix-strategist` | Matches the defect against a curated **CWE-aligned remediation catalog** and writes a strategy — *never* a diff. Splitting strategy from code creates a checkpoint before anything is written. | `04-fix-plans/` |
-| **05** | `05_fixer` | The **only agent that produces code**. Turns an *Approved* plan into the smallest diff in the app's existing style, compiles it inside a throwaway worktree, and refuses any plan not marked Approved. | `05-fixes/` |
+| **04** | `04_fix-generator` | **Stage 1 (strategize):** matches the defect against a curated **CWE-aligned remediation catalog** and writes a strategy — *never* a diff — at `Status: Proposed`. **Stage 2 (implement, Approved plans only):** the **only agent that produces code**. Turns an *Approved* plan into the smallest diff in the app's existing style, compiles it inside a throwaway worktree, and refuses any plan not marked Approved. | `04-remediation/` |
 
 ### 🟣 Phase C — Verify & Ship
 
 | # | Agent | What it does | Writes |
 |:--|:--|:--|:--|
-| **06** | `06_re-scanner` | Re-derives the issue's detection signatures and checks whether the finding **still triggers** against patched code. | `06-verify/rescan_*` |
-| **07** | `07_red-team-recon` | Adversarially hunts for **residual or alternate attack vectors** the fix didn't cover, grounded in the CWE entry's anti-patterns. | `06-verify/redteam_*` |
-| **08** | `08_behavior-guard` | Separates intended changes from **anything the fix plan doesn't explain** — log format, exception types, return values, visibility. | `06-verify/behavior_*` |
-| **09** | `09_qa-runner` | Drafts exactly one new regression test, then a **script** applies and runs it for real. The agent cannot interpret or override the exit code. | `09-qa/` |
-| **10** | `10_build-gatekeeper` | Runs `mvn verify` plus a dependency-tree diff. **Zero agent-authored content** — deliberately given narrower tools (no `edit`) because there is nothing here to author. | `10-build/` |
-| **11** | `11_merge-arbiter` | Aggregates all five upstream reports into one deterministic weighted score against hard gates. **The only agent that may declare a patch safe to ship.** | `11-ship/verdict_*` |
-| **12** | `12_scribe` | Writes PR content and a full chain-of-custody audit trail — **always**, Cleared or Blocked. Never runs `git` or `gh`. | `11-ship/pr_*`, `audit_*` |
+| **05** | `05_existing-app-test-agent` | Runs all three static, reasoning-based checks against the existing patched app: **re-scan** (does the finding **still trigger**?), **red-team** (residual/alternate attack vectors the fix didn't cover, grounded in the CWE entry's anti-patterns), **behavior guard** (anything the fix plan doesn't explain — log format, exception types, return values, visibility). | `05-verify/rescan_*`, `redteam_*`, `behavior_*` |
+| **06** | `06_additional-test-execution` | Drafts exactly one new regression test, then a **script** applies and runs it for real (the agent cannot interpret or override the exit code); then runs `mvn verify` plus a dependency-tree diff — **zero agent-authored content** in that half, deliberately, because there is nothing here to author. | `06-test-gate/qa_*`, `build_*` |
+| **07** | `07_audit-and-pr` | Aggregates all five upstream reports into one deterministic weighted score against hard gates — **the only agent that may declare a patch safe to ship** — then writes PR content and a full chain-of-custody audit trail, **always**, Cleared or Blocked. It creates a PR only when explicitly requested for a Cleared verdict. | `07-ship/verdict_*`, `pr_*`, `audit_*` |
 
-> **Stages 06·07·08 run in parallel**, and so do **09·10**. The numbering is pipeline position, not
-> a dependency chain — none of the three verifiers needs the others' results.
+> **Stages 06·07·08 run together** inside `05_existing-app-test-agent`, and so do **09·10** inside
+> `06_additional-test-execution`. Within an agent, the individual checks/gates remain independent —
+> none needs another's result.
 
 ---
 
@@ -146,14 +150,14 @@ Three relationships are worth knowing:
 
 ```mermaid
 flowchart LR
-  A0["8 agents<br/>02 · 03 · 04 · 06 · 07 · 08 · 11 · 12"] -->|"all share"| K0["00-issue-register"]
+  A0["4 agents<br/>02 · 03 · 04 · 07"] -->|"all share"| K0["00-issue-register"]
 
   AA["1 agent<br/>01_architect"] -->|"runs 4, in order"| K1["01a-code-cartographer"]
   K1 --> K2["01b-context-weaver"]
   K2 --> K3["01c-graph-forge"]
   K3 --> K4["01d-blueprint-scribe"]
 
-  AV["3 agents<br/>06 · 07 · 08"] -->|"all share"| K6["06-verification-layer"]
+  AV["1 agent<br/>05_existing-app-test-agent"] -->|"runs all three checks"| K6["05-verify"]
 
   classDef skill fill:#2E5FD9,stroke:#1e42a0,color:#fff,font-weight:bold
   classDef agent fill:#1F3864,stroke:#14254a,color:#fff,font-weight:bold
@@ -165,23 +169,27 @@ flowchart LR
 
 | Skill | Run by | Purpose |
 |:--|:--|:--|
-| `00-issue-register` | 02, 03, 04, 06–08, 11, 12 | Reads the Excel register; owns the column contract for all six consumers |
+| `00-issue-register` | 02, 03, 04, 07 | Reads the Excel register; owns the column contract for all four consumers |
 | `01a-code-cartographer` | 01 | Parses every `pom.xml` + `.java` file into `artifacts.json` via tree-sitter |
 | `01b-context-weaver` | 01 | Selects architecturally significant nodes and validates the descriptions the agent writes |
 | `01c-graph-forge` | 01 | Loads artifacts **and** the semantic layer into Neo4j |
 | `01d-blueprint-scribe` | 01 | Synthesizes `architecture.md` + `function-reference.md` |
 | `02-root-cause-analyst` | 02 | Evidence collection, analysis schema, report rendering |
 | `03-blast-radius-analyst` | 03 | Reach measurement, narrative schema, diagram-led report |
-| `04-fix-strategist` | 04 | CWE pattern catalog + fix-plan rendering |
-| `05-fixer` | 05 | Patch verification in an isolated worktree + fix-report rendering |
-| `06-verification-layer` | **06, 07, 08** | Shared by all three verifiers — identical inputs, three independent verdicts |
-| `09-qa-runner` | 09 | Regression-test scaffolding + deterministic test gate |
-| `10-build-gatekeeper` | 10 | `mvn verify` + dependency-tree diff gate |
-| `11-merge-arbiter` | 11 | Deterministic scoring against externalised weights |
-| `12-scribe` | 12 | Chain-of-custody collection + PR/audit rendering |
+| `04a-fix-strategist` | 04 (Stage 1) | CWE pattern catalog + fix-plan rendering |
+| `04b-fixer` | 04 (Stage 2) | Patch verification in an isolated worktree + fix-report rendering |
+| `05-verify` | 05 | One agent, three independent checks (re-scan, red-team, behavior guard) against identical inputs |
+| `06a-qa-runner` | 06 (Gate 1) | Regression-test scaffolding + deterministic test gate |
+| `06b-build-gatekeeper` | 06 (Gate 2) | `mvn verify` + dependency-tree diff gate |
+| `07a-merge-arbiter` | 07 (Part 1) | Deterministic scoring against externalised weights |
+| `07b-scribe` | 07 (Part 2) | Chain-of-custody collection + PR/audit rendering |
 
-> **Why skills jump 06 → 09:** `06-verification-layer` is deliberately shared by agents 06, 07 and 08,
-> because all three read exactly the same inputs. Numbers 07 and 08 are intentionally unused.
+> **Skill folders are numbered to match the agent that runs them, exactly like the Architect's
+> `01a`–`01d`.** A single-skill agent gets a plain number (`02-root-cause-analyst`, `03-blast-radius-analyst`,
+> `05-verify`); an agent driving more than one skill gets a lettered suffix per skill, in run order
+> (`04a-fix-strategist`/`04b-fixer`, `06a-qa-runner`/`06b-build-gatekeeper`,
+> `07a-merge-arbiter`/`07b-scribe`). `00-issue-register` keeps its own `00` prefix — it's shared
+> infrastructure with no single owning agent.
 
 ---
 
@@ -205,26 +213,23 @@ flowchart TD
   BR["03_blast-radius-analyst"]
   BRD[/"03-blast-radius/<br/>blast_radius_&lt;id&gt;.md"/]
 
-  FS["04_fix-strategist"]
-  FP[/"04-fix-plans/<br/>Status: Proposed"/]
+  FS["04_fix-generator (strategize)"]
+  FP[/"04-remediation/<br/>Status: Proposed"/]
   GATE{{"⏸ HUMAN CHECKPOINT<br/>Status → Approved"}}
 
-  FX["05_fixer"]
-  FIX[/"05-fixes/<br/>fix_&lt;id&gt;.md + .diff"/]
+  FX["04_fix-generator (implement)"]
+  FIX[/"04-remediation/<br/>fix_&lt;id&gt;.md + .diff"/]
 
-  V1["06_re-scanner"]
-  V2["07_red-team-recon"]
-  V3["08_behavior-guard"]
-  VER[/"06-verify/<br/>rescan · redteam · behavior"/]
+  V1["05_existing-app-test-agent"]
+  VER[/"05-verify/<br/>rescan · redteam · behavior"/]
 
-  QA["09_qa-runner"]
-  BG["10_build-gatekeeper"]
-  QAD[/"09-qa/ + 10-build/"/]
+  QA["06_additional-test-execution"]
+  QAD[/"06-test-gate/<br/>qa_* + build_*"/]
 
-  MA["11_merge-arbiter"]
-  VD[/"11-ship/verdict_&lt;id&gt;.md<br/>Cleared | Blocked"/]
-  SC["12_scribe"]
-  OUT[/"11-ship/<br/>pr_&lt;id&gt;.md + audit_&lt;id&gt;.md"/]
+  MA["07_audit-and-pr (arbitrate)"]
+  VD[/"07-ship/verdict_&lt;id&gt;.md<br/>Cleared | Blocked"/]
+  SC["07_audit-and-pr (write up)"]
+  OUT[/"07-ship/<br/>pr_&lt;id&gt;.md + audit_&lt;id&gt;.md"/]
 
   SRC --> ARCH
   ARCH --> DOCS
@@ -243,10 +248,10 @@ flowchart TD
   FP --> GATE
   GATE --> FX
   FX --> FIX
-  FIX --> V1 & V2 & V3
-  V1 & V2 & V3 --> VER
-  FIX --> QA & BG
-  QA & BG --> QAD
+  FIX --> V1
+  V1 --> VER
+  FIX --> QA
+  QA --> QAD
   VER --> MA
   QAD --> MA
   MA --> VD
@@ -270,13 +275,14 @@ flowchart TD
   class BR pa3
   class FS,FX pb
   class GATE human
-  class V1,V2,V3,QA,BG pc
+  class V1,QA pc
   class MA,SC ship
 ```
 
 **Why file-based handoff matters:** every stage is independently re-runnable, independently
-auditable, and independently reviewable by a human. If stage 07 is wrong, you fix stage 07 and
-re-run it — nothing else has to move.
+auditable, and independently reviewable by a human. If one of the checks inside
+`05_existing-app-test-agent` is wrong, you fix that one check and re-run it — nothing else has to
+move.
 
 ---
 
@@ -333,18 +339,19 @@ should not be trusted alone.
 
 | # | Where | What the human does | Why here |
 |:--|:--|:--|:--|
-| 1️⃣ | After **04 · Fix Strategist** | Edits the plan's `Status` from `Proposed` → `Approved` (or `Rejected`) | **No code is written before this.** A human signs off on the *approach* while changing it is still cheap |
-| 2️⃣ | After **12 · Scribe** | Opens the PR themselves | The harness **never runs `git` or `gh`**. It produces content; a person decides to publish it |
+| 1️⃣ | After **04 · Fix Generator, Stage 1 (strategize)** | Edits the plan's `Status` from `Proposed` → `Approved` (or `Rejected`) | **No code is written before this.** A human signs off on the *approach* while changing it is still cheap |
+| 2️⃣ | After **07 · Audit & PR, Part 2 (write up)** | Explicitly requests publication for a Cleared verdict | Agent 07 revalidates the rendered diff in an isolated worktree, then creates and pushes a PR branch |
 
-`05_fixer` refuses — plainly, without negotiating — any plan not marked `Approved`.
+`04_fix-generator` refuses — plainly, without negotiating — any plan not marked `Approved` before it
+will draft a diff for it.
 
 ---
 
 ## The ship decision
 
-Stage 11 is the only place a patch is declared safe. Scoring is **fully deterministic** and the
-weights live in an editable, auditable [`scoring.json`](./skills/11-merge-arbiter/scoring.json) —
-never in code.
+The **Arbitrate** step of `07_audit-and-pr` is the only place a patch is declared safe. Scoring is
+**fully deterministic** and the weights live in an editable, auditable
+[`scoring.json`](./skills/07a-merge-arbiter/scoring.json) — never in code.
 
 ```mermaid
 flowchart TD
@@ -380,15 +387,18 @@ flowchart TD
 > **Hard gates cannot be out-scored.** A patch that still triggers the original finding, or that
 > fails the build, is Blocked no matter how well it scores elsewhere.
 >
-> The agent may **contest** the computed decision in either direction — but never silently. An
-> override requires an explicit reason citing evidence, and the rendered verdict always shows the
-> computed decision and the override side by side.
+> `07_audit-and-pr` may only make a computed `Cleared` decision more conservative by overriding it to
+> `Blocked`. An override requires an explicit reason citing evidence, and the rendered verdict always
+> shows the computed decision and the override side by side.
 
 ---
 
 ## Status vocabulary
 
-Every stage communicates through a small, fixed set of statuses that downstream stages gate on.
+Every pipeline stage communicates through a small, fixed set of statuses that downstream stages gate
+on. These numbers identify the **output folder and pipeline stage** (`docs/agent_output/NN-*/`), which is
+unchanged even where one agent now drives several stages — see [The 7 agents](#the-7-agents) above
+for which agent owns which stage.
 
 | Stage | Field | Values |
 |:--|:--|:--|
@@ -401,10 +411,14 @@ Every stage communicates through a small, fixed set of statuses that downstream 
 | 10 · Build | `Status` | `Passed` \| `Failed` &nbsp;*(script-decided from the real exit code)* |
 | 11 · Verdict | `Decision` | `Cleared` \| `Blocked` |
 
-> Stages 06–08 accept `Compile Failed` fixes too — a patch that doesn't build still has a real diff
-> worth reasoning about. Only `Refused` (no diff drafted) is out of scope. An individual test marked
+> Stages 06–10 accept `Compile Failed` fixes too — a patch that doesn't build still has a real diff
+> worth rechecking and independently gating. Only `Refused` (no diff drafted) is out of scope. An individual test marked
 > `SKIPPED` inside a Passed QA report is never counted as a pass — it means this sandbox lacked the
 > dependency to run it.
+
+The canonical transition and ownership rules are in [pipeline-contract.md](./pipeline-contract.md).
+Run `node .github/scripts/pipeline-lint.js` after changing an agent, skill, renderer, or active
+output index to catch contract drift.
 
 ---
 
@@ -413,7 +427,7 @@ Every stage communicates through a small, fixed set of statuses that downstream 
 Issues are **not** markdown files. They live in one spreadsheet — because that is how scanner
 exports, tracker dumps and security reviewers already work.
 
-📊 **[`docs/00-issues/issue-register.xlsx`](./docs/00-issues/issue-register.xlsx)** — one row per
+📊 **[`docs/agent_output/00-issues/issue-register.xlsx`](../docs/agent_output/00-issues/issue-register.xlsx)** — one row per
 vulnerability, 19 columns. Add a row in Excel, re-run from stage 02.
 
 | Group | Columns |
@@ -433,28 +447,25 @@ Full column contract: [`docs/00-issues/README.md`](./docs/00-issues/README.md).
 
 ## Repository layout
 
-Everything the harness owns lives under `.github/`, and **all three listings are numbered to match**
-— agent `05`, skill `05-*`, output `05-*`.
+Everything the harness owns lives under `.github/`. **Skill and output-folder numbers still match
+each other** (skill `04a-fix-strategist`/`04b-fixer` ↔ output `04-remediation/`) even though agents
+were consolidated — an agent now simply drives more than one skill, writing into one merged output
+folder per agent.
 
 ```
 .github/
 ├── README.md                    ← you are here
 │
-├── agents/                      12 personas, numbered in execution order
+├── agents/                      7 personas, numbered in execution order
 │   ├── 01_architect.agent.md
 │   ├── 02_root-cause-analyst.agent.md
 │   ├── 03_blast-radius-analyst.agent.md
-│   ├── 04_fix-strategist.agent.md
-│   ├── 05_fixer.agent.md
-│   ├── 06_re-scanner.agent.md          ┐
-│   ├── 07_red-team-recon.agent.md      ├─ run in parallel
-│   ├── 08_behavior-guard.agent.md      ┘
-│   ├── 09_qa-runner.agent.md           ┐ run in parallel
-│   ├── 10_build-gatekeeper.agent.md    ┘
-│   ├── 11_merge-arbiter.agent.md
-│   └── 12_scribe.agent.md
+│   ├── 04_fix-generator.agent.md            plan (⏸ human approval) then implement
+│   ├── 05_existing-app-test-agent.agent.md  re-scan + red-team + behavior guard
+│   ├── 06_additional-test-execution.agent.md  QA gate + build gate
+│   └── 07_audit-and-pr.agent.md             arbitrate (Cleared|Blocked) then write up
 │
-├── skills/                      14 toolboxes, numbered to their agent
+├── skills/                      14 toolboxes, numbered to the agent(s) that run them
 │   ├── 00-issue-register/       shared by every issue-consuming agent
 │   ├── 01a-code-cartographer/   ┐
 │   ├── 01b-context-weaver/      ├─ the Architect runs all four, in order
@@ -462,26 +473,23 @@ Everything the harness owns lives under `.github/`, and **all three listings are
 │   ├── 01d-blueprint-scribe/    ┘
 │   ├── 02-root-cause-analyst/
 │   ├── 03-blast-radius-analyst/
-│   ├── 04-fix-strategist/       + catalog/cwe-patterns.json
-│   ├── 05-fixer/
-│   ├── 06-verification-layer/   shared by agents 06, 07 and 08
-│   ├── 09-qa-runner/
-│   ├── 10-build-gatekeeper/
-│   ├── 11-merge-arbiter/        + scoring.json
-│   └── 12-scribe/
+│   ├── 04a-fix-strategist/      + catalog/cwe-patterns.json  ┐ both run by 04_fix-generator
+│   ├── 04b-fixer/                                              ┘
+│   ├── 05-verify/               all three checks run by 05_existing-app-test-agent
+│   ├── 06a-qa-runner/           ┐ both run by 06_additional-test-execution
+│   ├── 06b-build-gatekeeper/    ┘
+│   ├── 07a-merge-arbiter/       + scoring.json
+│   └── 07b-scribe/
 │
 ├── docs/                        generated deliverables — committed
 │   ├── 00-issues/               issue-register.xlsx  ← human input
 │   ├── 01-architecture/         architecture.md · function-reference.md
 │   ├── 02-root-cause/
 │   ├── 03-blast-radius/
-│   ├── 04-fix-plans/            ⏸ human approves here
-│   ├── 05-fixes/                fix_<id>.md + fix_<id>.diff
-│   ├── 06-verify/               rescan · redteam · behavior
-│   ├── 09-qa/
-│   ├── 10-build/
-│   ├── 11-ship/                 verdict · pr · audit
-│   ├── architect-guide.md       full operator guide
+│   ├── 04-remediation/          ⏸ human approves here; fix_plan_*.md + fix_*.md/.diff
+│   ├── 05-verify/               rescan · redteam · behavior
+│   ├── 06-test-gate/            qa_*.md + build_*.md
+│   ├── 07-ship/                 verdict · pr · audit
 │   └── VULNERABILITY_REMEDIATION_SUMMARY.md
 │
 └── .pipeline-context/                  working data — gitignored, regeneratable
@@ -509,8 +517,8 @@ cd ../01c-graph-forge
 Copy-Item .env.example .env      # then fill in NEO4J_URI / USERNAME / PASSWORD
 ```
 
-> Skills `00`, `04`, `05`, `06`, `09`, `10`, `11` and `12` have **zero dependencies** — nothing to
-> install. Even the Excel reader is built on Node's own `zlib`.
+> Skills `00`, `04a`, `04b`, `05`, `06a`, `06b`, `07a` and `07b` have **zero dependencies** — nothing
+> to install. Even the Excel reader is built on Node's own `zlib`.
 
 **Then drive it from Copilot Chat**, one agent at a time, in numeric order:
 
@@ -518,12 +526,10 @@ Copy-Item .env.example .env      # then fill in NEO4J_URI / USERNAME / PASSWORD
 run the 01_architect agent          → architecture + knowledge graph
 run the 02_root-cause-analyst agent → why each issue is real
 run the 03_blast-radius-analyst agent
-run the 04_fix-strategist agent     → then approve a plan by hand ⏸
-run the 05_fixer agent
-run the 06_re-scanner agent  /  07_red-team-recon  /  08_behavior-guard
-run the 09_qa-runner agent   /  10_build-gatekeeper
-run the 11_merge-arbiter agent
-run the 12_scribe agent
+run the 04_fix-generator agent      → writes plans, then approve one by hand ⏸, then re-run to implement
+run the 05_existing-app-test-agent agent  → re-scan + red-team + behavior guard
+run the 06_additional-test-execution agent → QA gate + build gate
+run the 07_audit-and-pr agent        → arbitrate, then write PR + audit content
 ```
 
 Every skill also has a `list-*.js` script that shows its workload and pipeline state without
@@ -532,7 +538,7 @@ changing anything — the fastest way to see where a given issue currently stand
 ```powershell
 cd .github/skills/00-issue-register; node scripts/list-register.js
 cd ../02-root-cause-analyst;         node scripts/list-issues.js
-cd ../11-merge-arbiter;              node scripts/list-merge-workload.js
+cd ../07a-merge-arbiter;              node scripts/list-merge-workload.js
 ```
 
 ---
@@ -553,7 +559,6 @@ cd ../11-merge-arbiter;              node scripts/list-merge-workload.js
 
 <div align="center">
 
-**Full operator guide →** [`docs/architect-guide.md`](./docs/architect-guide.md)
-&nbsp;·&nbsp; **Issue format →** [`docs/00-issues/README.md`](./docs/00-issues/README.md)
+**Issue format →** [`docs/00-issues/README.md`](./docs/00-issues/README.md)
 
 </div>

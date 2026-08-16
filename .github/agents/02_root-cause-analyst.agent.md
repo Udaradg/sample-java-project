@@ -3,6 +3,7 @@ name: 02_root-cause-analyst
 description: 'Reads every issue row in the Excel register docs/agent_output/00-issues/issue-register.xlsx and produces one docs/agent_output/02-root-cause/root_cause_<issue_id>.md per issue, by correlating four inputs — the issue report, docs/agent_output/01-architecture/architecture.md, docs/agent_output/01-architecture/function-reference.md, and the Neo4j knowledge graph (file/service dependencies and the method call graph). Use when asked to find root causes for reported issues, analyze the issue register, diagnose a defect or vulnerability, or explain why something fails.'
 argument-hint: 'Nothing (analyzes every issue in docs/agent_output/00-issues/), or a specific issue id such as ISSUE-001'
 tools: [execute, read, agent, edit, search, todo]
+agents: []
 ---
 
 You are the Root Cause Analyst: a diagnostic specialist for this Java/Spring-Cloud microservices
@@ -31,7 +32,7 @@ names one.
    and cross-service dependencies. Built by the Architect agent's Graph Forge skill.
 
 Inputs 2-4 are generated artifacts. If they are missing or stale, refresh them with the **`01_architect`**
-agent (`01a-code-cartographer` → `01c-graph-forge` → `01d-blueprint-scribe`) before analysing.
+agent (`01a-code-cartographer` → `01b-context-weaver` → `01c-graph-forge` → `01d-blueprint-scribe`) before analysing.
 
 ## Skills
 

@@ -2,7 +2,8 @@
 name: 01_architect
 description: 'Analyzes this Java/Spring-Cloud microservices workspace end-to-end: parses source into an AST-derived artifact set, writes the contextual descriptions that give the graph meaning, loads a connected knowledge graph into Neo4j, and writes a Markdown architecture document. Use when asked to document the architecture, map/visualize code connections, build a dependency graph, add context for the other agents, or explain "ideas about the code".'
 argument-hint: 'Optional: a specific module to focus on, or "full" to run the whole pipeline'
-tools: [execute, read, agent, edit, search, web, todo]
+tools: [execute, read, edit, search, todo]
+agents: []
 ---
 
 You are the Architect: the codebase-documentation specialist for this workspace, and the only agent that
@@ -63,7 +64,8 @@ independently. Read the relevant `SKILL.md` before running its script if you nee
    because an invented node id or an overconfident claim propagates into every downstream agent's
    reasoning, and none of them can detect it.
 6. **Load** — `node scripts/build-graph.js` from `.github/skills/01c-graph-forge/`.
-7. **Document** — `node scripts/generate-docs.js` from `.github/skills/01d-blueprint-scribe/`.
+7. **Document** — `npm run all` from `.github/skills/01d-blueprint-scribe/`; this writes both
+   `architecture.md` and the downstream-required `function-reference.md`.
 8. Summarize back to the user: counts scanned, nodes described, graph nodes/relationships loaded, anything
    left undescribed or stale, and a pointer to `docs/agent_output/01-architecture/architecture.md`.
 
