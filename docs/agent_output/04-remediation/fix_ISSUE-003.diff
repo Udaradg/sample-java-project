@@ -44,7 +44,7 @@ index 2e4d9b4..a8fd967 100644
      public ResponseEntity<StandardResponse> getEmployee(@PathVariable("id") String employeeId) throws EmployeeNotFoundException {
          log.trace("EmployeeController - getEmployee - employeeId {}", employeeId);
 diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
-index d28c2b7..f868fdc 100644
+index d28c2b7..94ea9c2 100644
 --- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
 +++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/repository/EmployeeSearchRepository.java
 @@ -1,33 +1,27 @@
@@ -76,7 +76,7 @@ index d28c2b7..f868fdc 100644
 +        Criteria criteria = Criteria.where("name").regex(Pattern.quote(name));
          if (department != null && !department.isEmpty()) {
 -            filter.append(", 'department': '").append(department).append("'");
-+            criteria.and("department").is(department);
++            criteria = criteria.and("department").is(department);
          }
  
 -        filter.append(" }");

@@ -26,4 +26,6 @@ JDK/Lombok toolchain mismatch — cross-check before blaming the patch.
 
 | ID | Title | QA Status | Build Status | QA report | Build report |
 |---|---|---|---|---|---|
+| ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | Failed | Failed | [qa_ISSUE-001.md](./qa_ISSUE-001.md) | [build_ISSUE-001.md](./build_ISSUE-001.md) |
+| ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | Failed | Failed | [qa_ISSUE-002.md](./qa_ISSUE-002.md) | [build_ISSUE-002.md](./build_ISSUE-002.md) |
 | ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | Failed | Failed | [qa_ISSUE-003.md](./qa_ISSUE-003.md) | [build_ISSUE-003.md](./build_ISSUE-003.md) |

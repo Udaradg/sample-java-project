@@ -43,4 +43,4 @@ table is for humans; the pipeline itself discovers plans and fixes by scanning
 |---|---|---|---|---|---|---|
 | ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | `CWE-770` | Approved | Compile Failed | [fix_plan_ISSUE-001.md](./fix_plan_ISSUE-001.md) | [fix_ISSUE-001.md](./fix_ISSUE-001.md) |
 | ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | `CWE-306` | Approved | Compile Failed | [fix_plan_ISSUE-002.md](./fix_plan_ISSUE-002.md) | [fix_ISSUE-002.md](./fix_ISSUE-002.md) |
-| ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | `CWE-943` | Approved | Compiled | [fix_plan_ISSUE-003.md](./fix_plan_ISSUE-003.md) | [fix_ISSUE-003.md](./fix_ISSUE-003.md) |
+| ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | `CWE-943` | Approved | Compile Failed | [fix_plan_ISSUE-003.md](./fix_plan_ISSUE-003.md) | [fix_ISSUE-003.md](./fix_ISSUE-003.md) |

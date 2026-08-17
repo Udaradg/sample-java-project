@@ -13,4 +13,6 @@ is always a paper trail of what was proposed and why it didn't clear.
 
 | ID | Title | Decision | Verdict | PR content | Audit trail |
 |---|---|---|---|---|---|
+| ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | Blocked | [verdict_ISSUE-001.md](./verdict_ISSUE-001.md) | [pr_ISSUE-001.md](./pr_ISSUE-001.md) | [audit_ISSUE-001.md](./audit_ISSUE-001.md) |
+| ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | Blocked | [verdict_ISSUE-002.md](./verdict_ISSUE-002.md) | [pr_ISSUE-002.md](./pr_ISSUE-002.md) | [audit_ISSUE-002.md](./audit_ISSUE-002.md) |
 | ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | Blocked | [verdict_ISSUE-003.md](./verdict_ISSUE-003.md) | [pr_ISSUE-003.md](./pr_ISSUE-003.md) | [audit_ISSUE-003.md](./audit_ISSUE-003.md) |

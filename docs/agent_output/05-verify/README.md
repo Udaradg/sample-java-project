@@ -17,4 +17,6 @@ arbiter** (Phase C step 3) reads all three; none of them alone decides whether a
 
 | ID | Title | Re-scan | Red-team | Behavior |
 |---|---|---|---|---|
+| ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | STILL_VULNERABLE | NO_BYPASS_FOUND | BEHAVIOR_CHANGED |
+| ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | FIXED | BYPASS_FOUND | BEHAVIOR_CHANGED |
 | ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | FIXED | NO_BYPASS_FOUND | BEHAVIOR_CHANGED |
