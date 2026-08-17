@@ -1,0 +1,262 @@
+diff --git a/department-service/pom.xml b/department-service/pom.xml
+index 51cce6a..c4c333c 100644
+--- a/department-service/pom.xml
++++ b/department-service/pom.xml
+@@ -27,6 +27,10 @@
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-web</artifactId>
+ 		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-security</artifactId>
++		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework.cloud</groupId>
+ 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+diff --git a/department-service/src/main/java/com/aura/vihanga/departmentservice/config/SecurityConfig.java b/department-service/src/main/java/com/aura/vihanga/departmentservice/config/SecurityConfig.java
+new file mode 100644
+index 0000000..07029c8
+--- /dev/null
++++ b/department-service/src/main/java/com/aura/vihanga/departmentservice/config/SecurityConfig.java
+@@ -0,0 +1,31 @@
++package com.aura.vihanga.departmentservice.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
++import org.springframework.security.web.SecurityFilterChain;
++
++/**
++ * Deny-by-default security filter chain (CWE-306 remediation). GET /api/v1/department/salary/{minSalary}
++ * required no authentication at all before this change; now every request must present an
++ * authenticated principal. Restricting salary-band access further, to a specifically
++ * privileged role, needs the authorization model tracked as an open question in the plan
++ * (CWE-862 has no catalog entry yet) and is not implemented here.
++ */
++@Configuration
++@EnableWebSecurity
++public class SecurityConfig {
++
++    @Bean
++    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
++        http
++                .csrf().disable()
++                .authorizeRequests()
++                    .anyRequest().authenticated()
++                    .and()
++                .httpBasic();
++
++        return http.build();
++    }
++}
+diff --git a/department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java b/department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java
+index 037a431..c98fe9e 100644
+--- a/department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java
++++ b/department-service/src/main/java/com/aura/vihanga/departmentservice/controller/DepartmentController.java
+@@ -49,7 +49,6 @@ public class DepartmentController {
+     @GetMapping("department/salary/{minSalary}")
+     public List<DepartmentResponse> getAllDepartments(@PathVariable("minSalary") double minSalary) {
+         List<DepartmentResponse> departmentResponses = departmentService.getAllDepartments(minSalary);
+-        log.info("Department Controller {}", departmentResponses);
+         return  departmentResponses;
+     }
+ }
+diff --git a/employee-service/pom.xml b/employee-service/pom.xml
+index 81349ea..9a92f52 100644
+--- a/employee-service/pom.xml
++++ b/employee-service/pom.xml
+@@ -27,6 +27,10 @@
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-web</artifactId>
+ 		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-security</artifactId>
++		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework.cloud</groupId>
+ 			<artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/config/SecurityConfig.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/config/SecurityConfig.java
+new file mode 100644
+index 0000000..ba27478
+--- /dev/null
++++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/config/SecurityConfig.java
+@@ -0,0 +1,30 @@
++package com.aura.vihanga.employeeservice.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
++import org.springframework.security.web.SecurityFilterChain;
++
++/**
++ * Deny-by-default security filter chain (CWE-306 remediation). Every employee/payroll
++ * endpoint in this service required no authentication at all before this change; now every
++ * request must present an authenticated principal except the allow-listed health check.
++ */
++@Configuration
++@EnableWebSecurity
++public class SecurityConfig {
++
++    @Bean
++    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
++        http
++                .csrf().disable()
++                .authorizeRequests()
++                    .antMatchers("/actuator/health").permitAll()
++                    .anyRequest().authenticated()
++                    .and()
++                .httpBasic();
++
++        return http.build();
++    }
++}
+diff --git a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+index 2e4d9b4..ec28397 100644
+--- a/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
++++ b/employee-service/src/main/java/com/aura/vihanga/employeeservice/controller/EmployeeController.java
+@@ -30,7 +30,7 @@ public class EmployeeController {
+ 
+     @PostMapping("employee")
+     public ResponseEntity<StandardResponse> createEmployee(@RequestBody Employee employee) {
+-        log.trace("EmployeeController - createEmployee - employee {}", employee);
++        log.trace("EmployeeController - createEmployee");
+         EmployeeResponse employeeResponse = employeeService.createEmployee(employee);
+ 
+         return new ResponseEntity<StandardResponse>(
+@@ -50,7 +50,7 @@ public class EmployeeController {
+     @GetMapping("employee/search")
+     public ResponseEntity<StandardResponse> searchEmployees(@RequestParam("name") String name,
+                                                             @RequestParam(value = "department", required = false) String department) {
+-        log.trace("EmployeeController - searchEmployees - name {} department {}", name, department);
++        log.trace("EmployeeController - searchEmployees");
+         List<EmployeeResponse> employeeResponses = employeeService.searchEmployees(name, department);
+ 
+         return new ResponseEntity<StandardResponse>(
+diff --git a/employee-service/src/main/resources/application.properties b/employee-service/src/main/resources/application.properties
+index 0d1d35a..8622591 100644
+--- a/employee-service/src/main/resources/application.properties
++++ b/employee-service/src/main/resources/application.properties
+@@ -1,4 +1,4 @@
+-logging.level.com.aura.vihanga.employeeservice.controller = trace
++#logging.level.com.aura.vihanga.employeeservice.controller = trace
+ 
+ #spring.data.mongodb.uri=mongodb+srv://vmihiranga:dvpRulz22365@cluster0.63upslh.mongodb.net/?retryWrites=true&w=majority
+ #spring.data.mongodb.database=citi-assignment
+diff --git a/report-service/pom.xml b/report-service/pom.xml
+index 3160a4d..477895f 100644
+--- a/report-service/pom.xml
++++ b/report-service/pom.xml
+@@ -27,6 +27,10 @@
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-web</artifactId>
+ 		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-security</artifactId>
++		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-webflux</artifactId>
+diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/config/SecurityConfig.java b/report-service/src/main/java/com/aura/vihanga/reportservice/config/SecurityConfig.java
+new file mode 100644
+index 0000000..31e2f02
+--- /dev/null
++++ b/report-service/src/main/java/com/aura/vihanga/reportservice/config/SecurityConfig.java
+@@ -0,0 +1,31 @@
++package com.aura.vihanga.reportservice.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
++import org.springframework.security.web.SecurityFilterChain;
++
++/**
++ * Deny-by-default security filter chain (CWE-306 remediation). GET /api/v1/export
++ * required no authentication at all before this change; now every request must present
++ * an authenticated principal. Restricting the export endpoint further, to a specifically
++ * privileged role, needs the authorization model tracked as an open question in the plan
++ * (CWE-862 has no catalog entry yet) and is not implemented here.
++ */
++@Configuration
++@EnableWebSecurity
++public class SecurityConfig {
++
++    @Bean
++    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
++        http
++                .csrf().disable()
++                .authorizeRequests()
++                    .anyRequest().authenticated()
++                    .and()
++                .httpBasic();
++
++        return http.build();
++    }
++}
+diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
+index ec74c83..21584b2 100644
+--- a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
++++ b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
+@@ -60,8 +60,6 @@ public class EmployeeReportServiceImpl implements EmployeeReportService {
+                             .salary(department.getSalary())
+                             .build();
+ 
+-                    log.info("employee Salary {}",employeeSalaryResponse);
+-
+                     employeeSalaryResponseList.add(employeeSalaryResponse);
+                 }
+             }
+diff --git a/sheduler-service/pom.xml b/sheduler-service/pom.xml
+index a39f671..2dc874e 100644
+--- a/sheduler-service/pom.xml
++++ b/sheduler-service/pom.xml
+@@ -27,6 +27,10 @@
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-web</artifactId>
+ 		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-security</artifactId>
++		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework.cloud</groupId>
+ 			<artifactId>spring-cloud-starter-config</artifactId>
+diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/config/SecurityConfig.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/config/SecurityConfig.java
+new file mode 100644
+index 0000000..032c439
+--- /dev/null
++++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/config/SecurityConfig.java
+@@ -0,0 +1,29 @@
++package com.aura.vihanga.shedulerservice.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
++import org.springframework.security.web.SecurityFilterChain;
++
++/**
++ * Deny-by-default security filter chain (CWE-306 remediation). Every endpoint in this
++ * service required no authentication at all before this change; now every request must
++ * present an authenticated principal.
++ */
++@Configuration
++@EnableWebSecurity
++public class SecurityConfig {
++
++    @Bean
++    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
++        http
++                .csrf().disable()
++                .authorizeRequests()
++                    .anyRequest().authenticated()
++                    .and()
++                .httpBasic();
++
++        return http.build();
++    }
++}

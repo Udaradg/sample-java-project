@@ -58,10 +58,18 @@ index c481ebb..d06b4e9 100644
 +    void writeExcelFile(OutputStream outputStream) throws IOException;
  }
 diff --git a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
-index ec74c83..6c635ff 100644
+index ec74c83..7da4436 100644
 --- a/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
 +++ b/report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java
-@@ -10,16 +10,16 @@ import com.aura.vihanga.reportservice.service.EmployeeReportService;
+@@ -2,32 +2,31 @@ package com.aura.vihanga.reportservice.service.implementation;
+ 
+ import com.aura.vihanga.reportservice.config.DepartmentConfigUrl;
+ import com.aura.vihanga.reportservice.dto.DepartmentResponse;
+-import com.aura.vihanga.reportservice.dto.EmployeeResponse;
+-import com.aura.vihanga.reportservice.dto.EmployeeSalaryResponse;
+ import com.aura.vihanga.reportservice.entity.Employee;
+ import com.aura.vihanga.reportservice.repository.EmployeeReportRepository;
+ import com.aura.vihanga.reportservice.service.EmployeeReportService;
  import lombok.extern.slf4j.Slf4j;
  import org.apache.poi.ss.usermodel.Row;
  import org.apache.poi.ss.usermodel.Sheet;
@@ -81,22 +89,31 @@ index ec74c83..6c635ff 100644
 +import java.io.OutputStream;
  import java.util.Arrays;
  import java.util.List;
- import java.util.stream.Collectors;
-@@ -35,12 +35,8 @@ public class EmployeeReportServiceImpl implements EmployeeReportService {
+-import java.util.stream.Collectors;
+ 
+ @Service
+ @Slf4j
+ public class EmployeeReportServiceImpl implements EmployeeReportService {
+ 
++    private static final int PAGE_SIZE = 500;
++
+     @Autowired
+     private EmployeeReportRepository employeeReportRepository;
+     @Autowired
+@@ -35,11 +34,8 @@ public class EmployeeReportServiceImpl implements EmployeeReportService {
      @Autowired
      private DepartmentConfigUrl departmentConfigUrl;
  
 -    public List<EmployeeSalaryResponse> getEmployees() {
-+        public void writeExcelFile(OutputStream outputStream) throws IOException {
++    public void writeExcelFile(OutputStream outputStream) throws IOException {
          log.info("Report Service");
 -        List<Employee> employeesList = employeeReportRepository.findAll();
 -
 -//        List<String> employeeDepartmentId = employees.stream().map(employee -> employee.getDepartment()).toList();
--
+ 
          DepartmentResponse[] departmentResponses = builder.build().get()
                  .uri(departmentConfigUrl.getDepartmentUrl(), 10000)
-                 .retrieve()
-@@ -48,51 +44,35 @@ public class EmployeeReportServiceImpl implements EmployeeReportService {
+@@ -48,51 +44,36 @@ public class EmployeeReportServiceImpl implements EmployeeReportService {
                  .block();
          List<DepartmentResponse> departmentResponseList = Arrays.asList(departmentResponses);
  
@@ -115,37 +132,12 @@ index ec74c83..6c635ff 100644
 -                    log.info("employee Salary {}",employeeSalaryResponse);
 -
 -                    employeeSalaryResponseList.add(employeeSalaryResponse);
-+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
-+            Sheet sheet = workbook.createSheet("Employees");
-+
-+            Row headerRow = sheet.createRow(0);
-+            headerRow.createCell(0).setCellValue("Employee Id");
-+            headerRow.createCell(1).setCellValue("Employee Name");
-+            headerRow.createCell(2).setCellValue("Department");
-+            headerRow.createCell(3).setCellValue("Salary");
-+
-+            int page = 0;
-+            int row = 1;
-+            Page<Employee> employeePage;
-+            do {
-+                employeePage = employeeReportRepository.findAll(PageRequest.of(page++, 500));
-+                for (Employee employee : employeePage.getContent()) {
-+                    for (DepartmentResponse department : departmentResponseList) {
-+                        if (employee.getDepartment().equals(department.getDepartmentId())) {
-+                            Row dataRow = sheet.createRow(row++);
-+                            dataRow.createCell(0).setCellValue(employee.getEmployeeId());
-+                            dataRow.createCell(1).setCellValue(employee.getName());
-+                            dataRow.createCell(2).setCellValue(department.getDepartmentName());
-+                            dataRow.createCell(3).setCellValue(department.getSalary());
-+                        }
-+                    }
-                 }
+-                }
 -            }
 -        }
 -
 -        return employeeSalaryResponseList;
-+            } while (employeePage.hasNext());
- 
+-
 -    }
 -
 -        public byte[] generateExcelFile(List<EmployeeSalaryResponse> employees) throws IOException {
@@ -165,8 +157,34 @@ index ec74c83..6c635ff 100644
 -                    dataRow.createCell(1).setCellValue(employee.getName());
 -                    dataRow.createCell(2).setCellValue(employee.getDepartmentName());
 -                    dataRow.createCell(3).setCellValue(employee.getSalary());
--                }
--
++        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
++            Sheet sheet = workbook.createSheet("Employees");
++
++            Row headerRow = sheet.createRow(0);
++            headerRow.createCell(0).setCellValue("Employee Id");
++            headerRow.createCell(1).setCellValue("Employee Name");
++            headerRow.createCell(2).setCellValue("Department");
++            headerRow.createCell(3).setCellValue("Salary");
++
++            int rowNum = 1;
++            int pageNumber = 0;
++            Page<Employee> employeePage;
++            do {
++                employeePage = employeeReportRepository.findAll(PageRequest.of(pageNumber++, PAGE_SIZE));
++
++                for (Employee employee : employeePage.getContent()) {
++                    for (DepartmentResponse department : departmentResponseList) {
++                        if (employee.getDepartment().equals(department.getDepartmentId())) {
++                            Row dataRow = sheet.createRow(rowNum++);
++                            dataRow.createCell(0).setCellValue(employee.getEmployeeId());
++                            dataRow.createCell(1).setCellValue(employee.getName());
++                            dataRow.createCell(2).setCellValue(department.getDepartmentName());
++                            dataRow.createCell(3).setCellValue(department.getSalary());
++                        }
++                    }
+                 }
++            } while (employeePage.hasNext());
+ 
 -                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 -                workbook.write(outputStream);
 -                return outputStream.toByteArray();
@@ -174,10 +192,10 @@ index ec74c83..6c635ff 100644
 +            workbook.write(outputStream);
 +            workbook.dispose();
          }
++    }
  }
-+}
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
-index 9c31294..911ee50 100644
+index 9c31294..f5a4f4a 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/controller/EmployeeSchedulerController.java
 @@ -3,12 +3,13 @@ package com.aura.vihanga.shedulerservice.controller;
@@ -203,12 +221,12 @@ index 9c31294..911ee50 100644
 -    public List<Employee> getAllEmployees() {
 -        return schedulerService.getAllEmployees();
 +    public Page<Employee> getEmployees(@RequestParam(defaultValue = "0") int page,
-+                                       @RequestParam(defaultValue = "100") int size) {
++                                        @RequestParam(defaultValue = "100") int size) {
 +        return schedulerService.getEmployees(PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
      }
  }
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
-index 20df816..19dc961 100644
+index 20df816..b407f0e 100644
 --- a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
 +++ b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/repository/EmployeeSchedulerRepository.java
 @@ -1,7 +1,11 @@
@@ -221,7 +239,7 @@ index 20df816..19dc961 100644
 +import java.util.List;
 +
  public interface EmployeeSchedulerRepository extends MongoRepository<Employee, String> {
-+	List<Employee> findByGender(GenderType gender);
++    List<Employee> findByGender(GenderType gender);
  }
 diff --git a/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java b/sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/EmployeeSchedulerService.java
 index 8af2490..176bf6a 100644
