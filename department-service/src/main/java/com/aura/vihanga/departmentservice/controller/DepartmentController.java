@@ -22,7 +22,17 @@ public class DepartmentController {
 
     @PostMapping("department")
     public ResponseEntity<StandardResponse> createDepartment(@RequestBody Department department) {
-        DepartmentResponse departmentResponse = createDepartment(department);
+
+
+
+
+
+
+
+
+
+
+        DepartmentResponse departmentResponse = departmentService.createDepartment(department);
 
         return new ResponseEntity<StandardResponse>(
                 new StandardResponse(201, "Department Created Successfully", departmentResponse), HttpStatus.CREATED
