@@ -573,7 +573,7 @@ function renderEvidenceMarkdown(evidence) {
   out.push('| Input | Status |');
   out.push('|---|---|');
   out.push(`| Issue report | \`${issue.file}\` |`);
-  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.pipeline-contexture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
+  out.push(`| \`docs/agent_output/01-architecture/architecture.md\` | ${sources.architecture ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| \`docs/agent_output/01-architecture/function-reference.md\` | ${sources.functionReference ? 'loaded' : 'MISSING — run Blueprint Scribe'} |`);
   out.push(`| \`.github/.pipeline-context/artifacts.json\` | scanned ${sources.artifactsGeneratedAt} |`);
   out.push(`| Neo4j graph | ${graph.live ? `live (depth ${graph.depth})` : `not used — ${graph.reason}`} |`);
@@ -963,7 +963,7 @@ async function main() {
     architectureText: readIfPresent(ARCHITECTURE_MD),
     functionReferenceText: readIfPresent(FUNCTION_REFERENCE_MD),
   };
-  if (!context.pipeline-contextureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for full architecture context.`);
+  if (!context.architectureText) console.warn(`Warning: ${rel(ARCHITECTURE_MD)} is missing — run Blueprint Scribe for full architecture context.`);
   if (!context.functionReferenceText) console.warn(`Warning: ${rel(FUNCTION_REFERENCE_MD)} is missing — run Blueprint Scribe for function-level excerpts.`);
 
   // One issue failing must not abort the rest of the batch.

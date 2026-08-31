@@ -19,3 +19,4 @@ arbiter** (Phase C step 3) reads all three; none of them alone decides whether a
 | ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | FIXED | NO_BYPASS_FOUND | BEHAVIOR_CHANGED |
 | ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | STILL_VULNERABLE | BYPASS_FOUND | BEHAVIOR_CHANGED |
 | ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | FIXED | NO_BYPASS_FOUND | BEHAVIOR_PRESERVED |
+| ISSUE-004 | Outdated Apache POI (poi-ooxml 5.0.0) dependency exposes the employee Excel-upload endpoint to a known OOXML parsing vulnerability (CVE-2025-31672) | FIXED | NO_BYPASS_FOUND | BEHAVIOR_PRESERVED |

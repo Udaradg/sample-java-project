@@ -340,7 +340,7 @@ function render(facts, narrative) {
   out.push('|---|---|');
   out.push(`| Root cause report | ${linkFromOutput(sources.rootCauseReport, sources.rootCauseReport)} |`);
   out.push(`| Issue report | ${sources.issueFile ? linkFromOutput(sources.issueFile, sources.issueFile) : 'not available'} |`);
-  out.push(`| Architecture document | ${sources.pipeline-contexture ? linkFromOutput('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.architecture ? linkFromOutput('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
   out.push(`| Function reference | ${sources.functionReference ? linkFromOutput('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` |`);
   out.push(`| Knowledge graph | ${facts.graph.live ? `Neo4j, traversal depth ${facts.graph.depth}` : `not used — ${facts.graph.reason}`} |`);

@@ -320,15 +320,15 @@ function render(evidence, analysis) {
   out.push('| Input | Detail |');
   out.push('|---|---|');
   out.push(`| Issue report | ${docLink(issue.file, issue.file)} |`);
-  out.push(`| Architecture document | ${sources.pipeline-contexture ? docLink('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
+  out.push(`| Architecture document | ${sources.architecture ? docLink('docs/agent_output/01-architecture/architecture.md', 'docs/agent_output/01-architecture/architecture.md') : 'not available'} |`);
   out.push(`| Function reference | ${sources.functionReference ? docLink('docs/agent_output/01-architecture/function-reference.md', 'docs/agent_output/01-architecture/function-reference.md') : 'not available'} |`);
   out.push(`| Code scan | \`${sources.artifacts}\` (generated ${sources.artifactsGeneratedAt}) |`);
   out.push(`| Knowledge graph | ${graph.live ? `Neo4j, traversal depth ${graph.depth}` : `not used — ${graph.reason}`} |`);
   out.push('');
-  if (evidence.pipeline-contextureContext && evidence.pipeline-contextureContext.observations.length) {
+  if (evidence.architectureContext && evidence.architectureContext.observations.length) {
     out.push('<details><summary>Architecture observations considered</summary>');
     out.push('');
-    evidence.pipeline-contextureContext.observations.forEach((o) => out.push(o));
+    evidence.architectureContext.observations.forEach((o) => out.push(o));
     out.push('');
     out.push('</details>');
     out.push('');

@@ -29,10 +29,15 @@ negotiating — any plan that is not exactly `Approved`.
 - **Fix Strategist** (`.github/skills/04a-fix-strategist/`) — Stage 1. Three scripts
   (`list-remediation-workload.js`, `collect-remediation-context.js`, `render-fix-plan.js`) and the CWE
   pattern catalog at `catalog/cwe-patterns.json`.
-- **Fixer** (`.github/skills/04b-fixer/`) — Stage 2. Three scripts (`list-fix-workload.js`,
-  `verify-patch.js`, `render-fix-report.js`).
+- **Fixer** (`.github/skills/04b-fixer/`) — Stage 2, for every CWE except `CWE-1104`. Three scripts
+  (`list-fix-workload.js`, `verify-patch.js`, `render-fix-report.js`).
+- **Dependency Upgrader** (`.github/skills/04c-dependency-upgrader/`) — Stage 2, for `CWE-1104` plans
+  only (a dependency-version upgrade). Same shape as 04b (`list-fix-workload.js`,
+  `apply-version-bump.js`, `render-fix-report.js`), but drafts a version-bump diff instead of a logic
+  diff, and verifies both the *declared* version and the `mvn dependency:tree`-*resolved* version meet
+  the plan's target — not just that the module compiles.
 
-Read each `SKILL.md` before running its stage. Both are zero-dependency — nothing to `npm install`.
+Read each `SKILL.md` before running its stage. All three are zero-dependency — nothing to `npm install`.
 
 ## Inputs
 
@@ -79,22 +84,33 @@ when the user names it.
 
 ### Stage 2 — Implement (Approved plans only)
 
-1. `node scripts/list-fix-workload.js` from `.github/skills/04b-fixer/`. Plans not at `Approved` are
-   shown for visibility but are not workload.
+**Routing rule, check this first:** if the plan's `CWE` is `CWE-1104` (a dependency-version upgrade),
+run all of Stage 2 through `.github/skills/04c-dependency-upgrader/` instead of `04b-fixer/` — same
+scripts by different names (`list-fix-workload.js`, `apply-version-bump.js` in place of
+`verify-patch.js`, `render-fix-report.js`), same approval gate, same isolated-worktree discipline,
+same output location and Status vocabulary (`Compiled`/`Compile Failed`/`Refused`). Only the drafted
+diff's shape (a `<version>` bump vs. a logic change) and the verification script's checks differ — the
+dependency path additionally confirms the *resolved* `dependency:tree` version, not just a compile.
+Every other CWE uses `04b-fixer/` as below.
+
+1. `node scripts/list-fix-workload.js` from `.github/skills/04b-fixer/` (or `04c-dependency-upgrader/`
+   for `CWE-1104` plans). Plans not at `Approved` are shown for visibility but are not workload.
 2. Per Approved plan: read the plan, then the current source of every affected file. Write the
    smallest diff implementing `planned_change`, matching that file's existing style — imports,
    naming, formatting, error-handling conventions already present in the module. Do not refactor,
    reformat, or touch anything the plan didn't ask for. Save it as a standard unified diff to
-   `.github/.pipeline-context/fixer/<id>.patch.diff`.
-3. Write `.github/.pipeline-context/fixer/<id>.rationale.json` per `templates/rationale.schema.json`: what
-   changed and why it's the smallest correct diff, every file touched, and — if the real code didn't
-   match what the plan assumed — exactly what you deviated on and why, with `matches_plan: false`.
-4. `node scripts/verify-patch.js --issue <ID>` (optionally `--test <ClassName>` for an existing test
-   needing no live dependency). This refuses outright if the plan is not Approved — if it refuses,
-   stop, you do not have authorization.
-5. `node scripts/render-fix-report.js --all`. The rendered Status always reflects the real
-   verification result, including a failure or a refusal — never report success the verification did
-   not confirm.
+   `.github/.pipeline-context/fixer/<id>.patch.diff` (or `.github/.pipeline-context/dependency-upgrader/<id>.patch.diff`
+   for `CWE-1104`).
+3. Write `<id>.rationale.json` per that skill's `templates/rationale.schema.json`: what changed and
+   why it's the smallest correct diff, every file touched, and — if the real code didn't match what
+   the plan assumed — exactly what you deviated on and why, with `matches_plan: false`.
+4. `node scripts/verify-patch.js --issue <ID>` (04b-fixer; optionally `--test <ClassName>` for an
+   existing test needing no live dependency) or `node scripts/apply-version-bump.js --issue <ID>`
+   (04c-dependency-upgrader). This refuses outright if the plan is not Approved (or, for
+   04c, not `CWE-1104`) — if it refuses, stop, you do not have authorization.
+5. `node scripts/render-fix-report.js --all` (whichever skill you used). The rendered Status always
+   reflects the real verification result, including a failure or a refusal — never report success the
+   verification did not confirm.
 6. Re-run `list-fix-workload.js` and confirm every Approved plan shows "report written".
 
 ## Constraints
@@ -108,8 +124,11 @@ when the user names it.
 - DO NOT act on any fix plan whose Status is not exactly `Approved` in Stage 2. Refuse once, clearly,
   and move on — a strongly-worded request is not approval; only an edited Status cell counts.
 - DO NOT edit any real source file in the repository, at any point, for any reason. All Stage 2 code
-  goes into `.github/.pipeline-context/fixer/<id>.patch.diff` and is only ever applied inside the throwaway
-  worktree that `verify-patch.js` creates and destroys.
+  goes into `<id>.patch.diff` (under `.github/.pipeline-context/fixer/` or `.../dependency-upgrader/`,
+  matching whichever skill you used) and is only ever applied inside the throwaway worktree that
+  `verify-patch.js`/`apply-version-bump.js` creates and destroys.
+- DO NOT run a `CWE-1104` plan through `04b-fixer`, or any other-CWE plan through
+  `04c-dependency-upgrader` — both scripts refuse this themselves, but do not try to work around it.
 - DO NOT create, edit, rename or delete anything in `docs/agent_output/00-issues/`, `docs/agent_output/02-root-cause/`,
   `docs/agent_output/03-blast-radius/`, or (outside the render scripts) `docs/agent_output/04-remediation/`.
 - DO NOT widen a Stage 2 change beyond the plan's `affected_files` and `planned_change` without
@@ -119,7 +138,7 @@ when the user names it.
 - DO NOT leave a kept worktree (`--keep`) behind after a normal run.
 - DO NOT merge two issues into one plan or diff, and DO NOT rename any output file.
 - DO NOT print full context bundles, plans, diffs, or rationale into chat — link to the files.
-- No `npm install` is needed for either skill — both have zero dependencies.
+- No `npm install` is needed for any of the three skills — all have zero dependencies.
 
 ## Output Format
 

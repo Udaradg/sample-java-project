@@ -29,3 +29,4 @@ JDK/Lombok toolchain mismatch — cross-check before blaming the patch.
 | ISSUE-001 | Unbounded repository findAll() reads whole collections into memory across multiple services | Failed | Failed | [qa_ISSUE-001.md](./qa_ISSUE-001.md) | [build_ISSUE-001.md](./build_ISSUE-001.md) |
 | ISSUE-002 | Employee PII and payroll data are exposed to unauthenticated callers and written to application logs | Failed | Failed | [qa_ISSUE-002.md](./qa_ISSUE-002.md) | [build_ISSUE-002.md](./build_ISSUE-002.md) |
 | ISSUE-003 | MongoDB (NoSQL) injection in the employee search endpoint via string-concatenated BasicQuery | Failed | Failed | [qa_ISSUE-003.md](./qa_ISSUE-003.md) | [build_ISSUE-003.md](./build_ISSUE-003.md) |
+| ISSUE-004 | Outdated Apache POI (poi-ooxml 5.0.0) dependency exposes the employee Excel-upload endpoint to a known OOXML parsing vulnerability (CVE-2025-31672) | Failed | Failed | [qa_ISSUE-004.md](./qa_ISSUE-004.md) | [build_ISSUE-004.md](./build_ISSUE-004.md) |
