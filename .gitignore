@@ -1,77 +1,44 @@
-HELP.md
+# Maven
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.backup
+release.properties
+dependency-reduced-pom.xml
+.flattened-pom.xml
+.m2/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDE
+.idea/
 *.iml
+*.iws
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
 .vscode/
-
-### Mac OS ###
+*.swp
+*.swo
+*~
 .DS_Store
 
-### Windows ###
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-### Logs ###
-*.log
-logs/
-
-### Environment / secrets ###
-.env
-*.pem
-application-local.properties
-application-local.yml
-
-### Maven wrapper (keep jar, ignore local repo cache if vendored) ###
-.mvn/wrapper/maven-wrapper.properties.bak
-
-### Build/Runtime artifacts ###
-*.class
-*.war
-*.ear
+# Build
 *.jar
-!**/*wrapper*.jar
-hs_err_pid*
-replay_pid*
+*.war
+*.zip
+*.tar.gz
+*.rar
 
-### Agentic harness (.github/agents + .github/skills) ###
-node_modules/
-# Everything under .github/.pipeline-context/ is a regeneratable build output (scan results,
-# blast radius, rca, verify, graph-context) EXCEPT descriptions.json — that file is
-# authored interpretive content (agent-written or paid-API-generated), not cheap to
-# reproduce, so it is tracked even though the rest of .github/.pipeline-context/ is not.
-/.github/.pipeline-context/*
-!/.github/.pipeline-context/context/
-/.github/.pipeline-context/context/*
-!/.github/.pipeline-context/context/descriptions.json
+# Gradle
+.gradle/
+build/
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sql
+*.sqlite
+/data/

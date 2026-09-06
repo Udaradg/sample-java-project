@@ -45,6 +45,7 @@ for (const name of [
 
 forbidText('.github/agents/01_architect.agent.md', ' web,');
 requireText('.github/agents/01_architect.agent.md', 'npm run all');
+requireText('.github/agents/04_fix-generator.agent.md', '.github/skills/04d-version-migration/');
 requireText('.github/agents/06_additional-test-execution.agent.md', '`Compiled` or `Compile Failed`');
 requireText('.github/agents/07_audit-and-pr.agent.md', 'the rendered verdict\'s Decision is exactly `Cleared`');
 requireText('.github/skills/06a-qa-runner/scripts/lib/qa.js', "const STEP2_ELIGIBLE_STATUSES = ['Compiled', 'Compile Failed'];");

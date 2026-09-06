@@ -1,7 +1,7 @@
 ---
 name: 04_fix-generator
-description: 'Turns a diagnosed vulnerability into a verified patch in two gated stages. Stage 1: drafts or refreshes a CWE-aligned remediation plan for every root cause report in docs/agent_output/02-root-cause/ as docs/agent_output/04-remediation/fix_plan_<issue_id>.md (Status: Proposed, never a diff). Stage 2: for plans a human has since marked Approved only, drafts the smallest diff implementing that plan, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes docs/agent_output/04-remediation/fix_<issue_id>.md plus a standalone fix_<issue_id>.diff. Refuses to draft code for any plan that is not Approved. Use when asked to propose a fix, plan a remediation, choose a CWE-aligned fix approach, implement an approved fix, or generate a verified diff for a diagnosed vulnerability.'
-argument-hint: 'Nothing (processes every root cause report and every Approved plan), or a specific issue id such as ISSUE-001'
+description: 'Turns a diagnosed vulnerability into a verified patch in two gated stages. Stage 1: drafts or refreshes a CWE-aligned remediation plan for every root cause report in docs/agent_output/02-root-cause/ as docs/agent_output/04-remediation/fix_plan_<issue_id>.md (Status: Proposed, never a diff). Stage 2: for plans a human has since marked Approved only, drafts the smallest diff implementing that plan, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes docs/agent_output/04-remediation/fix_<issue_id>.md plus a standalone fix_<issue_id>.diff. Refuses to draft code for any plan that is not Approved. Also runs a third, ungated Migration mode for framework-generation and language-level upgrades (Spring Boot 3 to 4, Java 17 to 21) through the 04d-version-migration skill: it records the pre-migration build and runtime behaviour, upgrades the declared versions per a reference pack, iterates build rounds on the target JDK fixing what each failure points at, re-probes the running application, and writes docs/agent_output/04-remediation/migration_<slug>.md plus a cumulative patch — all inside a sandbox copy of the project. Use when asked to propose a fix, plan a remediation, choose a CWE-aligned fix approach, implement an approved fix, generate a verified diff for a diagnosed vulnerability, or to upgrade/migrate a framework or Java version and report on it.'
+argument-hint: 'Nothing (processes every root cause report and every Approved plan), a specific issue id such as ISSUE-001, or a migration such as "Spring Boot 3 to 4"'
 tools: [execute, read, agent, edit, search, todo]
 agents: []
 ---
@@ -24,6 +24,17 @@ These two stages stay procedurally separate even though one agent now runs both:
 re-checks a plan's Status immediately before drafting a diff, and refuses — plainly, without
 negotiating — any plan that is not exactly `Approved`.
 
+Alongside those two stages sits a third, independent mode:
+
+- **Migration.** A request to move the whole project to a newer framework generation or language
+  level — "upgrade Spring Boot 3 to 4", "migrate to Java 21". Nothing is broken to begin with, so
+  there is no root cause report, no CWE and no fix plan; the plan/approve gate has nothing to gate
+  and does not apply. What takes its place is evidence: a recorded pre-migration build and runtime
+  probe, a recorded failure and the change it forced for every build round, and a before/after
+  behaviour comparison. Run this through `.github/skills/04d-version-migration/`. **The real
+  working tree stays untouched here as well** — a migration runs in a sandbox copy of the project,
+  and its result reaches the project only if a human explicitly asks for it to be applied.
+
 ## Skills
 
 - **Fix Strategist** (`.github/skills/04a-fix-strategist/`) — Stage 1. Three scripts
@@ -36,8 +47,15 @@ negotiating — any plan that is not exactly `Approved`.
   `apply-version-bump.js`, `render-fix-report.js`), but drafts a version-bump diff instead of a logic
   diff, and verifies both the *declared* version and the `mvn dependency:tree`-*resolved* version meet
   the plan's target — not just that the module compiles.
+- **Version Migration** (`.github/skills/04d-version-migration/`) — the migration mode, for a
+  framework-generation or language-level upgrade. Six scripts (`detect-baseline.js`,
+  `prepare-workspace.js`, `run-migration-build.js`, `probe-runtime.js`,
+  `render-migration-report.js`, `apply-migration.js`) plus the reference packs in `references/`,
+  which hold every framework-specific rule. Writes `migration_<slug>.md` + `.diff` into the same
+  `docs/agent_output/04-remediation/` folder the fix reports use — a migration is not a fix plan,
+  but it is still remediation output, and the `migration_` prefix keeps the two apart.
 
-Read each `SKILL.md` before running its stage. All three are zero-dependency — nothing to `npm install`.
+Read each `SKILL.md` before running its stage. All four are zero-dependency — nothing to `npm install`.
 
 ## Inputs
 
@@ -63,6 +81,12 @@ With no argument: Stage 1 processes every root cause report and produces/refresh
 `docs/agent_output/04-remediation/fix_plan_<id>.md` for each; Stage 2 then processes every plan whose Status is
 `Approved` and produces a `docs/agent_output/04-remediation/fix_<id>.md` + `.diff` for each. Narrow to one issue only
 when the user names it.
+
+**A version-migration request runs neither stage.** "Upgrade Spring Boot 3 to 4", "move us to
+Java 21", "migrate the framework version" is Migration mode: no plan is written, no plan Status is
+read, and no `fix_*.md` is created or touched. Its output is
+`docs/agent_output/04-remediation/migration_<slug>.md` + `.diff` — the same folder, a different file
+prefix. Route it straight to `04d-version-migration` and follow that `SKILL.md`.
 
 ## Approach
 
@@ -113,6 +137,31 @@ Every other CWE uses `04b-fixer/` as below.
    verification did not confirm.
 6. Re-run `list-fix-workload.js` and confirm every Approved plan shows "report written".
 
+### Migration mode (a version upgrade, not a fix)
+
+Read `.github/skills/04d-version-migration/SKILL.md` first, then the reference pack it matches, end
+to end. The order below is the whole point of the mode and is not negotiable — each step exists to
+make the next step's evidence meaningful.
+
+1. `node scripts/detect-baseline.js --project <path> --to-java <target>` from
+   `.github/skills/04d-version-migration/`. It names the reference pack that covers the jump. **No
+   matching pack is a stop condition** — say so and offer to write one; do not migrate a framework
+   generation from memory.
+2. Read the application first — routes, security, persistence, configuration, tests — and write the
+   probe file that captures how you will know it still works. Then `prepare-workspace.js`.
+3. **Round 0 before anything changes**: `run-migration-build.js --baseline` and
+   `probe-runtime.js --phase baseline`, both on the JDK the project uses today. If round 0 is not
+   green, stop and report that — the project must build before it can be migrated.
+4. Change only the declared versions and coordinates the pack's build-file section calls for. Then
+   loop: build on the target JDK, read the errors the script grouped, look their *shape* up in the
+   pack, change the source they point at, build again — with a `--label` each round saying what
+   changed. Every round is kept, failures included.
+5. When a round comes back green: `probe-runtime.js --phase final` on the target JDK, then write
+   `migration.json` per the skill's schema — one `round_notes` entry per round that ran — and
+   `render-migration-report.js`.
+6. `apply-migration.js --to-project` only if the user asked for the migration to be applied. The
+   report and the patch are the deliverable otherwise.
+
 ## Constraints
 
 - DO NOT write a diff, patch, or code presented as ready to apply in Stage 1. An `illustrative_sketch`
@@ -131,6 +180,13 @@ Every other CWE uses `04b-fixer/` as below.
   `04c-dependency-upgrader` — both scripts refuse this themselves, but do not try to work around it.
 - DO NOT create, edit, rename or delete anything in `docs/agent_output/00-issues/`, `docs/agent_output/02-root-cause/`,
   `docs/agent_output/03-blast-radius/`, or (outside the render scripts) `docs/agent_output/04-remediation/`.
+- DO NOT run a version migration through `04b-fixer` or `04c-dependency-upgrader`, and DO NOT write
+  a fix plan for one — a framework-generation or language-level upgrade has no root cause report and
+  no CWE to plan against. It belongs to `04d-version-migration`, which writes `migration_<slug>.md`
+  into `docs/agent_output/04-remediation/` alongside the fix reports, never a `fix_*.md`.
+- DO NOT, in Migration mode, skip round 0, edit source before a build round has failed on it, bundle
+  unrelated fixes or refactors into the migration, or call it successful without both a green final
+  round and a completed before/after probe comparison.
 - DO NOT widen a Stage 2 change beyond the plan's `affected_files` and `planned_change` without
   recording it as a deviation with a reason — "while I was in there" changes are not smallest diffs.
 - DO NOT claim a verification passed that did not, and DO NOT overstate certainty in Stage 1 — set
@@ -142,7 +198,14 @@ Every other CWE uses `04b-fixer/` as below.
 
 ## Output Format
 
-Two short sections, never the plans or diffs themselves:
+**Migration mode** reports on its own, and does not print the two stage sections below: a one-line
+result (`Green on JDK <target> after N round(s)`, or the honest failure), then the versions moved,
+the source changes the upgrade forced, the behaviour verdict from the probe comparison, anything
+recorded as *not* caused by the migration, and a link to
+`docs/agent_output/04-remediation/migration_<slug>.md`. Close by saying whether the patch has been
+applied to the project (by default it has not) and what a human still needs to do.
+
+For the two gated stages, two short sections, never the plans or diffs themselves:
 
 **Stage 1 — Strategize**: a one-line coverage statement (`Proposed N of N plans`), then per issue:
 id/title, CWE and catalog pattern cited, one-sentence approach, current Status, and a link to
