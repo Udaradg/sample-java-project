@@ -5,6 +5,7 @@ import com.example.migrationdemo.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -24,10 +25,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * This test demonstrates database compatibility and will be important
  * for validating database and Hibernate queries during Spring Boot 4 migration.
  *
- * Note: This test will be skipped if Docker is not available.
+ * Note: The class is skipped when no Docker environment is available
+ * (disabledWithoutDocker), and @AutoConfigureTestDatabase(replace = NONE) keeps
+ * @DataJpaTest from swapping the container in for an embedded database.
  */
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class EmployeeRepositoryIntegrationTest {
 
     @Container

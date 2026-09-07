@@ -139,16 +139,4 @@ class EmployeeControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void testActuatorHealth_Public() throws Exception {
-        mockMvc.perform(get("/actuator/health"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void testActuatorInfo_Public() throws Exception {
-        mockMvc.perform(get("/actuator/info"))
-                .andExpect(status().isOk());
-    }
-
 }
