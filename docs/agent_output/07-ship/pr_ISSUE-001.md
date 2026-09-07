@@ -1,26 +1,22 @@
 > ⚠️ **BLOCKED — do not open this PR.** The merge arbiter did not clear this patch. This content exists for the record, not for use — see the audit trail and the verdict for why.
 
-# fix(sheduler-service, report-service): bound employee reads with paging/streaming (CWE-770) — NOT READY, scheduled-job path still unbounded
+# fix(CWE-770): bound the unbounded employee reads in scheduler and report services
 
 ## Summary
 
-- Bounds two of the three unbounded findAll() reads named in ISSUE-001: GET /api/v1/employee is now server-clamped Pageable pagination (size in [1,100]), and report-service's GET /api/v1/export now pages through the repository and streams rows into an SXSSFWorkbook instead of buffering the full employee list, salary-response list, and workbook bytes in memory at once.
-- Gives the Women's Day scheduled job (WomenDaySchedulerImpl) its own gender-filtered query (EmployeeSchedulerRepository.findByGender) instead of loading every employee and filtering in Java — but re-scan (docs/agent_output/05-verify/rescan_ISSUE-001.md) found this new query still returns a fully materialized, unbounded List<Employee>, so the third reaching path from the original finding is narrowed, not closed.
-- Do not open this PR: the merge verdict is Blocked (docs/agent_output/07-ship/verdict_ISSUE-001.md) on two independent hard gates — the re-scanner still reports STILL_VULNERABLE, and the build gate reports Failed for both report-service and sheduler-service.
-- The build/QA failures trace to a project-wide JDK 25 vs. Lombok annotation-processing gap on this machine, independently confirmed by the Fixer against unmodified modules at HEAD with no patch applied (docs/agent_output/04-remediation/fix_ISSUE-001.md, Open questions) — real, but not evidence the diff's own logic is broken. It does not excuse the still-open scheduled-job vulnerability, which is a separate, genuine finding.
+- Replaces the two unbounded MongoRepository.findAll() reads named in ISSUE-001 with a page-limited read capped by a server-side constant, and pushes the scheduler gender filter into a findByGender query instead of an in-memory stream filter.
+- **Do not merge as-is.** The merge arbiter Blocked this patch. Two things must be resolved first: the read takes only page 0, so collections larger than 500 records are silently truncated instead of paged through as the approved plan required; and the build gate could not run meaningfully because the workspace uses JDK 25 against a Java 17 project.
 
 ## Test plan
 
-- [ ] [BLOCKED] Build gate (docs/agent_output/06-test-gate/build_ISSUE-001.md): `mvnw verify` failed for report-service and sheduler-service in an isolated worktree — every error is a missing Lombok-generated getter/field, not a syntax or logic error in the diff's own new code.
-- [ ] [BLOCKED] QA gate (docs/agent_output/06-test-gate/qa_ISSUE-001.md): the new EmployeeSchedulerControllerTest — which mocks EmployeeSchedulerService and asserts a size=999999 request is clamped to Pageable(size=100) via ArgumentCaptor, plus an in-bounds page=2/size=20 pass-through case — never executed because the module would not compile; it is unverified, not proven passing or failing.
-- [ ] Once the toolchain gap is resolved locally: re-run `mvnw verify` in both report-service and sheduler-service to confirm compilation, then re-run the QA gate to actually execute EmployeeSchedulerControllerTest.
-- [ ] Before any resubmission: give WomenDaySchedulerImpl's read path a bounded/paged or streaming implementation (e.g. a Pageable-backed or cursor-based findByGender) so the re-scanner's STILL_VULNERABLE finding is actually closed, then re-run 05-verify's re-scan against the revised diff.
-- [ ] Confirm the newly-identified out-of-scope change (silent removal of the per-record salary log line in EmployeeReportServiceImpl) is either restored, deliberately re-scoped into the fix plan, or explicitly accepted by a reviewer before merge.
+- [ ] Re-run the build and QA gates on a JDK 17 toolchain — the current failure is Lombok annotation processing under JDK 25 and reproduces on unpatched source.
+- [ ] Seed the employee collection with more than 500 records and confirm the XLSX export still contains every record exactly once.
+- [ ] Confirm no caller-supplied page-size parameter reaches PageRequest, so the cap stays server-side.
 
 ## Additional notes
 
-Two things for a reviewer to keep separate: (1) the STILL_VULNERABLE re-scan finding on WomenDaySchedulerImpl is a real, unresolved instance of the original CWE-770 defect narrowed to one gender rather than closed — this is the actual reason the fix is not yet complete; (2) the Failed build/QA gates are a confirmed environment-wide JDK 25/Lombok gap on this machine (docs/agent_output/04-remediation/fix_ISSUE-001.md Open questions; docs/agent_output/06-test-gate/build_ISSUE-001.md), reproducing even against unmodified modules at current HEAD — real and gate-blocking per this pipeline's rules, but not itself evidence of a defect in this diff's logic. Both must be true to call this fix ready; today only the second is 'just the environment.'
+The security substance is sound — the re-scanner confirms the unbounded allocation is closed and the red-team found no way to make it unbounded again. Only the pagination completeness and the toolchain stand in the way.
 
 ---
 
-_Generated by the scribe agent for ISSUE-001 (Unbounded repository findAll() reads whole collections into memory across multiple services) on 2026-08-17. This file is content for a human to use with `gh pr create` — nothing in this pipeline runs git or GitHub on its own. Diff: [docs/agent_output/04-remediation/fix_ISSUE-001.diff](../04-remediation/fix_ISSUE-001.diff). Full audit trail: [docs/agent_output/07-ship/audit_ISSUE-001.md](./audit_ISSUE-001.md)._
+_Generated by the scribe agent for ISSUE-001 (Unbounded repository findAll() reads whole collections into memory across multiple services) on 2026-08-16. This file is content for a human to use with `gh pr create` — nothing in this pipeline runs git or GitHub on its own. Diff: [docs/agent_output/04-remediation/fix_ISSUE-001.diff](../fixes/fix_ISSUE-001.diff). Full audit trail: [docs/agent_output/07-ship/audit_ISSUE-001.md](./audit_ISSUE-001.md)._

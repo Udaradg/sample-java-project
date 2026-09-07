@@ -6,7 +6,7 @@
 to a scored, auditable ship decision, with optional cleared-only PR publication on explicit request.**
 
 ![Agents](https://img.shields.io/badge/Agents-7-1F3864?style=for-the-badge)
-![Skills](https://img.shields.io/badge/Skills-14-2E5FD9?style=for-the-badge)
+![Skills](https://img.shields.io/badge/Skills-16-2E5FD9?style=for-the-badge)
 ![Pipeline stages](https://img.shields.io/badge/Pipeline_stages-9-6E86E8?style=for-the-badge)
 ![Zero-dependency skills](https://img.shields.io/badge/Zero--dep_skills-8_of_14-3DA35B?style=for-the-badge)
 ![PR publication](https://img.shields.io/badge/PR_publish-explicit%20cleared--only-A0399B?style=for-the-badge)
@@ -140,7 +140,7 @@ the real working tree" rule, "zero agent-authored judgment" for the build gate, 
 
 ---
 
-## The 14 skills
+## The 16 skills
 
 An **agent** is the persona and the judgement. A **skill** is the toolbox it drives: deterministic
 Node scripts, JSON schemas, and reference catalogs. Skills live in [`skills/`](./skills/) and are
@@ -178,6 +178,8 @@ flowchart LR
 | `03-blast-radius-analyst` | 03 | Reach measurement, narrative schema, diagram-led report |
 | `04a-fix-strategist` | 04 (Stage 1) | CWE pattern catalog + fix-plan rendering |
 | `04b-fixer` | 04 (Stage 2) | Patch verification in an isolated worktree + fix-report rendering |
+| `04c-dependency-upgrader` | 04 (Stage 2, `CWE-1104`) | Version-bump diff verified by declared **and** `dependency:tree`-resolved version |
+| `04d-version-migration` | 04 (Migration mode) | Framework/language upgrades: baseline + runtime probe, build rounds against a reference pack, migration report |
 | `05-verify` | 05 | One agent, three independent checks (re-scan, red-team, behavior guard) against identical inputs |
 | `06a-qa-runner` | 06 (Gate 1) | Regression-test scaffolding + deterministic test gate |
 | `06b-build-gatekeeper` | 06 (Gate 2) | `mvn verify` + dependency-tree diff gate |

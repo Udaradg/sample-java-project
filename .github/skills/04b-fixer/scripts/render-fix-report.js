@@ -291,7 +291,9 @@ pair per diagnosed defect in [\`docs/agent_output/02-root-cause/\`](../02-root-c
   Never contains a diff. Starts at **Status: Proposed**.
 - **\`fix_<id>.md\` + \`fix_<id>.diff\`** — Stage 2's compiled patch, drafted only once a human edits
   the plan's Status to **Approved**. The diff is a standalone, directly \`git apply\`-able patch —
-  Stage 2 never edits the real working tree itself.
+  Stage 2 never edits the real working tree itself. Written by \`04b-fixer\` for a code-logic fix, or
+  by \`04c-dependency-upgrader\` for a \`CWE-1104\` dependency-version fix — same output location and
+  Status vocabulary either way.
 
 ## The approval checkpoint
 
@@ -301,23 +303,27 @@ deliberate pause point between choosing a remediation strategy and writing code.
 
 ## A Compiled patch is not a merge signal
 
-It only means the module builds. Whether the patch actually closes the vulnerability, survives
-adversarial re-testing, passes a real test/build gate, and is safe to ship is decided by the rest of
-the pipeline — see [\`docs/agent_output/07-ship/\`](../07-ship/) for the final verdict.
+It only means the module builds (and, for a dependency upgrade, that the resolved version also meets
+the target). Whether the patch actually closes the vulnerability, survives adversarial re-testing,
+passes a real test/build gate, and is safe to ship is decided by the rest of the pipeline — see
+[\`docs/agent_output/07-ship/\`](../07-ship/) for the final verdict.
 
 ## Reading Fix Status
 
 - **Compiled** — the patch applied cleanly and the affected module compiled (and, if a target test
-  was named, passed it) inside an isolated \`git worktree\`.
-- **Compile Failed** — the patch was drafted but did not apply cleanly, or the build/test failed.
-  The report and diff are still published for review; do not apply a patch marked this way.
-- **Refused** — Stage 2 would not act because the plan was not \`Status: Approved\` at the time.
+  was named, passed it) inside an isolated \`git worktree\`. For a dependency upgrade, this also means
+  the resolved \`dependency:tree\` version met the plan's target.
+- **Compile Failed** — the patch was drafted but did not apply cleanly, or the build/version check
+  failed. The report and diff are still published for review; do not apply a patch marked this way.
+- **Refused** — Stage 2 would not act because the plan was not \`Status: Approved\` at the time (or,
+  for \`04c-dependency-upgrader\`, because the plan's CWE was not \`CWE-1104\`).
 
 ## Pipeline state
 
-Run \`node .github/skills/04a-fix-strategist/scripts/list-remediation-workload.js\` or
-\`node .github/skills/04b-fixer/scripts/list-fix-workload.js\` for the live pipeline state — this
-table is for humans; the pipeline itself discovers plans and fixes by scanning
+Run \`node .github/skills/04a-fix-strategist/scripts/list-remediation-workload.js\`,
+\`node .github/skills/04b-fixer/scripts/list-fix-workload.js\`, or
+\`node .github/skills/04c-dependency-upgrader/scripts/list-fix-workload.js\` for the live pipeline
+state — this table is for humans; the pipeline itself discovers plans and fixes by scanning
 \`docs/agent_output/04-remediation/fix_plan_*.md\` and \`fix_*.md\`.
 
 `;

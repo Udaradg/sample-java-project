@@ -124,6 +124,23 @@
       "https://cwe.mitre.org/data/definitions/798.html"
     ]
   },
+  "CWE-1104": {
+    "title": "Use of Unmaintained Third Party Components",
+    "owasp": "A06:2021 - Vulnerable and Outdated Components",
+    "applicable_when": "A pom.xml (or other manifest) pins a third-party library to a version with a publicly known vulnerability advisory, whether that pin is explicit or resolved via the parent's dependency management, and no newer, non-vulnerable version is actually in use.",
+    "canonical_approach": "Identify the minimum version that remediates the specific advisory (not blindly 'latest', which can introduce unrelated breaking changes outside this fix's scope) by reading the advisory's own affected/fixed version range. Pin that version explicitly if it is not already. Rebuild and confirm via `mvn dependency:tree` that the *resolved* version in the dependency tree actually reflects the bump — a `<version>` edit can be textually correct and still not take effect if another dependency management entry overrides it.",
+    "anti_patterns": [
+      "Bumping to whatever 'latest' resolves to without checking the advisory's actual fixed-version boundary, or without checking it doesn't pull in unrelated breaking changes",
+      "Editing a version only in a `<properties>` variable when a separate explicit `<version>` tag elsewhere in the same or a child module overrides it, so the resolved version never actually changes",
+      "Suppressing or ignoring the finding (a dependency-check allowlist/ignore rule) instead of upgrading the library",
+      "Verifying only that the pom.xml text changed, without confirming the resolved dependency tree reflects the new version"
+    ],
+    "references": [
+      "https://cwe.mitre.org/data/definitions/1104.html",
+      "OWASP Top 10 A06:2021 - Vulnerable and Outdated Components",
+      "https://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html"
+    ]
+  },
   "CWE-79": {
     "title": "Improper Neutralization of Input During Web Page Generation (Cross-site Scripting)",
     "owasp": "A03:2021 - Injection",

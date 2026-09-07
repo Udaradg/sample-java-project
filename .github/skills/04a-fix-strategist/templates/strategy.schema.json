@@ -77,6 +77,19 @@
       "type": "array",
       "items": { "type": "string" },
       "description": "Anything the context bundle could not settle, including catalog gaps. Use this instead of guessing."
+    },
+    "dependency_upgrade": {
+      "type": "object",
+      "description": "Required only when cwe is CWE-1104 (or another dependency-version CWE added later). Turns 'bump the version' into machine-checkable facts that 04c-dependency-upgrader's verification script checks deterministically, instead of relying on prose alone.",
+      "required": ["maven_coordinate", "current_version", "minimum_fixed_version"],
+      "additionalProperties": false,
+      "properties": {
+        "maven_coordinate": { "type": "string", "description": "groupId:artifactId, e.g. org.apache.poi:poi-ooxml." },
+        "current_version": { "type": "string", "description": "The vulnerable version currently pinned/resolved." },
+        "minimum_fixed_version": { "type": "string", "description": "The lowest version that remediates the advisory, per its own affected/fixed range — not necessarily 'latest'." },
+        "cve": { "type": "string", "description": "The CVE id, if one exists, e.g. CVE-2025-31672." },
+        "advisory_url": { "type": "string", "description": "Link to the advisory used to determine minimum_fixed_version." }
+      }
     }
   }
 }

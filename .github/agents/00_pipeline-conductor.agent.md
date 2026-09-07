@@ -1,7 +1,7 @@
 ---
 name: 00_pipeline-conductor
 description: 'Orchestrates the autonomous vulnerability-analysis pipeline end to end: refreshes architecture, diagnoses registered issues, measures blast radius, writes proposed remediation plans, and after human approval coordinates patch verification, testing, build gating, and ship documentation. Use when asked to run the full agent chain, process the issue register automatically, resume an approved remediation pipeline, or produce an end-to-end issue-to-verdict trail.'
-argument-hint: '"analyze" to run through proposed plans, "resume" to process Approved plans through verification, or a specific issue id'
+argument-hint: '"analyze" to run through proposed plans, "resume" to process Approved plans through verification, or a specific issue id (a version migration is not a pipeline mode — hand it straight to 04_fix-generator)'
 tools: [read, search, agent, todo]
 agents: [01_architect, 02_root-cause-analyst, 03_blast-radius-analyst, 04_fix-generator, 05_existing-app-test-agent, 06_additional-test-execution, 07_audit-and-pr]
 ---
@@ -23,7 +23,9 @@ For `analyze`, `full`, or no argument, run these stages in order:
 2. `02_root-cause-analyst` to analyze every issue in the read-only issue register.
 3. `03_blast-radius-analyst` to create impact reports for every root-cause report.
 4. `04_fix-generator` to write or refresh remediation plans and, only for plans already marked
-   `Approved`, generate verified patch reports.
+   `Approved`, generate verified patch reports. That agent routes each Approved plan to the right
+   Stage 2 skill by CWE (`04c-dependency-upgrader` for `CWE-1104`, `04b-fixer` otherwise); the
+   routing is its decision, not yours.
 
 Stop after stage 4 when no plans are `Approved`. Report the plans awaiting a human decision. Do not
 invoke stages 5–7 for a plan without a drafted fix report.
@@ -45,6 +47,15 @@ reported blocker, never a reason to manufacture output or skip a gate.
 When a specific issue id is supplied, pass that id to every delegated agent. Do not infer an issue
 id from filenames or report contents.
 
+### Not a pipeline mode: version migration
+
+A request to upgrade a framework generation or language level — "upgrade Spring Boot 3 to 4",
+"migrate to Java 21" — is not `analyze`, `resume`, or a single issue. There is no root cause report,
+no CWE, no fix plan and therefore nothing for the approval gate to gate. Do not run the chain for
+it: delegate to `04_fix-generator` alone, which handles it in its own Migration mode through
+`04d-version-migration`, and report that agent's result. Migration output
+(`04-remediation/migration_<slug>.*`) is never input to stages 5, 6, or 7.
+
 ## Non-Negotiable Gates
 
 - The issue register is human-authored, read-only input. If it has no issue rows, stop after the
@@ -53,6 +64,8 @@ id from filenames or report contents.
   as `Approved`.
 - Do not dispatch the Fixer portion of stage 4, test stages, build stage, merge arbitration, or PR
   publication for an unapproved plan.
+- Never treat a migration run as pipeline workload. It carries no plan `Status`, produces no
+  `Compiled`/`Refused` result, and must not be fed into stages 5-7 or counted as a remediated issue.
 - `07_audit-and-pr` may create a PR only when the user explicitly asks it to and its existing
   Cleared-verdict rule is satisfied.
 - Never report a later stage as complete merely because it was invoked. Relay each specialist's
