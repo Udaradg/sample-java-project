@@ -36,6 +36,12 @@ stage decides more than it should, and exactly one stage is allowed to say a pat
 >    worktree` copies that are destroyed immediately. Only an explicit, cleared-only PR-publish request
 >    creates and pushes a branch after revalidating the rendered diff in an isolated worktree.
 
+## Framework upgrades
+
+The vulnerability pipeline is complemented by the separate [`08_spring-framework-upgrader`](./agents/08_spring-framework-upgrader.agent.md) agent. It handles Spring Boot and Spring Cloud migrations one Maven service at a time using a validated compatibility target and a pinned OpenRewrite recipe.
+
+Read the dedicated [Spring Framework Upgrader guide](./agents/08_spring-framework-upgrader.README.md) for the manifest, commands, isolated-worktree behavior, verification gates, and known limitations. This workflow is not a CWE remediation stage and should not be forced through the vulnerability pipeline.
+
 ---
 
 ## The pipeline at a glance

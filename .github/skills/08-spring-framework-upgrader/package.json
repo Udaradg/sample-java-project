@@ -1,0 +1,14 @@
+{
+  "name": "08-spring-framework-upgrader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inventory and safely execute coordinated Spring Boot upgrades across the Maven services.",
+  "type": "commonjs",
+  "scripts": {
+    "inventory": "node scripts/inventory.js",
+    "validate": "node scripts/validate-target.js",
+    "rewrite": "node scripts/run-openrewrite.js",
+    "verify": "node scripts/verify-services.js"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,22 @@
+{
+  "name": "sample-java-project-spring-upgrade",
+  "current": {
+    "springBoot": "2.7.12",
+    "springCloud": "2021.0.7",
+    "java": "17"
+  },
+  "target": {
+    "springBoot": "3.5.12",
+    "springCloud": "2025.0.10",
+    "java": "17"
+  },
+  "openRewrite": {
+    "pluginVersion": "6.46.1",
+    "recipeArtifact": "org.openrewrite.recipe:rewrite-spring",
+    "recipeVersion": "6.37.1",
+    "recipe": "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5"
+  },
+  "services": [
+    "employee-service"    
+  ]
+}
