@@ -49,12 +49,14 @@ state — this table is for humans; the pipeline itself discovers plans and fixe
 
 Framework-generation and language-level upgrades, written by the
 [`04d-version-migration`](../../.github/skills/04d-version-migration/) skill. A migration runs in a
-sandbox copy of the project under `.github/.pipeline-context/version-migration/`; the project
-directory is never edited by the skill, and applying the patch is a separate, explicit step.
+sandbox copy of the project under `.github/.pipeline-context/version-migration/`, and finishes
+by writing the result into the project and building it there. The **Project** column is that
+last step: a migration that has not reached the project is not a finished migration.
 
-| Migration | Result | Rounds | Files changed | Runtime behaviour | Report | Patch |
-|---|---|---|---|---|---|---|
-| Spring Boot 3.5.0 to 4.1.1 on Java 21 | 🟢 **Passed** on the final build | 8 recorded — 1 pre-migration baseline, 5 that failed and were read for what to change next, 2 green | 6 — `Dockerfile`, `pom.xml`, `src/main/java/com/example/migrationdemo/config/JacksonConfig.java`, `src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java`, `src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java`, `src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java` | 🟡 same status on all 9, body differs on 5 | [report](./migration_spring-boot-3-to-4.md) | [patch](./migration_spring-boot-3-to-4.diff) |
+| Migration | Result | Rounds | Files changed | Runtime behaviour | Project | Report | Patch |
+|---|---|---|---|---|---|---|---|
+| Spring Boot 3.5.0 to 4.1.1 on Java 21 | 🟢 **Passed** on the final build | 6 recorded — 1 pre-migration baseline, 3 that failed and were read for what to change next, 3 green | 7 — `Dockerfile`, `pom.xml`, `src/main/java/com/example/migrationdemo/config/JacksonConfig.java`, `src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java`, `src/test/java/com/example/migrationdemo/actuator/ActuatorEndpointsTest.java`, `src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java`, `src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java` | 🟡 same status on all 10, body differs on 5 | 🟢 Applied to the project and green there — `C:\Tools\apache-maven-3.9.16\bin\mvn.cmd -B clean package` on JDK 21, passed | [report](./migration_sample-java-project.md) | [patch](./migration_sample-java-project.diff) |
+| Spring Boot 3.5.0 to 4.1.1 on Java 21 | 🟢 **Passed** on the final build | 8 recorded — 1 pre-migration baseline, 5 that failed and were read for what to change next, 2 green | 6 — `Dockerfile`, `pom.xml`, `src/main/java/com/example/migrationdemo/config/JacksonConfig.java`, `src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java`, `src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java`, `src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java` | 🟡 same status on all 9, body differs on 5 | _not applied_ | [report](./migration_spring-boot-3-to-4.md) | [patch](./migration_spring-boot-3-to-4.diff) |
 
 <!-- END AUTO-GENERATED MIGRATIONS -->
 

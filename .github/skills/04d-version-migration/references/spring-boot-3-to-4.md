@@ -467,18 +467,26 @@ corrected.
 ## 12. What the rounds usually look like
 
 This is the sequence an actual run of this pack took on a small Boot 3.5.0 service (17 main + 5 test
-sources), recorded round by round:
+sources), recorded round by round.
+
+**Read round 0 as a cautionary tale, not a template.** That run began from a red baseline — two
+pre-existing test failures and a Testcontainers error from a stopped Docker daemon — and every later
+row had to carry the question "was this already broken?" alongside "did the migration break it?".
+The skill no longer allows it: `run-migration-build.js --baseline` exits non-zero unless round 0
+passes outright. The same project, made green first (Docker started, the two failing tests repaired
+as their own change), runs 19 tests with no failures at round 0, and rounds 5 and 6 below then read
+as unambiguous regression and repair instead of a count to be compared against a broken reference.
 
 | Round | Goal | Result | What it taught |
 |---|---|---|---|
-| 0 | `package` on JDK 17 | 15 tests, 2 failures + 1 error | The reference. Both failures were pre-existing, and the error was a missing Docker daemon — none of it caused by the migration, all of it needed as the comparison |
+| 0 | `package` on JDK 17 | 15 tests, 2 failures + 1 error | The reference — and, under the gate this skill enforces now, a stop: fix the environment and the pre-existing failures first, then re-record round 0 green |
 | 1 | `test-compile` on JDK 21 | 27 errors in 2 files | Parent, `java.version`, compiler `release`, `web`→`webmvc`, Dockerfile. Boot 4.1.1 resolved *and compiled under JDK 17*, so the language move was a decision, not a compiler demand. All errors were §2 and §3 |
 | 2 | `test-compile` | 12 errors in 2 test files | Main code fixed (§2, §3); the failure moved to the test layer, which only compiles once main does |
 | 3 | `test-compile` | same 12 errors | Adding the two test starters changed nothing — the slice annotations moved *package*, not just artifact (§4.3) |
 | 4 | `test-compile` | green | Imports repointed, `@MockBean`→`@MockitoBean`, `ObjectMapper`→`JsonMapper` |
 | 5 | `package` on JDK 21 | 7 failures (was 2) | A real regression, invisible to the compiler: `@WithMockUser` tests returning 401 (§4.4) |
-| 6 | `package` | back to 2 failures + 1 error | `spring-boot-starter-security-test` added. Identical to round 0 — nothing introduced |
-| 7 | `package -DskipTests` | green | Runnable jar on JDK 21, then the final runtime probe |
+| 6 | `package` | back to 2 failures + 1 error | `spring-boot-starter-security-test` added. Identical to round 0 — nothing introduced. From a green baseline this round is simply green |
+| 7 | `package -DskipTests` | green | A runnable jar, nothing more. `-DskipTests` cannot be the round a migration finishes on: the last green round has to have run the tests, or `apply-migration.js` verifies the project with `verify` instead |
 
 Two lessons worth carrying into any run: the test layer breaks a round *after* main code, and the
 worst breakage of the whole migration (round 5) produced no compiler error at all. A migration
