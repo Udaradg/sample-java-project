@@ -38,10 +38,17 @@ Replace both unbounded MongoRepository.findAll() calls with the catalog's CWE-77
 | [EmployeeSchedulerServiceImpl.java](../../../sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java) | Replace repository.findAll() with a paged read using PageRequest.of(page, MAX_PAGE_SIZE), iterating while more pages remain; keep the method signature and return type unchanged. |
 | [EmployeeReportServiceImpl.java](../../../report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java) | Replace repository.findAll() with the same server-capped paged read so the XLSX export streams page by page instead of materialising the whole collection. |
 
+**Grounding, for a reviewer checking this against the code directly:**
+
+- `EmployeeSchedulerServiceImpl.getAllEmployees()` — `sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java:16-19`. The current method body is a single statement, `return employeeSchedulerRepository.findAll();` (line 18), against `EmployeeSchedulerRepository`, an interface that declares no query methods beyond what `MongoRepository<Employee, String>` supplies. This plan calls for replacing that line with a call to the `Page<Employee>`-returning `findAll(Pageable)` overload, looping on `Page.hasNext()`/`Page.nextPageable()` until pages are exhausted, with the page size bounded by a new server-side constant (not a method parameter).
+- `EmployeeReportServiceImpl.getEmployees()` — `report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java:38-72`. Line 40, `List<Employee> employeesList = employeeReportRepository.findAll();`, feeds the nested `for` loop at lines 53-68 that joins every employee against every department in memory. This plan calls for the same page-bounded `findAll(Pageable)` replacement at line 40, plus indexing the department list once (e.g. into a `Map<String, DepartmentResponse>`) so the per-page join cost does not multiply the nested-loop cost that exists today.
+
 ## 4. Risks to watch
 
-- Both call sites feed downstream loops that assume a full List; paging must preserve total ordering and completeness or the export/scheduler output changes.
-- The scheduled job's runtime will increase slightly because it issues N queries instead of one.
+- Both call sites feed downstream loops that assume a full List; paging must preserve total ordering and completeness or the export/scheduler output changes. Concretely: `EmployeeReportServiceImpl.getEmployees()`'s department join (lines 53-68) and `WomenDaySchedulerImpl.printWomenDayMessage()`'s gender filter (lines 21-23 of the current file) both assume today that the full collection is already sitting in a `List` before any per-employee work starts; if the paged replacement stops short of the last page, the join and the filter both silently operate on a subset, with nothing in the call chain raising an error.
+- The scheduled job's runtime will increase slightly because it issues N queries instead of one, and each round trip adds latency proportional to page count rather than a single bulk read.
+
+**Post-implementation note (added at the verification stage, 2026-09-09):** [behavior_ISSUE-001.md](../../../docs/agent_output/05-verify/behavior_ISSUE-001.md) found that the implemented fix requests only `PageRequest.of(0, MAX_PAGE_SIZE)` — page 0 — and never advances to a second page, which does not match the "iterating while more pages remain" language planned above. Any employee collection larger than `MAX_PAGE_SIZE` (500, per the diff) is silently truncated by the scheduler read this way. This is recorded here as a finding from downstream verification; the plan itself did not anticipate it at authoring time, and this note does not change the plan's Status.
 
 ## 5. How the fix must be verified
 
@@ -50,6 +57,17 @@ Replace both unbounded MongoRepository.findAll() calls with the catalog's CWE-77
 3. Seed a collection larger than one page and confirm the export still contains every record exactly once.
 
 _The Fixer's verification report must address every step above, or explain why a step could not be run (e.g. it needs a live dependency unavailable in the isolated build sandbox)._
+
+## 6. Reviewer checklist
+
+- Confirm the page-size constant (`MAX_PAGE_SIZE` or equivalent) is a private, server-side constant and is not exposed as a request parameter on `GET /api/v1/employee` or the export endpoint — a caller-controllable page size is the first anti-pattern the catalog's `CWE-770` entry names.
+- Confirm the paginated read loop terminates only when a page returns fewer than the page-size elements (or `Page.hasNext()` is false), not after a single page — this is exactly the defect verification found in the drafted patch (page 0 only, see the post-implementation note above).
+- Confirm `WomenDaySchedulerImpl.printWomenDayMessage()` calls a gender-filtered repository method rather than `EmployeeSchedulerService.getAllEmployees()` followed by an in-memory `.filter()`, so the Women's Day job does not depend on the paged "get all" method returning a complete list.
+- Run the scheduled job path manually (or via its test double) against a seeded collection exceeding one page size and confirm every matching record is processed, not only the first page's worth.
+- Confirm `EmployeeReportServiceImpl.getEmployees()`'s department join is no longer evaluated as a nested loop over the full department list once paging is introduced — verify it uses an indexed lookup (e.g. `Map<String, DepartmentResponse>`) built once, not per page.
+- Confirm the XLSX export (`EmployeeReportController.exportToExcel()`) produces exactly one row per employee, in a stable order, with no duplicates and no gaps, when the underlying read spans more than one page.
+- Confirm the patch actually touches `report-service/.../EmployeeReportServiceImpl.java` before treating the report-service call site as fixed — cross-check the file list in `fix_ISSUE-001.md` against the hunks actually present in `fix_ISSUE-001.diff` (see the note in [rescan_ISSUE-001.md](../../../docs/agent_output/05-verify/rescan_ISSUE-001.md) section 1).
+- Confirm neither affected endpoint returns a truncated collection with a plain `200 OK` when the underlying data exceeds the page cap — either the read must page through fully server-side, or a partial result must be signalled to the caller (e.g. pagination metadata), not silently substituted for the full set.
 
 ## Approval
 
@@ -66,4 +84,4 @@ This plan is a **checkpoint**, not an authorization to write code. The Fixer age
 
 ---
 
-The affected-files list and the diagnosis quoted above are rendered from the root cause and issue reports. The remediation approach, alternatives, risks and verification plan are the judgement of the Fix Strategist agent.
+The affected-files list and the diagnosis quoted above are rendered from the root cause and issue reports. The remediation approach, alternatives, risks and verification plan are the judgement of the Fix Strategist agent. The per-file grounding, the post-implementation note, and the reviewer checklist were added afterwards against the real source and the verification-stage reports; they elaborate on the agent's judgement rather than replacing it.

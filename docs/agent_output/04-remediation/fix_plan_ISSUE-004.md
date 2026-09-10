@@ -39,6 +39,8 @@ Apply the catalog's CWE-1104 canonical_approach directly: identify the minimum v
 |---|---|
 | [pom.xml](../../../employee-service/pom.xml) | Change the org.apache.poi:poi-ooxml <version> from 5.0.0 to 5.4.0 — the exact dependency block already present, version text only, no other edits. |
 
+The target is the explicit dependency block at `employee-service/pom.xml:68-72` — `<groupId>org.apache.poi</groupId>` (line 69), `<artifactId>poi-ooxml</artifactId>` (line 70), `<version>5.0.0</version>` (line 71), inside a plain `<dependencies>` entry, not a `<dependencyManagement>` entry or a `${...}` properties variable. This plan's one-line change is to rewrite line 71 only. The advisory's own affected/fixed boundary — poi-ooxml **< 5.4.0 is affected**, so **5.4.0 is the minimum fixed version** (already stated in section 1 above) — is what makes 5.0.0 unsafe and 5.4.0 safe: 5.0.0 falls inside the affected range, 5.4.0 is the first release outside it. The applied fix (`docs/agent_output/04-remediation/fix_ISSUE-004.md`, diff at `docs/agent_output/04-remediation/fix_ISSUE-004.diff`) confirms this is exactly what was implemented — the diff's hunk header `@@ -68,7 +68,7 @@` targets the same line range, changing only `<version>5.0.0</version>` to `<version>5.4.0</version>` and touching no other line.
+
 <details><summary>Illustrative sketch (not an applied patch — the Fixer writes the actual diff)</summary>
 
 ```java
@@ -55,8 +57,19 @@ Apply the catalog's CWE-1104 canonical_approach directly: identify the minimum v
 
 - poi-ooxml 5.0.0 to 5.4.0 spans several minor releases; while this stays within the same major version (5.x), the Fixer's verification should confirm employee-service still compiles cleanly against the new version's API surface, not just that the version string changed.
 - This fix only addresses employee-service's direct pin — if org.apache.poi is pulled in transitively by any other module at a vulnerable version, that is a separate, untracked instance of the same root cause (see open_questions).
+- **Residual, out-of-scope gap (not closed by this plan):** `ExcelUploadImpl.isValidExcelFile()` (`employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java:22-25`) validates only the caller-supplied `Content-Type` header string against an expected value — it does not open or structurally validate the archive itself. This plan deliberately does not add that check (see Alternatives considered, above); it leaves the upload endpoint's only defense as "the pinned library version has no known bug." The red-team pass independently identified this same gap and confirmed it is not a bypass of this specific fix, only a standing defense-in-depth shortfall — see [redteam_ISSUE-004.md](../../../docs/agent_output/05-verify/redteam_ISSUE-004.md), Residual risk.
 
-## 5. How the fix must be verified
+## 5. Reviewer checklist
+
+- Confirm the changed line in the patched pom.xml is the direct `<version>` element inside the `org.apache.poi:poi-ooxml` `<dependency>` block (`employee-service/pom.xml:71`), not a `<properties>` variable that some other explicit `<version>` tag could still override.
+- Confirm 5.4.0 is actually outside CVE-2025-31672's advisory-stated affected range (`< 5.4.0`), not merely a numerically higher version — i.e. that no later-but-still-affected release was mistaken for the fix boundary.
+- Run `mvn dependency:tree` filtered to `org.apache.poi` and confirm the *resolved* version is >= 5.4.0, not just the declared `<version>` text — a textual edit that a parent or dependencyManagement entry silently overrides would not actually close the CVE.
+- Confirm no other module in this multi-module workspace (`report-service`, `department-service`, `sheduler-service`, `discovery-service`, `configuaration-server`) pins its own `org.apache.poi:poi-ooxml` version independently of employee-service's fix.
+- Confirm `ExcelUploadImpl.java` is untouched by the diff — this is meant to be a pure dependency-version bump with zero calling-code changes.
+- Flag the Content-Type-only upload validation (`ExcelUploadImpl.isValidExcelFile`, lines 22-25) as a separate defense-in-depth follow-up item — do not treat it as blocking on this specific CVE fix.
+- Confirm employee-service still compiles cleanly against poi-ooxml 5.4.0's API surface, since the bump spans several minor releases within the 5.x line.
+
+## 6. How the fix must be verified
 
 1. Compile employee-service.
 2. Confirm the declared <version> for org.apache.poi:poi-ooxml in the patched pom.xml is >= 5.4.0.
@@ -65,7 +78,7 @@ Apply the catalog's CWE-1104 canonical_approach directly: identify the minimum v
 
 _The Fixer's verification report must address every step above, or explain why a step could not be run (e.g. it needs a live dependency unavailable in the isolated build sandbox)._
 
-## 6. Open questions
+## 7. Open questions
 
 - Whether org.apache.poi is pulled in transitively by any other module in this workspace at a vulnerable version — only employee-service's direct, explicit pin is addressed by this plan.
 
@@ -84,4 +97,4 @@ This plan is a **checkpoint**, not an authorization to write code. The Fixer age
 
 ---
 
-The affected-files list and the diagnosis quoted above are rendered from the root cause and issue reports. The remediation approach, alternatives, risks and verification plan are the judgement of the Fix Strategist agent.
+The affected-files list and the diagnosis quoted above are rendered from the root cause and issue reports. The remediation approach, alternatives, risks, reviewer checklist and verification plan are the judgement of the Fix Strategist agent; the added pom.xml line numbers, diff hunk reference and catalog quotation are grounding citations against the real source and patch files, not new judgement.
