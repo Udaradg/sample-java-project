@@ -1,0 +1,3967 @@
+{
+  "generatedAt": "2026-09-10T11:00:06.470Z",
+  "repoRoot": "D:\\Office Research\\SDLC_Harness\\claude_agents\\sample-java-project",
+  "modules": [
+    {
+      "name": "spring-boot-migration-demo",
+      "path": "",
+      "groupId": "com.example",
+      "version": "1.0.0",
+      "packaging": "jar",
+      "dependencies": [
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-web",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-data-jpa",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-validation",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-security",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-actuator",
+          "version": null
+        },
+        {
+          "groupId": "org.postgresql",
+          "artifactId": "postgresql",
+          "version": null
+        },
+        {
+          "groupId": "com.h2database",
+          "artifactId": "h2",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.security",
+          "artifactId": "spring-security-test",
+          "version": null
+        },
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-test",
+          "version": null
+        },
+        {
+          "groupId": "org.testcontainers",
+          "artifactId": "testcontainers",
+          "version": null
+        },
+        {
+          "groupId": "org.testcontainers",
+          "artifactId": "postgresql",
+          "version": null
+        },
+        {
+          "groupId": "org.testcontainers",
+          "artifactId": "junit-jupiter",
+          "version": null
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "file": "src/main/java/com/example/migrationdemo/MigrationDemoApplication.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo",
+      "imports": [
+        "org.springframework.boot.SpringApplication",
+        "org.springframework.boot.autoconfigure.SpringBootApplication"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.service",
+      "imports": [
+        "com.example.migrationdemo.dto.EmployeeCreateRequest",
+        "com.example.migrationdemo.dto.EmployeeResponse",
+        "com.example.migrationdemo.dto.EmployeeUpdateRequest",
+        "com.example.migrationdemo.entity.Employee",
+        "com.example.migrationdemo.exception.DuplicateEmployeeException",
+        "com.example.migrationdemo.exception.EmployeeNotFoundException",
+        "com.example.migrationdemo.mapper.EmployeeMapper",
+        "com.example.migrationdemo.repository.EmployeeRepository",
+        "org.springframework.stereotype.Service",
+        "org.springframework.transaction.annotation.Transactional",
+        "java.math.BigDecimal",
+        "java.util.List",
+        "java.util.stream.Collectors"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.mapper",
+      "imports": [
+        "com.example.migrationdemo.dto.EmployeeCreateRequest",
+        "com.example.migrationdemo.dto.EmployeeResponse",
+        "com.example.migrationdemo.entity.Employee",
+        "org.springframework.stereotype.Component"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.repository",
+      "imports": [
+        "com.example.migrationdemo.entity.Employee",
+        "org.springframework.data.jpa.repository.JpaRepository",
+        "org.springframework.data.jpa.repository.Query",
+        "org.springframework.data.repository.query.Param",
+        "org.springframework.stereotype.Repository",
+        "java.math.BigDecimal",
+        "java.util.List",
+        "java.util.Optional"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/init/DataInitializer.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.init",
+      "imports": [
+        "com.example.migrationdemo.entity.Employee",
+        "com.example.migrationdemo.repository.EmployeeRepository",
+        "org.springframework.boot.CommandLineRunner",
+        "org.springframework.stereotype.Component",
+        "java.math.BigDecimal"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.health",
+      "imports": [
+        "org.springframework.boot.actuate.health.Health",
+        "org.springframework.boot.actuate.health.HealthIndicator",
+        "org.springframework.stereotype.Component",
+        "javax.sql.DataSource",
+        "java.sql.Connection"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "imports": [
+        "jakarta.servlet.http.HttpServletRequest",
+        "org.springframework.http.HttpHeaders",
+        "org.springframework.http.HttpStatus",
+        "org.springframework.http.HttpStatusCode",
+        "org.springframework.http.ResponseEntity",
+        "org.springframework.web.bind.MethodArgumentNotValidException",
+        "org.springframework.web.bind.annotation.ExceptionHandler",
+        "org.springframework.web.bind.annotation.RestControllerAdvice",
+        "org.springframework.web.context.request.ServletWebRequest",
+        "org.springframework.web.context.request.WebRequest",
+        "org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler",
+        "java.time.LocalDateTime",
+        "java.util.stream.Collectors"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/exception/ErrorResponse.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "imports": [
+        "com.fasterxml.jackson.annotation.JsonFormat",
+        "java.time.LocalDateTime"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "imports": []
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "imports": []
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.entity",
+      "imports": [
+        "jakarta.persistence",
+        "jakarta.validation.constraints",
+        "java.math.BigDecimal",
+        "java.time.LocalDateTime"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "imports": [
+        "jakarta.validation.constraints",
+        "java.math.BigDecimal"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "imports": [
+        "java.math.BigDecimal",
+        "java.time.LocalDateTime"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "imports": [
+        "jakarta.validation.constraints",
+        "java.math.BigDecimal"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.controller",
+      "imports": [
+        "com.example.migrationdemo.dto.EmployeeCreateRequest",
+        "com.example.migrationdemo.dto.EmployeeResponse",
+        "com.example.migrationdemo.dto.EmployeeUpdateRequest",
+        "com.example.migrationdemo.service.EmployeeService",
+        "jakarta.validation.Valid",
+        "org.springframework.http.HttpStatus",
+        "org.springframework.http.ResponseEntity",
+        "org.springframework.web.bind.annotation",
+        "java.math.BigDecimal",
+        "java.util.List"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/config/SecurityConfig.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.config",
+      "imports": [
+        "org.springframework.context.annotation.Bean",
+        "org.springframework.context.annotation.Configuration",
+        "org.springframework.security.config.Customizer",
+        "org.springframework.security.config.annotation.web.builders.HttpSecurity",
+        "org.springframework.security.config.annotation.web.configuration.EnableWebSecurity",
+        "org.springframework.security.core.userdetails.User",
+        "org.springframework.security.core.userdetails.UserDetails",
+        "org.springframework.security.core.userdetails.UserDetailsService",
+        "org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder",
+        "org.springframework.security.crypto.password.PasswordEncoder",
+        "org.springframework.security.provisioning.InMemoryUserDetailsManager",
+        "org.springframework.security.web.SecurityFilterChain"
+      ]
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/config/JacksonConfig.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.config",
+      "imports": [
+        "com.fasterxml.jackson.databind.ObjectMapper",
+        "com.fasterxml.jackson.databind.SerializationFeature",
+        "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule",
+        "org.springframework.context.annotation.Bean",
+        "org.springframework.context.annotation.Configuration"
+      ]
+    }
+  ],
+  "types": [
+    {
+      "id": "com.example.migrationdemo.MigrationDemoApplication",
+      "name": "MigrationDemoApplication",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo",
+      "file": "src/main/java/com/example/migrationdemo/MigrationDemoApplication.java",
+      "startLine": 6,
+      "endLine": 13,
+      "annotations": [
+        {
+          "name": "SpringBootApplication",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "main",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String[]",
+              "name": "args"
+            }
+          ],
+          "annotations": [],
+          "calls": [
+            {
+              "name": "run",
+              "receiverKind": "identifier",
+              "receiverName": "SpringApplication"
+            }
+          ],
+          "startLine": 9,
+          "endLine": 11,
+          "source": "public static void main(String[] args) {\n        SpringApplication.run(MigrationDemoApplication.class, args);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.service.EmployeeService",
+      "name": "EmployeeService",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.service",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+      "startLine": 18,
+      "endLine": 128,
+      "annotations": [
+        {
+          "name": "Service",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "employeeRepository",
+          "type": "EmployeeRepository",
+          "annotations": []
+        },
+        {
+          "name": "employeeMapper",
+          "type": "EmployeeMapper",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "EmployeeService",
+          "returnType": null,
+          "params": [
+            {
+              "type": "EmployeeRepository",
+              "name": "employeeRepository"
+            },
+            {
+              "type": "EmployeeMapper",
+              "name": "employeeMapper"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 24,
+          "endLine": 27,
+          "source": "public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {\n        this.employeeRepository = employeeRepository;\n        this.employeeMapper = employeeMapper;\n    }"
+        },
+        {
+          "name": "createEmployee",
+          "returnType": "EmployeeResponse",
+          "params": [
+            {
+              "type": "EmployeeCreateRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "isPresent",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findByEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "getEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "isPresent",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findByEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "toEntity",
+              "receiverKind": "identifier",
+              "receiverName": "employeeMapper"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toResponse",
+              "receiverKind": "identifier",
+              "receiverName": "employeeMapper"
+            }
+          ],
+          "startLine": 29,
+          "endLine": 44,
+          "source": "@Transactional\n    public EmployeeResponse createEmployee(EmployeeCreateRequest request) {\n        // Check for duplicate employee number\n        if (employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {\n            throw new DuplicateEmployeeException(\"employeeNumber\", request.getEmployeeNumber());\n        }\n\n        // Check for duplicate email\n        if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n            throw new DuplicateEmployeeException(\"email\", request.getEmail());\n        }\n\n        Employee employee = employeeMapper.toEntity(request);\n        Employee savedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(savedEmployee);\n    }"
+        },
+        {
+          "name": "getAllEmployees",
+          "returnType": "List<EmployeeResponse>",
+          "params": [],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {
+                "readOnly": "true"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "collect",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "map",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "stream",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findAll",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toList",
+              "receiverKind": "identifier",
+              "receiverName": "Collectors"
+            }
+          ],
+          "startLine": 46,
+          "endLine": 52,
+          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+        },
+        {
+          "name": "getEmployeeById",
+          "returnType": "EmployeeResponse",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {
+                "readOnly": "true"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "orElseThrow",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findById",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toResponse",
+              "receiverKind": "identifier",
+              "receiverName": "employeeMapper"
+            }
+          ],
+          "startLine": 54,
+          "endLine": 59,
+          "source": "@Transactional(readOnly = true)\n    public EmployeeResponse getEmployeeById(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        return employeeMapper.toResponse(employee);\n    }"
+        },
+        {
+          "name": "updateEmployee",
+          "returnType": "EmployeeResponse",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            },
+            {
+              "type": "EmployeeUpdateRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "orElseThrow",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findById",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "equals",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "isPresent",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findByEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setLastName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setEmail",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setSalary",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getActive",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "setActive",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getActive",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toResponse",
+              "receiverKind": "identifier",
+              "receiverName": "employeeMapper"
+            }
+          ],
+          "startLine": 61,
+          "endLine": 95,
+          "source": "@Transactional\n    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n\n        // Check for duplicate email if email is being updated\n        if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) {\n            if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n                throw new DuplicateEmployeeException(\"email\", request.getEmail());\n            }\n        }\n\n        // Update fields\n        if (request.getFirstName() != null) {\n            employee.setFirstName(request.getFirstName());\n        }\n        if (request.getLastName() != null) {\n            employee.setLastName(request.getLastName());\n        }\n        if (request.getEmail() != null) {\n            employee.setEmail(request.getEmail());\n        }\n        if (request.getDepartment() != null) {\n            employee.setDepartment(request.getDepartment());\n        }\n        if (request.getSalary() != null) {\n            employee.setSalary(request.getSalary());\n        }\n        if (request.getActive() != null) {\n            employee.setActive(request.getActive());\n        }\n\n        Employee updatedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(updatedEmployee);\n    }"
+        },
+        {
+          "name": "deleteEmployee",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "orElseThrow",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findById",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "delete",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            }
+          ],
+          "startLine": 97,
+          "endLine": 102,
+          "source": "@Transactional\n    public void deleteEmployee(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        employeeRepository.delete(employee);\n    }"
+        },
+        {
+          "name": "searchByDepartment",
+          "returnType": "List<EmployeeResponse>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {
+                "readOnly": "true"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "collect",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "map",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "stream",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findByDepartmentIgnoreCase",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toList",
+              "receiverKind": "identifier",
+              "receiverName": "Collectors"
+            }
+          ],
+          "startLine": 104,
+          "endLine": 110,
+          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> searchByDepartment(String department) {\n        return employeeRepository.findByDepartmentIgnoreCase(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+        },
+        {
+          "name": "findActiveEmployeesByDepartment",
+          "returnType": "List<EmployeeResponse>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {
+                "readOnly": "true"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "collect",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "map",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "stream",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findActiveEmployeesByDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toList",
+              "receiverKind": "identifier",
+              "receiverName": "Collectors"
+            }
+          ],
+          "startLine": 112,
+          "endLine": 118,
+          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> findActiveEmployeesByDepartment(String department) {\n        return employeeRepository.findActiveEmployeesByDepartment(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+        },
+        {
+          "name": "findHighEarners",
+          "returnType": "List<EmployeeResponse>",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Transactional",
+              "args": {
+                "readOnly": "true"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "collect",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "map",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "stream",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "findHighEarners",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "toList",
+              "receiverKind": "identifier",
+              "receiverName": "Collectors"
+            }
+          ],
+          "startLine": 120,
+          "endLine": 126,
+          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> findHighEarners(BigDecimal salary) {\n        return employeeRepository.findHighEarners(salary)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.mapper.EmployeeMapper",
+      "name": "EmployeeMapper",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.mapper",
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+      "startLine": 8,
+      "endLine": 56,
+      "annotations": [
+        {
+          "name": "Component",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "toEntity",
+          "returnType": "Employee",
+          "params": [
+            {
+              "type": "EmployeeCreateRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [],
+          "calls": [
+            {
+              "name": "getEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            }
+          ],
+          "startLine": 11,
+          "endLine": 19,
+          "source": "public Employee toEntity(EmployeeCreateRequest request) {\n        return new Employee(\n                request.getEmployeeNumber(),\n                request.getFirstName(),\n                request.getLastName(),\n                request.getEmail(),\n                request.getDepartment(),\n                request.getSalary());\n    }"
+        },
+        {
+          "name": "toResponse",
+          "returnType": "EmployeeResponse",
+          "params": [
+            {
+              "type": "Employee",
+              "name": "employee"
+            }
+          ],
+          "annotations": [],
+          "calls": [
+            {
+              "name": "getId",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getEmployeeNumber",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getActive",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getCreatedAt",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getUpdatedAt",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            }
+          ],
+          "startLine": 21,
+          "endLine": 33,
+          "source": "public EmployeeResponse toResponse(Employee employee) {\n        return new EmployeeResponse(\n                employee.getId(),\n                employee.getEmployeeNumber(),\n                employee.getFirstName(),\n                employee.getLastName(),\n                employee.getEmail(),\n                employee.getDepartment(),\n                employee.getSalary(),\n                employee.getActive(),\n                employee.getCreatedAt(),\n                employee.getUpdatedAt());\n    }"
+        },
+        {
+          "name": "updateEntityFromRequest",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "EmployeeResponse",
+              "name": "response"
+            },
+            {
+              "type": "Employee",
+              "name": "employee"
+            }
+          ],
+          "annotations": [],
+          "calls": [
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getFirstName",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setLastName",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getLastName",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setEmail",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getEmail",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setSalary",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getSalary",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "getActive",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            },
+            {
+              "name": "setActive",
+              "receiverKind": "identifier",
+              "receiverName": "employee"
+            },
+            {
+              "name": "getActive",
+              "receiverKind": "identifier",
+              "receiverName": "response"
+            }
+          ],
+          "startLine": 35,
+          "endLine": 54,
+          "source": "public void updateEntityFromRequest(EmployeeResponse response, Employee employee) {\n        if (response.getFirstName() != null) {\n            employee.setFirstName(response.getFirstName());\n        }\n        if (response.getLastName() != null) {\n            employee.setLastName(response.getLastName());\n        }\n        if (response.getEmail() != null) {\n            employee.setEmail(response.getEmail());\n        }\n        if (response.getDepartment() != null) {\n            employee.setDepartment(response.getDepartment());\n        }\n        if (response.getSalary() != null) {\n            employee.setSalary(response.getSalary());\n        }\n        if (response.getActive() != null) {\n            employee.setActive(response.getActive());\n        }\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.repository.EmployeeRepository",
+      "name": "EmployeeRepository",
+      "kind": "interface",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.repository",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+      "startLine": 13,
+      "endLine": 47,
+      "annotations": [
+        {
+          "name": "Repository",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [
+        "JpaRepository<Employee, Long>"
+      ],
+      "fields": [],
+      "methods": [
+        {
+          "name": "findByEmployeeNumber",
+          "returnType": "Optional<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 16,
+          "endLine": 16,
+          "source": "Optional<Employee> findByEmployeeNumber(String employeeNumber);"
+        },
+        {
+          "name": "findByDepartmentIgnoreCase",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 18,
+          "endLine": 18,
+          "source": "List<Employee> findByDepartmentIgnoreCase(String department);"
+        },
+        {
+          "name": "findActiveEmployeesByDepartment",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Query",
+              "args": {
+                "value": "\"\"\n            select e\n            from Employee e\n            where lower(e.department) = lower(:department)\n            and e.active = true\n            \"\""
+              }
+            }
+          ],
+          "calls": [],
+          "startLine": 24,
+          "endLine": 31,
+          "source": "@Query(\"\"\"\n            select e\n            from Employee e\n            where lower(e.department) = lower(:department)\n            and e.active = true\n            \"\"\")\n    List<Employee> findActiveEmployeesByDepartment(\n            @Param(\"department\") String department);"
+        },
+        {
+          "name": "findHighEarners",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Query",
+              "args": {
+                "value": "\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"",
+                "nativeQuery": "true"
+              }
+            }
+          ],
+          "calls": [],
+          "startLine": 37,
+          "endLine": 45,
+          "source": "@Query(value = \"\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"\", nativeQuery = true)\n    List<Employee> findHighEarners(\n            @Param(\"salary\") BigDecimal salary);"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.init.DataInitializer",
+      "name": "DataInitializer",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.init",
+      "file": "src/main/java/com/example/migrationdemo/init/DataInitializer.java",
+      "startLine": 10,
+      "endLine": 75,
+      "annotations": [
+        {
+          "name": "Component",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [
+        "CommandLineRunner"
+      ],
+      "fields": [
+        {
+          "name": "employeeRepository",
+          "type": "EmployeeRepository",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "DataInitializer",
+          "returnType": null,
+          "params": [
+            {
+              "type": "EmployeeRepository",
+              "name": "employeeRepository"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 15,
+          "endLine": 17,
+          "source": "public DataInitializer(EmployeeRepository employeeRepository) {\n        this.employeeRepository = employeeRepository;\n    }"
+        },
+        {
+          "name": "run",
+          "returnType": "void",
+          "params": [
+            {
+              "type": null,
+              "name": null
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Override",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "count",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "initializeSampleData",
+              "receiverKind": "none",
+              "receiverName": null
+            }
+          ],
+          "startLine": 19,
+          "endLine": 25,
+          "source": "@Override\n    public void run(String... args) throws Exception {\n        // Only initialize if table is empty\n        if (employeeRepository.count() == 0) {\n            initializeSampleData();\n        }\n    }"
+        },
+        {
+          "name": "initializeSampleData",
+          "returnType": "void",
+          "params": [],
+          "annotations": [],
+          "calls": [
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            },
+            {
+              "name": "save",
+              "receiverKind": "identifier",
+              "receiverName": "employeeRepository"
+            }
+          ],
+          "startLine": 27,
+          "endLine": 73,
+          "source": "private void initializeSampleData() {\n        Employee emp1 = new Employee(\n                \"EMP001\",\n                \"John\",\n                \"Smith\",\n                \"john.smith@example.com\",\n                \"Technology\",\n                new BigDecimal(\"95000.00\"));\n\n        Employee emp2 = new Employee(\n                \"EMP002\",\n                \"Sarah\",\n                \"Johnson\",\n                \"sarah.johnson@example.com\",\n                \"Finance\",\n                new BigDecimal(\"85000.00\"));\n\n        Employee emp3 = new Employee(\n                \"EMP003\",\n                \"Michael\",\n                \"Brown\",\n                \"michael.brown@example.com\",\n                \"Technology\",\n                new BigDecimal(\"88000.00\"));\n\n        Employee emp4 = new Employee(\n                \"EMP004\",\n                \"Emily\",\n                \"Davis\",\n                \"emily.davis@example.com\",\n                \"Operations\",\n                new BigDecimal(\"72000.00\"));\n\n        Employee emp5 = new Employee(\n                \"EMP005\",\n                \"James\",\n                \"Wilson\",\n                \"james.wilson@example.com\",\n                \"HR\",\n                new BigDecimal(\"68000.00\"));\n\n        employeeRepository.save(emp1);\n        employeeRepository.save(emp2);\n        employeeRepository.save(emp3);\n        employeeRepository.save(emp4);\n        employeeRepository.save(emp5);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.health.DatabaseHealthIndicator",
+      "name": "DatabaseHealthIndicator",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.health",
+      "file": "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java",
+      "startLine": 9,
+      "endLine": 36,
+      "annotations": [
+        {
+          "name": "Component",
+          "args": {
+            "value": "database"
+          }
+        }
+      ],
+      "extends": [],
+      "implements": [
+        "HealthIndicator"
+      ],
+      "fields": [
+        {
+          "name": "dataSource",
+          "type": "DataSource",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "DatabaseHealthIndicator",
+          "returnType": null,
+          "params": [
+            {
+              "type": "DataSource",
+              "name": "dataSource"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 14,
+          "endLine": 16,
+          "source": "public DatabaseHealthIndicator(DataSource dataSource) {\n        this.dataSource = dataSource;\n    }"
+        },
+        {
+          "name": "health",
+          "returnType": "Health",
+          "params": [],
+          "annotations": [
+            {
+              "name": "Override",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "getConnection",
+              "receiverKind": "identifier",
+              "receiverName": "dataSource"
+            },
+            {
+              "name": "isClosed",
+              "receiverKind": "identifier",
+              "receiverName": "connection"
+            },
+            {
+              "name": "build",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "withDetail",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "withDetail",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "up",
+              "receiverKind": "identifier",
+              "receiverName": "Health"
+            },
+            {
+              "name": "getDatabaseProductName",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getMetaData",
+              "receiverKind": "identifier",
+              "receiverName": "connection"
+            },
+            {
+              "name": "build",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "withException",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "withDetail",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "down",
+              "receiverKind": "identifier",
+              "receiverName": "Health"
+            },
+            {
+              "name": "build",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "unknown",
+              "receiverKind": "identifier",
+              "receiverName": "Health"
+            }
+          ],
+          "startLine": 18,
+          "endLine": 34,
+          "source": "@Override\n    public Health health() {\n        try (Connection connection = dataSource.getConnection()) {\n            if (connection != null && !connection.isClosed()) {\n                return Health.up()\n                    .withDetail(\"database\", connection.getMetaData().getDatabaseProductName())\n                    .withDetail(\"status\", \"Connected\")\n                    .build();\n            }\n        } catch (Exception e) {\n            return Health.down()\n                    .withDetail(\"status\", \"Connection failed\")\n                    .withException(e)\n                    .build();\n        }\n        return Health.unknown().build();\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.exception.GlobalExceptionHandler",
+      "name": "GlobalExceptionHandler",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "file": "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java",
+      "startLine": 18,
+      "endLine": 80,
+      "annotations": [
+        {
+          "name": "RestControllerAdvice",
+          "args": {}
+        }
+      ],
+      "extends": [
+        "ResponseEntityExceptionHandler"
+      ],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "handleEmployeeNotFound",
+          "returnType": "ResponseEntity<ErrorResponse>",
+          "params": [
+            {
+              "type": "EmployeeNotFoundException",
+              "name": "ex"
+            },
+            {
+              "type": "HttpServletRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "ExceptionHandler",
+              "args": {
+                "value": "EmployeeNotFoundException.class"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            },
+            {
+              "name": "value",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getMessage",
+              "receiverKind": "identifier",
+              "receiverName": "ex"
+            },
+            {
+              "name": "getRequestURI",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            }
+          ],
+          "startLine": 21,
+          "endLine": 31,
+          "source": "@ExceptionHandler(EmployeeNotFoundException.class)\n    public ResponseEntity<ErrorResponse> handleEmployeeNotFound(\n            EmployeeNotFoundException ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.NOT_FOUND.value(),\n                \"Not Found\",\n                ex.getMessage(),\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);\n    }"
+        },
+        {
+          "name": "handleDuplicateEmployee",
+          "returnType": "ResponseEntity<ErrorResponse>",
+          "params": [
+            {
+              "type": "DuplicateEmployeeException",
+              "name": "ex"
+            },
+            {
+              "type": "HttpServletRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "ExceptionHandler",
+              "args": {
+                "value": "DuplicateEmployeeException.class"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            },
+            {
+              "name": "value",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getMessage",
+              "receiverKind": "identifier",
+              "receiverName": "ex"
+            },
+            {
+              "name": "getRequestURI",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            }
+          ],
+          "startLine": 33,
+          "endLine": 43,
+          "source": "@ExceptionHandler(DuplicateEmployeeException.class)\n    public ResponseEntity<ErrorResponse> handleDuplicateEmployee(\n            DuplicateEmployeeException ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.CONFLICT.value(),\n                \"Conflict\",\n                ex.getMessage(),\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);\n    }"
+        },
+        {
+          "name": "handleMethodArgumentNotValid",
+          "returnType": "ResponseEntity<Object>",
+          "params": [
+            {
+              "type": "MethodArgumentNotValidException",
+              "name": "ex"
+            },
+            {
+              "type": "HttpHeaders",
+              "name": "headers"
+            },
+            {
+              "type": "HttpStatusCode",
+              "name": "status"
+            },
+            {
+              "type": "WebRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Override",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "collect",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "map",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "stream",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getFieldErrors",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getBindingResult",
+              "receiverKind": "identifier",
+              "receiverName": "ex"
+            },
+            {
+              "name": "getField",
+              "receiverKind": "identifier",
+              "receiverName": "error"
+            },
+            {
+              "name": "getDefaultMessage",
+              "receiverKind": "identifier",
+              "receiverName": "error"
+            },
+            {
+              "name": "joining",
+              "receiverKind": "identifier",
+              "receiverName": "Collectors"
+            },
+            {
+              "name": "getRequestURI",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getRequest",
+              "receiverKind": "identifier",
+              "receiverName": "servletWebRequest"
+            },
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            },
+            {
+              "name": "value",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "handleExceptionInternal",
+              "receiverKind": "none",
+              "receiverName": null
+            }
+          ],
+          "startLine": 45,
+          "endLine": 66,
+          "source": "@Override\n    protected ResponseEntity<Object> handleMethodArgumentNotValid(\n            MethodArgumentNotValidException ex,\n            HttpHeaders headers,\n            HttpStatusCode status,\n            WebRequest request) {\n        String message = ex.getBindingResult().getFieldErrors()\n                .stream()\n                .map(error -> error.getField() + \": \" + error.getDefaultMessage())\n                .collect(Collectors.joining(\", \"));\n        String path = request instanceof ServletWebRequest servletWebRequest\n                ? servletWebRequest.getRequest().getRequestURI()\n                : \"\";\n\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.BAD_REQUEST.value(),\n                \"Bad Request\",\n                \"Validation failed: \" + message,\n                path);\n        return handleExceptionInternal(ex, errorResponse, headers, status, request);\n    }"
+        },
+        {
+          "name": "handleGenericException",
+          "returnType": "ResponseEntity<ErrorResponse>",
+          "params": [
+            {
+              "type": "Exception",
+              "name": "ex"
+            },
+            {
+              "type": "HttpServletRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "ExceptionHandler",
+              "args": {
+                "value": "Exception.class"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            },
+            {
+              "name": "value",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "getRequestURI",
+              "receiverKind": "identifier",
+              "receiverName": "request"
+            }
+          ],
+          "startLine": 68,
+          "endLine": 78,
+          "source": "@ExceptionHandler(Exception.class)\n    public ResponseEntity<ErrorResponse> handleGenericException(\n            Exception ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.INTERNAL_SERVER_ERROR.value(),\n                \"Internal Server Error\",\n                \"An unexpected error occurred\",\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.exception.ErrorResponse",
+      "name": "ErrorResponse",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "file": "src/main/java/com/example/migrationdemo/exception/ErrorResponse.java",
+      "startLine": 6,
+      "endLine": 66,
+      "annotations": [],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "timestamp",
+          "type": "LocalDateTime",
+          "annotations": [
+            {
+              "name": "JsonFormat",
+              "args": {
+                "pattern": "yyyy-MM-dd'T'HH:mm:ss"
+              }
+            }
+          ]
+        },
+        {
+          "name": "status",
+          "type": "int",
+          "annotations": []
+        },
+        {
+          "name": "error",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "path",
+          "type": "String",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "ErrorResponse",
+          "returnType": null,
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 15,
+          "endLine": 16,
+          "source": "public ErrorResponse() {\n    }"
+        },
+        {
+          "name": "ErrorResponse",
+          "returnType": null,
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "timestamp"
+            },
+            {
+              "type": "int",
+              "name": "status"
+            },
+            {
+              "type": "String",
+              "name": "error"
+            },
+            {
+              "type": "String",
+              "name": "message"
+            },
+            {
+              "type": "String",
+              "name": "path"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 18,
+          "endLine": 24,
+          "source": "public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path) {\n        this.timestamp = timestamp;\n        this.status = status;\n        this.error = error;\n        this.message = message;\n        this.path = path;\n    }"
+        },
+        {
+          "name": "getTimestamp",
+          "returnType": "LocalDateTime",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 26,
+          "endLine": 28,
+          "source": "public LocalDateTime getTimestamp() {\n        return timestamp;\n    }"
+        },
+        {
+          "name": "setTimestamp",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "timestamp"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 30,
+          "endLine": 32,
+          "source": "public void setTimestamp(LocalDateTime timestamp) {\n        this.timestamp = timestamp;\n    }"
+        },
+        {
+          "name": "getStatus",
+          "returnType": "int",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 34,
+          "endLine": 36,
+          "source": "public int getStatus() {\n        return status;\n    }"
+        },
+        {
+          "name": "setStatus",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "int",
+              "name": "status"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 38,
+          "endLine": 40,
+          "source": "public void setStatus(int status) {\n        this.status = status;\n    }"
+        },
+        {
+          "name": "getError",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 42,
+          "endLine": 44,
+          "source": "public String getError() {\n        return error;\n    }"
+        },
+        {
+          "name": "setError",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "error"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 46,
+          "endLine": 48,
+          "source": "public void setError(String error) {\n        this.error = error;\n    }"
+        },
+        {
+          "name": "getMessage",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 50,
+          "endLine": 52,
+          "source": "public String getMessage() {\n        return message;\n    }"
+        },
+        {
+          "name": "setMessage",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "message"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 54,
+          "endLine": 56,
+          "source": "public void setMessage(String message) {\n        this.message = message;\n    }"
+        },
+        {
+          "name": "getPath",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 58,
+          "endLine": 60,
+          "source": "public String getPath() {\n        return path;\n    }"
+        },
+        {
+          "name": "setPath",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "path"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 62,
+          "endLine": 64,
+          "source": "public void setPath(String path) {\n        this.path = path;\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.exception.EmployeeNotFoundException",
+      "name": "EmployeeNotFoundException",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "file": "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java",
+      "startLine": 3,
+      "endLine": 13,
+      "annotations": [],
+      "extends": [
+        "RuntimeException"
+      ],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "EmployeeNotFoundException",
+          "returnType": null,
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 5,
+          "endLine": 7,
+          "source": "public EmployeeNotFoundException(Long id) {\n        super(\"Employee with id \" + id + \" was not found\");\n    }"
+        },
+        {
+          "name": "EmployeeNotFoundException",
+          "returnType": null,
+          "params": [
+            {
+              "type": "String",
+              "name": "message"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 9,
+          "endLine": 11,
+          "source": "public EmployeeNotFoundException(String message) {\n        super(message);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.exception.DuplicateEmployeeException",
+      "name": "DuplicateEmployeeException",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.exception",
+      "file": "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java",
+      "startLine": 3,
+      "endLine": 13,
+      "annotations": [],
+      "extends": [
+        "RuntimeException"
+      ],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "DuplicateEmployeeException",
+          "returnType": null,
+          "params": [
+            {
+              "type": "String",
+              "name": "field"
+            },
+            {
+              "type": "String",
+              "name": "value"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 5,
+          "endLine": 7,
+          "source": "public DuplicateEmployeeException(String field, String value) {\n        super(\"Employee with \" + field + \" '\" + value + \"' already exists\");\n    }"
+        },
+        {
+          "name": "DuplicateEmployeeException",
+          "returnType": null,
+          "params": [
+            {
+              "type": "String",
+              "name": "message"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 9,
+          "endLine": 11,
+          "source": "public DuplicateEmployeeException(String message) {\n        super(message);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.entity.Employee",
+      "name": "Employee",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.entity",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java",
+      "startLine": 8,
+      "endLine": 155,
+      "annotations": [
+        {
+          "name": "Entity",
+          "args": {}
+        },
+        {
+          "name": "Table",
+          "args": {
+            "name": "employees"
+          }
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "id",
+          "type": "Long",
+          "annotations": [
+            {
+              "name": "Id",
+              "args": {}
+            },
+            {
+              "name": "GeneratedValue",
+              "args": {
+                "strategy": "GenerationType.IDENTITY"
+              }
+            }
+          ]
+        },
+        {
+          "name": "employeeNumber",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false",
+                "unique": "true",
+                "length": "50"
+              }
+            },
+            {
+              "name": "NotBlank",
+              "args": {}
+            }
+          ]
+        },
+        {
+          "name": "firstName",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false",
+                "length": "100"
+              }
+            },
+            {
+              "name": "NotBlank",
+              "args": {}
+            }
+          ]
+        },
+        {
+          "name": "lastName",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false",
+                "length": "100"
+              }
+            },
+            {
+              "name": "NotBlank",
+              "args": {}
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false",
+                "unique": "true",
+                "length": "255"
+              }
+            },
+            {
+              "name": "Email",
+              "args": {}
+            },
+            {
+              "name": "NotBlank",
+              "args": {}
+            }
+          ]
+        },
+        {
+          "name": "department",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "length": "100"
+              }
+            }
+          ]
+        },
+        {
+          "name": "salary",
+          "type": "BigDecimal",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "precision": "10",
+                "scale": "2"
+              }
+            },
+            {
+              "name": "PositiveOrZero",
+              "args": {}
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "type": "Boolean",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false"
+              }
+            }
+          ]
+        },
+        {
+          "name": "createdAt",
+          "type": "LocalDateTime",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false",
+                "updatable": "false"
+              }
+            }
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": "LocalDateTime",
+          "annotations": [
+            {
+              "name": "Column",
+              "args": {
+                "nullable": "false"
+              }
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "Employee",
+          "returnType": null,
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 49,
+          "endLine": 50,
+          "source": "public Employee() {\n    }"
+        },
+        {
+          "name": "Employee",
+          "returnType": null,
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            },
+            {
+              "type": "String",
+              "name": "firstName"
+            },
+            {
+              "type": "String",
+              "name": "lastName"
+            },
+            {
+              "type": "String",
+              "name": "email"
+            },
+            {
+              "type": "String",
+              "name": "department"
+            },
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 52,
+          "endLine": 61,
+          "source": "public Employee(String employeeNumber, String firstName, String lastName, String email,\n                    String department, BigDecimal salary) {\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n        this.active = true;\n    }"
+        },
+        {
+          "name": "onCreate",
+          "returnType": "void",
+          "params": [],
+          "annotations": [
+            {
+              "name": "PrePersist",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            },
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            }
+          ],
+          "startLine": 63,
+          "endLine": 67,
+          "source": "@PrePersist\n    protected void onCreate() {\n        createdAt = LocalDateTime.now();\n        updatedAt = LocalDateTime.now();\n    }"
+        },
+        {
+          "name": "onUpdate",
+          "returnType": "void",
+          "params": [],
+          "annotations": [
+            {
+              "name": "PreUpdate",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "now",
+              "receiverKind": "identifier",
+              "receiverName": "LocalDateTime"
+            }
+          ],
+          "startLine": 69,
+          "endLine": 72,
+          "source": "@PreUpdate\n    protected void onUpdate() {\n        updatedAt = LocalDateTime.now();\n    }"
+        },
+        {
+          "name": "getId",
+          "returnType": "Long",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 75,
+          "endLine": 77,
+          "source": "public Long getId() {\n        return id;\n    }"
+        },
+        {
+          "name": "setId",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 79,
+          "endLine": 81,
+          "source": "public void setId(Long id) {\n        this.id = id;\n    }"
+        },
+        {
+          "name": "getEmployeeNumber",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 83,
+          "endLine": 85,
+          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+        },
+        {
+          "name": "setEmployeeNumber",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 87,
+          "endLine": 89,
+          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+        },
+        {
+          "name": "getFirstName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 91,
+          "endLine": 93,
+          "source": "public String getFirstName() {\n        return firstName;\n    }"
+        },
+        {
+          "name": "setFirstName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "firstName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 95,
+          "endLine": 97,
+          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+        },
+        {
+          "name": "getLastName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 99,
+          "endLine": 101,
+          "source": "public String getLastName() {\n        return lastName;\n    }"
+        },
+        {
+          "name": "setLastName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "lastName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 103,
+          "endLine": 105,
+          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+        },
+        {
+          "name": "getEmail",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 107,
+          "endLine": 109,
+          "source": "public String getEmail() {\n        return email;\n    }"
+        },
+        {
+          "name": "setEmail",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "email"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 111,
+          "endLine": 113,
+          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+        },
+        {
+          "name": "getDepartment",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 115,
+          "endLine": 117,
+          "source": "public String getDepartment() {\n        return department;\n    }"
+        },
+        {
+          "name": "setDepartment",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 119,
+          "endLine": 121,
+          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+        },
+        {
+          "name": "getSalary",
+          "returnType": "BigDecimal",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 123,
+          "endLine": 125,
+          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+        },
+        {
+          "name": "setSalary",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 127,
+          "endLine": 129,
+          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+        },
+        {
+          "name": "getActive",
+          "returnType": "Boolean",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 131,
+          "endLine": 133,
+          "source": "public Boolean getActive() {\n        return active;\n    }"
+        },
+        {
+          "name": "setActive",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Boolean",
+              "name": "active"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 135,
+          "endLine": 137,
+          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+        },
+        {
+          "name": "getCreatedAt",
+          "returnType": "LocalDateTime",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 139,
+          "endLine": 141,
+          "source": "public LocalDateTime getCreatedAt() {\n        return createdAt;\n    }"
+        },
+        {
+          "name": "setCreatedAt",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "createdAt"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 143,
+          "endLine": 145,
+          "source": "public void setCreatedAt(LocalDateTime createdAt) {\n        this.createdAt = createdAt;\n    }"
+        },
+        {
+          "name": "getUpdatedAt",
+          "returnType": "LocalDateTime",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 147,
+          "endLine": 149,
+          "source": "public LocalDateTime getUpdatedAt() {\n        return updatedAt;\n    }"
+        },
+        {
+          "name": "setUpdatedAt",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "updatedAt"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 151,
+          "endLine": 153,
+          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\n        this.updatedAt = updatedAt;\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.dto.EmployeeUpdateRequest",
+      "name": "EmployeeUpdateRequest",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java",
+      "startLine": 6,
+      "endLine": 73,
+      "annotations": [],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "firstName",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "lastName",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "Email",
+              "args": {
+                "message": "Email should be valid"
+              }
+            }
+          ]
+        },
+        {
+          "name": "department",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "salary",
+          "type": "BigDecimal",
+          "annotations": [
+            {
+              "name": "PositiveOrZero",
+              "args": {
+                "message": "Salary must be zero or positive"
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "type": "Boolean",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "EmployeeUpdateRequest",
+          "returnType": null,
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 22,
+          "endLine": 23,
+          "source": "public EmployeeUpdateRequest() {\n    }"
+        },
+        {
+          "name": "getFirstName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 25,
+          "endLine": 27,
+          "source": "public String getFirstName() {\n        return firstName;\n    }"
+        },
+        {
+          "name": "setFirstName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "firstName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 29,
+          "endLine": 31,
+          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+        },
+        {
+          "name": "getLastName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 33,
+          "endLine": 35,
+          "source": "public String getLastName() {\n        return lastName;\n    }"
+        },
+        {
+          "name": "setLastName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "lastName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 37,
+          "endLine": 39,
+          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+        },
+        {
+          "name": "getEmail",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 41,
+          "endLine": 43,
+          "source": "public String getEmail() {\n        return email;\n    }"
+        },
+        {
+          "name": "setEmail",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "email"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 45,
+          "endLine": 47,
+          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+        },
+        {
+          "name": "getDepartment",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 49,
+          "endLine": 51,
+          "source": "public String getDepartment() {\n        return department;\n    }"
+        },
+        {
+          "name": "setDepartment",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 53,
+          "endLine": 55,
+          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+        },
+        {
+          "name": "getSalary",
+          "returnType": "BigDecimal",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 57,
+          "endLine": 59,
+          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+        },
+        {
+          "name": "setSalary",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 61,
+          "endLine": 63,
+          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+        },
+        {
+          "name": "getActive",
+          "returnType": "Boolean",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 65,
+          "endLine": 67,
+          "source": "public Boolean getActive() {\n        return active;\n    }"
+        },
+        {
+          "name": "setActive",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Boolean",
+              "name": "active"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 69,
+          "endLine": 71,
+          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.dto.EmployeeResponse",
+      "name": "EmployeeResponse",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java",
+      "startLine": 6,
+      "endLine": 117,
+      "annotations": [],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "id",
+          "type": "Long",
+          "annotations": []
+        },
+        {
+          "name": "employeeNumber",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "firstName",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "lastName",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "department",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "salary",
+          "type": "BigDecimal",
+          "annotations": []
+        },
+        {
+          "name": "active",
+          "type": "Boolean",
+          "annotations": []
+        },
+        {
+          "name": "createdAt",
+          "type": "LocalDateTime",
+          "annotations": []
+        },
+        {
+          "name": "updatedAt",
+          "type": "LocalDateTime",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "EmployeeResponse",
+          "returnType": null,
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 19,
+          "endLine": 20,
+          "source": "public EmployeeResponse() {\n    }"
+        },
+        {
+          "name": "EmployeeResponse",
+          "returnType": null,
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            },
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            },
+            {
+              "type": "String",
+              "name": "firstName"
+            },
+            {
+              "type": "String",
+              "name": "lastName"
+            },
+            {
+              "type": "String",
+              "name": "email"
+            },
+            {
+              "type": "String",
+              "name": "department"
+            },
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            },
+            {
+              "type": "Boolean",
+              "name": "active"
+            },
+            {
+              "type": "LocalDateTime",
+              "name": "createdAt"
+            },
+            {
+              "type": "LocalDateTime",
+              "name": "updatedAt"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 22,
+          "endLine": 35,
+          "source": "public EmployeeResponse(Long id, String employeeNumber, String firstName, String lastName,\n            String email, String department, BigDecimal salary, Boolean active,\n            LocalDateTime createdAt, LocalDateTime updatedAt) {\n        this.id = id;\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n        this.active = active;\n        this.createdAt = createdAt;\n        this.updatedAt = updatedAt;\n    }"
+        },
+        {
+          "name": "getId",
+          "returnType": "Long",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 37,
+          "endLine": 39,
+          "source": "public Long getId() {\n        return id;\n    }"
+        },
+        {
+          "name": "setId",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 41,
+          "endLine": 43,
+          "source": "public void setId(Long id) {\n        this.id = id;\n    }"
+        },
+        {
+          "name": "getEmployeeNumber",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 45,
+          "endLine": 47,
+          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+        },
+        {
+          "name": "setEmployeeNumber",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 49,
+          "endLine": 51,
+          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+        },
+        {
+          "name": "getFirstName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 53,
+          "endLine": 55,
+          "source": "public String getFirstName() {\n        return firstName;\n    }"
+        },
+        {
+          "name": "setFirstName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "firstName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 57,
+          "endLine": 59,
+          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+        },
+        {
+          "name": "getLastName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 61,
+          "endLine": 63,
+          "source": "public String getLastName() {\n        return lastName;\n    }"
+        },
+        {
+          "name": "setLastName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "lastName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 65,
+          "endLine": 67,
+          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+        },
+        {
+          "name": "getEmail",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 69,
+          "endLine": 71,
+          "source": "public String getEmail() {\n        return email;\n    }"
+        },
+        {
+          "name": "setEmail",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "email"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 73,
+          "endLine": 75,
+          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+        },
+        {
+          "name": "getDepartment",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 77,
+          "endLine": 79,
+          "source": "public String getDepartment() {\n        return department;\n    }"
+        },
+        {
+          "name": "setDepartment",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 81,
+          "endLine": 83,
+          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+        },
+        {
+          "name": "getSalary",
+          "returnType": "BigDecimal",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 85,
+          "endLine": 87,
+          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+        },
+        {
+          "name": "setSalary",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 89,
+          "endLine": 91,
+          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+        },
+        {
+          "name": "getActive",
+          "returnType": "Boolean",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 93,
+          "endLine": 95,
+          "source": "public Boolean getActive() {\n        return active;\n    }"
+        },
+        {
+          "name": "setActive",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "Boolean",
+              "name": "active"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 97,
+          "endLine": 99,
+          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+        },
+        {
+          "name": "getCreatedAt",
+          "returnType": "LocalDateTime",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 101,
+          "endLine": 103,
+          "source": "public LocalDateTime getCreatedAt() {\n        return createdAt;\n    }"
+        },
+        {
+          "name": "setCreatedAt",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "createdAt"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 105,
+          "endLine": 107,
+          "source": "public void setCreatedAt(LocalDateTime createdAt) {\n        this.createdAt = createdAt;\n    }"
+        },
+        {
+          "name": "getUpdatedAt",
+          "returnType": "LocalDateTime",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 109,
+          "endLine": 111,
+          "source": "public LocalDateTime getUpdatedAt() {\n        return updatedAt;\n    }"
+        },
+        {
+          "name": "setUpdatedAt",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "LocalDateTime",
+              "name": "updatedAt"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 113,
+          "endLine": 115,
+          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\n        this.updatedAt = updatedAt;\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.dto.EmployeeCreateRequest",
+      "name": "EmployeeCreateRequest",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.dto",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java",
+      "startLine": 6,
+      "endLine": 87,
+      "annotations": [],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "employeeNumber",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "NotBlank",
+              "args": {
+                "message": "Employee number is required"
+              }
+            }
+          ]
+        },
+        {
+          "name": "firstName",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "NotBlank",
+              "args": {
+                "message": "First name is required"
+              }
+            }
+          ]
+        },
+        {
+          "name": "lastName",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "NotBlank",
+              "args": {
+                "message": "Last name is required"
+              }
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "annotations": [
+            {
+              "name": "NotBlank",
+              "args": {
+                "message": "Email is required"
+              }
+            },
+            {
+              "name": "Email",
+              "args": {
+                "message": "Email should be valid"
+              }
+            }
+          ]
+        },
+        {
+          "name": "department",
+          "type": "String",
+          "annotations": []
+        },
+        {
+          "name": "salary",
+          "type": "BigDecimal",
+          "annotations": [
+            {
+              "name": "PositiveOrZero",
+              "args": {
+                "message": "Salary must be zero or positive"
+              }
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "EmployeeCreateRequest",
+          "returnType": null,
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 26,
+          "endLine": 27,
+          "source": "public EmployeeCreateRequest() {\n    }"
+        },
+        {
+          "name": "EmployeeCreateRequest",
+          "returnType": null,
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            },
+            {
+              "type": "String",
+              "name": "firstName"
+            },
+            {
+              "type": "String",
+              "name": "lastName"
+            },
+            {
+              "type": "String",
+              "name": "email"
+            },
+            {
+              "type": "String",
+              "name": "department"
+            },
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 29,
+          "endLine": 37,
+          "source": "public EmployeeCreateRequest(String employeeNumber, String firstName, String lastName,\n            String email, String department, BigDecimal salary) {\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n    }"
+        },
+        {
+          "name": "getEmployeeNumber",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 39,
+          "endLine": 41,
+          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+        },
+        {
+          "name": "setEmployeeNumber",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 43,
+          "endLine": 45,
+          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+        },
+        {
+          "name": "getFirstName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 47,
+          "endLine": 49,
+          "source": "public String getFirstName() {\n        return firstName;\n    }"
+        },
+        {
+          "name": "setFirstName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "firstName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 51,
+          "endLine": 53,
+          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+        },
+        {
+          "name": "getLastName",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 55,
+          "endLine": 57,
+          "source": "public String getLastName() {\n        return lastName;\n    }"
+        },
+        {
+          "name": "setLastName",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "lastName"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 59,
+          "endLine": 61,
+          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+        },
+        {
+          "name": "getEmail",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 63,
+          "endLine": 65,
+          "source": "public String getEmail() {\n        return email;\n    }"
+        },
+        {
+          "name": "setEmail",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "email"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 67,
+          "endLine": 69,
+          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+        },
+        {
+          "name": "getDepartment",
+          "returnType": "String",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 71,
+          "endLine": 73,
+          "source": "public String getDepartment() {\n        return department;\n    }"
+        },
+        {
+          "name": "setDepartment",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 75,
+          "endLine": 77,
+          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+        },
+        {
+          "name": "getSalary",
+          "returnType": "BigDecimal",
+          "params": [],
+          "annotations": [],
+          "calls": [],
+          "startLine": 79,
+          "endLine": 81,
+          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+        },
+        {
+          "name": "setSalary",
+          "returnType": "void",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 83,
+          "endLine": 85,
+          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.controller.EmployeeController",
+      "name": "EmployeeController",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.controller",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 15,
+      "endLine": 71,
+      "annotations": [
+        {
+          "name": "RestController",
+          "args": {}
+        },
+        {
+          "name": "RequestMapping",
+          "args": {
+            "value": "/api/v1/employees"
+          }
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [
+        {
+          "name": "employeeService",
+          "type": "EmployeeService",
+          "annotations": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "EmployeeController",
+          "returnType": null,
+          "params": [
+            {
+              "type": "EmployeeService",
+              "name": "employeeService"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 21,
+          "endLine": 23,
+          "source": "public EmployeeController(EmployeeService employeeService) {\n        this.employeeService = employeeService;\n    }"
+        },
+        {
+          "name": "createEmployee",
+          "returnType": "ResponseEntity<EmployeeResponse>",
+          "params": [
+            {
+              "type": "EmployeeCreateRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "PostMapping",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "createEmployee",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            }
+          ],
+          "startLine": 25,
+          "endLine": 29,
+          "source": "@PostMapping\n    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {\n        EmployeeResponse response = employeeService.createEmployee(request);\n        return new ResponseEntity<>(response, HttpStatus.CREATED);\n    }"
+        },
+        {
+          "name": "getAllEmployees",
+          "returnType": "ResponseEntity<List<EmployeeResponse>>",
+          "params": [],
+          "annotations": [
+            {
+              "name": "GetMapping",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "getAllEmployees",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "ok",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 31,
+          "endLine": 35,
+          "source": "@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }"
+        },
+        {
+          "name": "getEmployeeById",
+          "returnType": "ResponseEntity<EmployeeResponse>",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "GetMapping",
+              "args": {
+                "value": "/{id}"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "getEmployeeById",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "ok",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 37,
+          "endLine": 41,
+          "source": "@GetMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {\n        EmployeeResponse employee = employeeService.getEmployeeById(id);\n        return ResponseEntity.ok(employee);\n    }"
+        },
+        {
+          "name": "updateEmployee",
+          "returnType": "ResponseEntity<EmployeeResponse>",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            },
+            {
+              "type": "EmployeeUpdateRequest",
+              "name": "request"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "PutMapping",
+              "args": {
+                "value": "/{id}"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "updateEmployee",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "ok",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 43,
+          "endLine": 49,
+          "source": "@PutMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> updateEmployee(\n            @PathVariable Long id,\n            @Valid @RequestBody EmployeeUpdateRequest request) {\n        EmployeeResponse response = employeeService.updateEmployee(id, request);\n        return ResponseEntity.ok(response);\n    }"
+        },
+        {
+          "name": "deleteEmployee",
+          "returnType": "ResponseEntity<Void>",
+          "params": [
+            {
+              "type": "Long",
+              "name": "id"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "DeleteMapping",
+              "args": {
+                "value": "/{id}"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "deleteEmployee",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "build",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "noContent",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 51,
+          "endLine": 55,
+          "source": "@DeleteMapping(\"/{id}\")\n    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {\n        employeeService.deleteEmployee(id);\n        return ResponseEntity.noContent().build();\n    }"
+        },
+        {
+          "name": "searchByDepartment",
+          "returnType": "ResponseEntity<List<EmployeeResponse>>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "GetMapping",
+              "args": {
+                "value": "/search"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "searchByDepartment",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "ok",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 57,
+          "endLine": 62,
+          "source": "@GetMapping(\"/search\")\n    public ResponseEntity<List<EmployeeResponse>> searchByDepartment(\n            @RequestParam String department) {\n        List<EmployeeResponse> employees = employeeService.searchByDepartment(department);\n        return ResponseEntity.ok(employees);\n    }"
+        },
+        {
+          "name": "getHighEarners",
+          "returnType": "ResponseEntity<List<EmployeeResponse>>",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "GetMapping",
+              "args": {
+                "value": "/high-earners"
+              }
+            }
+          ],
+          "calls": [
+            {
+              "name": "findHighEarners",
+              "receiverKind": "identifier",
+              "receiverName": "employeeService"
+            },
+            {
+              "name": "ok",
+              "receiverKind": "identifier",
+              "receiverName": "ResponseEntity"
+            }
+          ],
+          "startLine": 64,
+          "endLine": 69,
+          "source": "@GetMapping(\"/high-earners\")\n    public ResponseEntity<List<EmployeeResponse>> getHighEarners(\n            @RequestParam BigDecimal salary) {\n        List<EmployeeResponse> employees = employeeService.findHighEarners(salary);\n        return ResponseEntity.ok(employees);\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.config.SecurityConfig",
+      "name": "SecurityConfig",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.config",
+      "file": "src/main/java/com/example/migrationdemo/config/SecurityConfig.java",
+      "startLine": 24,
+      "endLine": 58,
+      "annotations": [
+        {
+          "name": "Configuration",
+          "args": {}
+        },
+        {
+          "name": "EnableWebSecurity",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "securityFilterChain",
+          "returnType": "SecurityFilterChain",
+          "params": [
+            {
+              "type": "HttpSecurity",
+              "name": "http"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Bean",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "httpBasic",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "authorizeHttpRequests",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "csrf",
+              "receiverKind": "identifier",
+              "receiverName": "http"
+            },
+            {
+              "name": "disable",
+              "receiverKind": "identifier",
+              "receiverName": "csrf"
+            },
+            {
+              "name": "permitAll",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "anyRequest",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "authenticated",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "requestMatchers",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "permitAll",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "requestMatchers",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "permitAll",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "requestMatchers",
+              "receiverKind": "identifier",
+              "receiverName": "auth"
+            },
+            {
+              "name": "withDefaults",
+              "receiverKind": "identifier",
+              "receiverName": "Customizer"
+            },
+            {
+              "name": "build",
+              "receiverKind": "identifier",
+              "receiverName": "http"
+            }
+          ],
+          "startLine": 28,
+          "endLine": 40,
+          "source": "@Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless REST API demo\n                .authorizeHttpRequests(auth -> auth\n                        .requestMatchers(\"/actuator/health\").permitAll()\n                        .requestMatchers(\"/actuator/info\").permitAll()\n                        .requestMatchers(\"/api/**\").authenticated()\n                        .anyRequest().permitAll())\n                .httpBasic(Customizer.withDefaults()); // Enable HTTP Basic authentication\n\n        return http.build();\n    }"
+        },
+        {
+          "name": "userDetailsService",
+          "returnType": "UserDetailsService",
+          "params": [
+            {
+              "type": "PasswordEncoder",
+              "name": "passwordEncoder"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Bean",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "build",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "roles",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "password",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "username",
+              "receiverKind": "other",
+              "receiverName": null
+            },
+            {
+              "name": "builder",
+              "receiverKind": "identifier",
+              "receiverName": "User"
+            },
+            {
+              "name": "encode",
+              "receiverKind": "identifier",
+              "receiverName": "passwordEncoder"
+            }
+          ],
+          "startLine": 42,
+          "endLine": 51,
+          "source": "@Bean\n    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {\n        UserDetails demoUser = User.builder()\n                .username(\"demo\")\n                .password(passwordEncoder.encode(\"demo123\"))\n                .roles(\"USER\")\n                .build();\n\n        return new InMemoryUserDetailsManager(demoUser);\n    }"
+        },
+        {
+          "name": "passwordEncoder",
+          "returnType": "PasswordEncoder",
+          "params": [],
+          "annotations": [
+            {
+              "name": "Bean",
+              "args": {}
+            }
+          ],
+          "calls": [],
+          "startLine": 53,
+          "endLine": 56,
+          "source": "@Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.config.JacksonConfig",
+      "name": "JacksonConfig",
+      "kind": "class",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.config",
+      "file": "src/main/java/com/example/migrationdemo/config/JacksonConfig.java",
+      "startLine": 18,
+      "endLine": 41,
+      "annotations": [
+        {
+          "name": "Configuration",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [],
+      "fields": [],
+      "methods": [
+        {
+          "name": "objectMapper",
+          "returnType": "ObjectMapper",
+          "params": [],
+          "annotations": [
+            {
+              "name": "Bean",
+              "args": {}
+            }
+          ],
+          "calls": [
+            {
+              "name": "registerModule",
+              "receiverKind": "identifier",
+              "receiverName": "mapper"
+            },
+            {
+              "name": "disable",
+              "receiverKind": "identifier",
+              "receiverName": "mapper"
+            },
+            {
+              "name": "setDefaultPropertyInclusion",
+              "receiverKind": "identifier",
+              "receiverName": "mapper"
+            },
+            {
+              "name": "disable",
+              "receiverKind": "identifier",
+              "receiverName": "mapper"
+            }
+          ],
+          "startLine": 21,
+          "endLine": 39,
+          "source": "@Bean\n    public ObjectMapper objectMapper() {\n        ObjectMapper mapper = new ObjectMapper();\n\n        // Support LocalDateTime serialization\n        mapper.registerModule(new JavaTimeModule());\n\n        // Use ISO 8601 date/time formatting\n        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);\n\n        // Do not serialize null values\n        mapper.setDefaultPropertyInclusion(\n                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);\n\n        // Disable pretty printing for production\n        mapper.disable(SerializationFeature.INDENT_OUTPUT);\n\n        return mapper;\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1410 @@
+{
+  "generatedAt": "2026-09-10T11:45:46.157Z",
+  "issue": {
+    "id": "ISSUE-004",
+    "title": "Outdated Apache POI (poi-ooxml 5.0.0) dependency exposes the employee Excel-upload endpoint to a known OOXML parsing vulnerability (CVE-2025-31672)",
+    "type": "Vulnerability",
+    "severity": "Medium",
+    "status": "Open",
+    "reportedOn": "2026-08-30",
+    "reportedBy": "Dependency audit",
+    "services": [
+      "employee-service"
+    ],
+    "symbols": [
+      "EmployeeController.uploadEmployee",
+      "EmployeeServiceImpl.uploadEmployee",
+      "ExcelUploadImpl.getEmployeeDataFromExcel",
+      "ExcelUploadImpl.isValidExcelFile"
+    ],
+    "files": [
+      "employee-service/pom.xml",
+      "employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/ExcelUploadImpl.java"
+    ],
+    "entryPoints": [],
+    "file": "docs/agent_output/00-issues/issue-register.xlsx",
+    "body": "# ISSUE-004 — Outdated Apache POI (poi-ooxml 5.0.0) dependency exposes the employee Excel-upload endpoint to a known OOXML parsing vulnerability (CVE-2025-31672)\n\n## Summary\n\nemployee-service/pom.xml explicitly pins org.apache.poi:poi-ooxml to version 5.0.0 (not inherited from the Spring Boot parent - a direct, hand-written <version> tag). That version carries a public, current CVE: CVE-2025-31672. Apache POI's OOXML reader performs no uniqueness check on ZIP entry paths inside an .xlsx/.docx/.pptx package when it loads the archive, so a crafted upload containing duplicate entry paths can make different tools (or different code paths within the same JVM) disagree about which entry's content is actually being read - an integrity/content-confusion defect, not remote code execution. Fixed upstream in poi-ooxml 5.4.0.\n\nThis dependency is not merely present in the tree - it is used directly on caller-uploaded, untrusted bytes. ExcelUploadImpl.getEmployeeDataFromExcel(MultipartFile) constructs new XSSFWorkbook(multipartFile.getInputStream()) straight from the HTTP request body of POST /api/v1/employee/excelUpload, with no antivirus/structure pre-check beyond a client-supplied Content-Type string match. This is a textbook case of the exact untrusted-input class CVE-2025-31672 concerns: the vulnerable parser is fed adversary-controlled OOXML content directly.\n\n## Data Flow (source → sink)\n\nSource: an authenticated-or-not caller (this endpoint has its own separate exposure - see ISSUE-002 - so today it is reachable by anyone) POSTs a .xlsx file to /api/v1/employee/excelUpload.\n1. EmployeeController.uploadEmployee (EmployeeController.java:41-42) receives the MultipartFile and calls employeeService.uploadEmployee(multipartFile) with no content inspection of its own.\n2. EmployeeServiceImpl.uploadEmployee (EmployeeServiceImpl.java:125-131) checks ExcelUploadImpl.isValidExcelFile(multipartFile) - a single string comparison against the client-supplied Content-Type header (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet), which a caller controls and can spoof; it is not a structural check of the file's actual bytes.\n3. Sink: ExcelUploadImpl.getEmployeeDataFromExcel (ExcelUploadImpl.java:27-30) calls new XSSFWorkbook(multipartFile.getInputStream()) directly on the uploaded bytes - this is the exact vulnerable poi-ooxml 5.0.0 OOXML-package-loading code path CVE-2025-31672 describes.\n4. The parsed rows are mapped into Employee objects (ExcelUploadImpl.java:39-57) and persisted via employeeRepository.saveAll(employees) (EmployeeServiceImpl.java:129) - so a successful parse of ambiguous/crafted content is written straight to the employee collection with no further validation.\n\n## Observed Behavior\n\nemployee-service/pom.xml declares <groupId>org.apache.poi</groupId><artifactId>poi-ooxml</artifactId><version>5.0.0</version> as an explicit, hand-pinned version - not inherited from the spring-boot-starter-parent (which does not manage a POI version at all), and not overridden anywhere else in the module.\nVersion 5.0.0 was released before the CVE-2025-31672 fix; the advisory affects poi-ooxml before 5.4.0.\nExcelUploadImpl.getEmployeeDataFromExcel constructs the workbook directly from the multipart upload stream with no pre-parse structural validation and no size/entry-count limit.\nisValidExcelFile only compares the request's declared Content-Type string - it does not open or validate the archive structure itself, so it provides no defence against a crafted file with a spoofed or accurate Content-Type header.\n\n## Expected Behavior\n\nEvery third-party library that parses untrusted, caller-supplied input (uploaded files, in particular) should be kept at or above the version that fixes its most recent known parsing-related CVE - not left pinned to whatever version was current when the dependency was first added.\nA version bump for a security fix should target the minimum version that actually contains the fix, verified against the advisory, and should be confirmed to actually take effect in the resolved dependency tree - not just the declared version string.\nIdeally, uploaded file structure should also be validated before being handed to a parsing library, independent of which library version is in use - out of scope for this issue's fix (which addresses the outdated-dependency root cause), but worth tracking as a defence-in-depth follow-up.\n\n## Steps to Reproduce\n\n1. Confirm the pinned version: grep -A1 poi-ooxml employee-service/pom.xml shows <version>5.0.0</version>.\n2. Cross-reference 5.0.0 against the public advisory at https://github.com/advisories/GHSA-gmg8-593g-7mv3 (CVE-2025-31672) - confirms affected versions are \"< 5.4.0\", so 5.0.0 is in range.\n3. Start employee-service (with configuaration-server and discovery-service for config/registration).\n4. Construct an .xlsx file containing two ZIP entries with the same internal path (the specific malformed-archive shape the advisory describes) and POST it to /api/v1/employee/excelUpload with Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.\n5. Observe that poi-ooxml 5.0.0 loads the archive without rejecting the duplicate entry, versus a patched (>=5.4.0) build, which throws rather than silently picking one entry - confirming the vulnerable code path is reachable from this endpoint.\nReproducibility: deterministic once a crafted file is constructed - this is a version/parsing-logic issue, not a race condition or timing-dependent condition.\n\n## Impact\n\nIntegrity: a crafted upload can cause the application to read different content than what another tool (or a human reviewer) sees when opening the same file, per the advisory's own description (\"tools disagree about what the document contains\"). Given this endpoint writes parsed rows straight into the employee collection, a content-confusion condition here has a direct path to inserting attacker-influenced data.\nNot remote code execution - the advisory itself characterises this as improper input validation leading to integrity loss, not arbitrary code execution or memory corruption.\nCompounds with ISSUE-002 (missing authentication): today this endpoint has no authentication requirement, so exploitation is not limited to a trusted internal user.\nSystemic risk beyond this one CVE: pinning a specific version and never revisiting it means this module will silently accumulate every future POI CVE too, not just this one - the fix should establish the pattern (explicit pin, deliberately kept current), not just resolve this single advisory.\n\n## Detection Notes\n\ngrep -A1 \"poi-ooxml\" employee-service/pom.xml shows the pinned <version>5.0.0</version> - the exact signature to re-check after a fix (the version string should read 5.4.0 or higher).\ngrep -rn \"XSSFWorkbook\" employee-service/src/main/java confirms exactly one call site, ExcelUploadImpl.java:30, taking multipartFile.getInputStream() directly - the sink this fix must not change the shape of (only the dependency version), so re-scanning after a fix should still find the same call site, just backed by a patched library version.\nmvn dependency:tree run inside employee-service, filtered to org.apache.poi, is the authoritative check that the resolved (not just declared) version reflects the fix.\n"
+  },
+  "sources": {
+    "issueFile": "docs/agent_output/00-issues/issue-register.xlsx",
+    "architecture": true,
+    "functionReference": true,
+    "artifacts": ".github/.pipeline-context/artifacts.json",
+    "artifactsGeneratedAt": "2026-09-10T11:00:06.470Z",
+    "graphLive": true,
+    "dispatchEdges": 0
+  },
+  "focus": [
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#EmployeeController(EmployeeService)",
+      "label": "EmployeeController.EmployeeController()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 21,
+      "endLine": 23,
+      "signature": "void EmployeeController(EmployeeService employeeService)",
+      "endpoint": null,
+      "annotations": [],
+      "source": "public EmployeeController(EmployeeService employeeService) {\n        this.employeeService = employeeService;\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": false,
+          "calledMethods": [],
+          "sameNameMethods": []
+        }
+      ],
+      "upstream": [],
+      "downstream": [],
+      "upstreamChains": [],
+      "downstreamChains": []
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+      "label": "EmployeeController.createEmployee()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 25,
+      "endLine": 29,
+      "signature": "ResponseEntity<EmployeeResponse> createEmployee(EmployeeCreateRequest request)",
+      "endpoint": "POST /api/v1/employees",
+      "annotations": [
+        "@PostMapping"
+      ],
+      "source": "@PostMapping\n    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {\n        EmployeeResponse response = employeeService.createEmployee(request);\n        return new ResponseEntity<>(response, HttpStatus.CREATED);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+          "label": "EmployeeService.createEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 29,
+          "endLine": 44,
+          "signature": "EmployeeResponse createEmployee(EmployeeCreateRequest request)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.createEmployee()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+              "label": "EmployeeService.createEmployee()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 29,
+              "endLine": 44,
+              "signature": "EmployeeResponse createEmployee(EmployeeCreateRequest request)",
+              "source": "@Transactional\n    public EmployeeResponse createEmployee(EmployeeCreateRequest request) {\n        // Check for duplicate employee number\n        if (employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {\n            throw new DuplicateEmployeeException(\"employeeNumber\", request.getEmployeeNumber());\n        }\n\n        // Check for duplicate email\n        if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n            throw new DuplicateEmployeeException(\"email\", request.getEmail());\n        }\n\n        Employee employee = employeeMapper.toEntity(request);\n        Employee savedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(savedEmployee);\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+          "label": "EmployeeService.createEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 29,
+          "endLine": 44,
+          "signature": "EmployeeResponse createEmployee(EmployeeCreateRequest request)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.repository.EmployeeRepository#findByEmployeeNumber(String)",
+          "label": "EmployeeRepository.findByEmployeeNumber()",
+          "type": "EmployeeRepository",
+          "typeId": "com.example.migrationdemo.repository.EmployeeRepository",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+          "startLine": 16,
+          "endLine": 16,
+          "signature": "Optional<Employee> findByEmployeeNumber(String employeeNumber)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.mapper.EmployeeMapper#toEntity(EmployeeCreateRequest)",
+          "label": "EmployeeMapper.toEntity()",
+          "type": "EmployeeMapper",
+          "typeId": "com.example.migrationdemo.mapper.EmployeeMapper",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+          "startLine": 11,
+          "endLine": 19,
+          "signature": "Employee toEntity(EmployeeCreateRequest request)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)",
+          "label": "EmployeeMapper.toResponse()",
+          "type": "EmployeeMapper",
+          "typeId": "com.example.migrationdemo.mapper.EmployeeMapper",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+          "startLine": 21,
+          "endLine": 33,
+          "signature": "EmployeeResponse toResponse(Employee employee)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.createEmployee()",
+          "EmployeeService.createEmployee()",
+          "EmployeeRepository.findByEmployeeNumber()"
+        ],
+        [
+          "EmployeeController.createEmployee()",
+          "EmployeeService.createEmployee()",
+          "EmployeeMapper.toEntity()"
+        ],
+        [
+          "EmployeeController.createEmployee()",
+          "EmployeeService.createEmployee()",
+          "EmployeeMapper.toResponse()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+      "label": "EmployeeController.getAllEmployees()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 31,
+      "endLine": 35,
+      "signature": "ResponseEntity<List<EmployeeResponse>> getAllEmployees()",
+      "endpoint": "GET /api/v1/employees",
+      "annotations": [
+        "@GetMapping"
+      ],
+      "source": "@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+          "label": "EmployeeService.getAllEmployees()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 46,
+          "endLine": 52,
+          "signature": "List<EmployeeResponse> getAllEmployees()",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.getAllEmployees()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+              "label": "EmployeeService.getAllEmployees()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 46,
+              "endLine": 52,
+              "signature": "List<EmployeeResponse> getAllEmployees()",
+              "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+          "label": "EmployeeService.getAllEmployees()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 46,
+          "endLine": 52,
+          "signature": "List<EmployeeResponse> getAllEmployees()",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.getAllEmployees()",
+          "EmployeeService.getAllEmployees()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#getEmployeeById(Long)",
+      "label": "EmployeeController.getEmployeeById()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 37,
+      "endLine": 41,
+      "signature": "ResponseEntity<EmployeeResponse> getEmployeeById(Long id)",
+      "endpoint": "GET /api/v1/employees/{id}",
+      "annotations": [
+        "@GetMapping"
+      ],
+      "source": "@GetMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {\n        EmployeeResponse employee = employeeService.getEmployeeById(id);\n        return ResponseEntity.ok(employee);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getEmployeeById(Long)",
+          "label": "EmployeeService.getEmployeeById()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 54,
+          "endLine": 59,
+          "signature": "EmployeeResponse getEmployeeById(Long id)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.getEmployeeById()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#getEmployeeById(Long)",
+              "label": "EmployeeService.getEmployeeById()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 54,
+              "endLine": 59,
+              "signature": "EmployeeResponse getEmployeeById(Long id)",
+              "source": "@Transactional(readOnly = true)\n    public EmployeeResponse getEmployeeById(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        return employeeMapper.toResponse(employee);\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getEmployeeById(Long)",
+          "label": "EmployeeService.getEmployeeById()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 54,
+          "endLine": 59,
+          "signature": "EmployeeResponse getEmployeeById(Long id)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)",
+          "label": "EmployeeMapper.toResponse()",
+          "type": "EmployeeMapper",
+          "typeId": "com.example.migrationdemo.mapper.EmployeeMapper",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+          "startLine": 21,
+          "endLine": 33,
+          "signature": "EmployeeResponse toResponse(Employee employee)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.getEmployeeById()",
+          "EmployeeService.getEmployeeById()",
+          "EmployeeMapper.toResponse()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)",
+      "label": "EmployeeController.updateEmployee()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 43,
+      "endLine": 49,
+      "signature": "ResponseEntity<EmployeeResponse> updateEmployee(Long id, EmployeeUpdateRequest request)",
+      "endpoint": "PUT /api/v1/employees/{id}",
+      "annotations": [
+        "@PutMapping"
+      ],
+      "source": "@PutMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> updateEmployee(\n            @PathVariable Long id,\n            @Valid @RequestBody EmployeeUpdateRequest request) {\n        EmployeeResponse response = employeeService.updateEmployee(id, request);\n        return ResponseEntity.ok(response);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+          "label": "EmployeeService.updateEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 61,
+          "endLine": 95,
+          "signature": "EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.updateEmployee()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+              "label": "EmployeeService.updateEmployee()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 61,
+              "endLine": 95,
+              "signature": "EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request)",
+              "source": "@Transactional\n    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n\n        // Check for duplicate email if email is being updated\n        if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) {\n            if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n                throw new DuplicateEmployeeException(\"email\", request.getEmail());\n            }\n        }\n\n        // Update fields\n        if (request.getFirstName() != null) {\n            employee.setFirstName(request.getFirstName());\n        }\n        if (request.getLastName() != null) {\n            employee.setLastName(request.getLastName());\n        }\n        if (request.getEmail() != null) {\n            employee.setEmail(request.getEmail());\n        }\n        if (request.getDepartment() != null) {\n            employee.setDepartment(request.getDepartment());\n        }\n        if (request.getSalary() != null) {\n            employee.setSalary(request.getSalary());\n        }\n        if (request.getActive() != null) {\n            employee.setActive(request.getActive());\n        }\n\n        Employee updatedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(updatedEmployee);\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+          "label": "EmployeeService.updateEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 61,
+          "endLine": 95,
+          "signature": "EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.repository.EmployeeRepository#findByEmployeeNumber(String)",
+          "label": "EmployeeRepository.findByEmployeeNumber()",
+          "type": "EmployeeRepository",
+          "typeId": "com.example.migrationdemo.repository.EmployeeRepository",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+          "startLine": 16,
+          "endLine": 16,
+          "signature": "Optional<Employee> findByEmployeeNumber(String employeeNumber)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)",
+          "label": "EmployeeMapper.toResponse()",
+          "type": "EmployeeMapper",
+          "typeId": "com.example.migrationdemo.mapper.EmployeeMapper",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java",
+          "startLine": 21,
+          "endLine": 33,
+          "signature": "EmployeeResponse toResponse(Employee employee)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.updateEmployee()",
+          "EmployeeService.updateEmployee()",
+          "EmployeeRepository.findByEmployeeNumber()"
+        ],
+        [
+          "EmployeeController.updateEmployee()",
+          "EmployeeService.updateEmployee()",
+          "EmployeeMapper.toResponse()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#deleteEmployee(Long)",
+      "label": "EmployeeController.deleteEmployee()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 51,
+      "endLine": 55,
+      "signature": "ResponseEntity<Void> deleteEmployee(Long id)",
+      "endpoint": "DELETE /api/v1/employees/{id}",
+      "annotations": [
+        "@DeleteMapping"
+      ],
+      "source": "@DeleteMapping(\"/{id}\")\n    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {\n        employeeService.deleteEmployee(id);\n        return ResponseEntity.noContent().build();\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#deleteEmployee(Long)",
+          "label": "EmployeeService.deleteEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 97,
+          "endLine": 102,
+          "signature": "void deleteEmployee(Long id)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.deleteEmployee()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#deleteEmployee(Long)",
+              "label": "EmployeeService.deleteEmployee()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 97,
+              "endLine": 102,
+              "signature": "void deleteEmployee(Long id)",
+              "source": "@Transactional\n    public void deleteEmployee(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        employeeRepository.delete(employee);\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#deleteEmployee(Long)",
+          "label": "EmployeeService.deleteEmployee()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 97,
+          "endLine": 102,
+          "signature": "void deleteEmployee(Long id)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.deleteEmployee()",
+          "EmployeeService.deleteEmployee()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#searchByDepartment(String)",
+      "label": "EmployeeController.searchByDepartment()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 57,
+      "endLine": 62,
+      "signature": "ResponseEntity<List<EmployeeResponse>> searchByDepartment(String department)",
+      "endpoint": "GET /api/v1/employees/search",
+      "annotations": [
+        "@GetMapping"
+      ],
+      "source": "@GetMapping(\"/search\")\n    public ResponseEntity<List<EmployeeResponse>> searchByDepartment(\n            @RequestParam String department) {\n        List<EmployeeResponse> employees = employeeService.searchByDepartment(department);\n        return ResponseEntity.ok(employees);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#searchByDepartment(String)",
+          "label": "EmployeeService.searchByDepartment()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 104,
+          "endLine": 110,
+          "signature": "List<EmployeeResponse> searchByDepartment(String department)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.searchByDepartment()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#searchByDepartment(String)",
+              "label": "EmployeeService.searchByDepartment()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 104,
+              "endLine": 110,
+              "signature": "List<EmployeeResponse> searchByDepartment(String department)",
+              "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> searchByDepartment(String department) {\n        return employeeRepository.findByDepartmentIgnoreCase(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#searchByDepartment(String)",
+          "label": "EmployeeService.searchByDepartment()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 104,
+          "endLine": 110,
+          "signature": "List<EmployeeResponse> searchByDepartment(String department)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.repository.EmployeeRepository#findByDepartmentIgnoreCase(String)",
+          "label": "EmployeeRepository.findByDepartmentIgnoreCase()",
+          "type": "EmployeeRepository",
+          "typeId": "com.example.migrationdemo.repository.EmployeeRepository",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+          "startLine": 18,
+          "endLine": 18,
+          "signature": "List<Employee> findByDepartmentIgnoreCase(String department)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.searchByDepartment()",
+          "EmployeeService.searchByDepartment()",
+          "EmployeeRepository.findByDepartmentIgnoreCase()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeController.uploadEmployee",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#getHighEarners(BigDecimal)",
+      "label": "EmployeeController.getHighEarners()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 64,
+      "endLine": 69,
+      "signature": "ResponseEntity<List<EmployeeResponse>> getHighEarners(BigDecimal salary)",
+      "endpoint": "GET /api/v1/employees/high-earners",
+      "annotations": [
+        "@GetMapping"
+      ],
+      "source": "@GetMapping(\"/high-earners\")\n    public ResponseEntity<List<EmployeeResponse>> getHighEarners(\n            @RequestParam BigDecimal salary) {\n        List<EmployeeResponse> employees = employeeService.findHighEarners(salary);\n        return ResponseEntity.ok(employees);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#findHighEarners(BigDecimal)",
+          "label": "EmployeeService.findHighEarners()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 120,
+          "endLine": 126,
+          "signature": "List<EmployeeResponse> findHighEarners(BigDecimal salary)",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.findHighEarners()"
+          ],
+          "sameNameMethods": []
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#findHighEarners(BigDecimal)",
+          "label": "EmployeeService.findHighEarners()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 120,
+          "endLine": 126,
+          "signature": "List<EmployeeResponse> findHighEarners(BigDecimal salary)",
+          "endpoint": null
+        },
+        {
+          "id": "com.example.migrationdemo.repository.EmployeeRepository#findHighEarners(BigDecimal)",
+          "label": "EmployeeRepository.findHighEarners()",
+          "type": "EmployeeRepository",
+          "typeId": "com.example.migrationdemo.repository.EmployeeRepository",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+          "startLine": 37,
+          "endLine": 45,
+          "signature": "List<Employee> findHighEarners(BigDecimal salary)",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.getHighEarners()",
+          "EmployeeService.findHighEarners()",
+          "EmployeeRepository.findHighEarners()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeServiceImpl.uploadEmployee",
+      "resolved": false
+    },
+    {
+      "symbol": "ExcelUploadImpl.getEmployeeDataFromExcel",
+      "resolved": false
+    },
+    {
+      "symbol": "ExcelUploadImpl.isValidExcelFile",
+      "resolved": false
+    }
+  ],
+  "affectedArea": {
+    "modules": [
+      "spring-boot-migration-demo"
+    ],
+    "types": [
+      "EmployeeController",
+      "EmployeeMapper",
+      "EmployeeRepository",
+      "EmployeeService"
+    ],
+    "endpoints": [
+      "DELETE /api/v1/employees/{id}",
+      "GET /api/v1/employees",
+      "GET /api/v1/employees/high-earners",
+      "GET /api/v1/employees/search",
+      "GET /api/v1/employees/{id}",
+      "POST /api/v1/employees",
+      "PUT /api/v1/employees/{id}"
+    ],
+    "scheduledJobs": [],
+    "crossServiceConsumers": []
+  },
+  "architectureContext": {
+    "moduleRows": [
+      "| `spring-boot-migration-demo` | jar | spring-boot-starter-web, spring-boot-starter-data-jpa, spring-boot-starter-validation, spring-boot-starter-security, spring-boot-starter-actuator, spring-boot-starter-test |"
+    ],
+    "typeBreakdownRows": [
+      "| `spring-boot-migration-demo` | 1 | 1 | 1 | 1 | 3 | 2 | 1 | 2 | 5 |"
+    ],
+    "endpointRows": [
+      "| `POST` | `/api/v1/employees` | EmployeeController.createEmployee() | `spring-boot-migration-demo` |",
+      "| `GET` | `/api/v1/employees` | EmployeeController.getAllEmployees() | `spring-boot-migration-demo` |",
+      "| `GET` | `/api/v1/employees/{id}` | EmployeeController.getEmployeeById() | `spring-boot-migration-demo` |",
+      "| `PUT` | `/api/v1/employees/{id}` | EmployeeController.updateEmployee() | `spring-boot-migration-demo` |",
+      "| `DELETE` | `/api/v1/employees/{id}` | EmployeeController.deleteEmployee() | `spring-boot-migration-demo` |",
+      "| `GET` | `/api/v1/employees/high-earners` | EmployeeController.getHighEarners() | `spring-boot-migration-demo` |",
+      "| `GET` | `/api/v1/employees/search` | EmployeeController.searchByDepartment() | `spring-boot-migration-demo` |"
+    ],
+    "serviceMap": "```mermaid\nflowchart LR\n  spring_boot_migration_demo[\"spring-boot-migration-demo\"]\n```",
+    "observations": [
+      "- Each service (`department-service`, `employee-service`, `report-service`, `sheduler-service`) follows the same layered convention: `controller` → `service` → `repository` → `model`/`entity`, backed by MongoDB repositories.",
+      "- `configuaration-server` and `discovery-service` are infrastructure services (Spring Cloud Config + Eureka) that every business service depends on at startup via `bootstrap.properties`.",
+      "- No Feign clients were detected — cross-service calls, if any, likely go through `RestTemplate`/`WebClient` rather than declarative Feign interfaces. Worth confirming if service-to-service coupling should show up as graph edges.",
+      "- The generated Neo4j graph can be queried directly (e.g. `MATCH (m:Module)-[:CONTAINS]->(t:Type) RETURN m.name, count(t)`) for deeper, ad-hoc architecture questions beyond this static document."
+    ]
+  },
+  "functionReferenceExcerpts": [
+    {
+      "heading": "EmployeeController.EmployeeController()",
+      "text": "#### `EmployeeController.EmployeeController()`\n- **Signature**: `void EmployeeController(EmployeeService employeeService)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 21-23)\n- **Calls**: _none resolved_\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\npublic EmployeeController(EmployeeService employeeService) {\n        this.employeeService = employeeService;\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.createEmployee()",
+      "text": "#### `EmployeeController.createEmployee()`\n- **Signature**: `ResponseEntity<EmployeeResponse> createEmployee(EmployeeCreateRequest request)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 25-29)\n- **Annotations**: @PostMapping\n- **REST endpoint**: `POST /api/v1/employees`\n- **Calls**: `EmployeeService.createEmployee()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@PostMapping\n    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {\n        EmployeeResponse response = employeeService.createEmployee(request);\n        return new ResponseEntity<>(response, HttpStatus.CREATED);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.getAllEmployees()",
+      "text": "#### `EmployeeController.getAllEmployees()`\n- **Signature**: `ResponseEntity<List<EmployeeResponse>> getAllEmployees()`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 31-35)\n- **Annotations**: @GetMapping\n- **REST endpoint**: `GET /api/v1/employees`\n- **Calls**: `EmployeeService.getAllEmployees()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.getEmployeeById()",
+      "text": "#### `EmployeeController.getEmployeeById()`\n- **Signature**: `ResponseEntity<EmployeeResponse> getEmployeeById(Long id)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 37-41)\n- **Annotations**: @GetMapping(\"/{id}\")\n- **REST endpoint**: `GET /api/v1/employees/{id}`\n- **Calls**: `EmployeeService.getEmployeeById()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@GetMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {\n        EmployeeResponse employee = employeeService.getEmployeeById(id);\n        return ResponseEntity.ok(employee);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.updateEmployee()",
+      "text": "#### `EmployeeController.updateEmployee()`\n- **Signature**: `ResponseEntity<EmployeeResponse> updateEmployee(Long id, EmployeeUpdateRequest request)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 43-49)\n- **Annotations**: @PutMapping(\"/{id}\")\n- **REST endpoint**: `PUT /api/v1/employees/{id}`\n- **Calls**: `EmployeeService.updateEmployee()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@PutMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> updateEmployee(\n            @PathVariable Long id,\n            @Valid @RequestBody EmployeeUpdateRequest request) {\n        EmployeeResponse response = employeeService.updateEmployee(id, request);\n        return ResponseEntity.ok(response);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.deleteEmployee()",
+      "text": "#### `EmployeeController.deleteEmployee()`\n- **Signature**: `ResponseEntity<Void> deleteEmployee(Long id)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 51-55)\n- **Annotations**: @DeleteMapping(\"/{id}\")\n- **REST endpoint**: `DELETE /api/v1/employees/{id}`\n- **Calls**: `EmployeeService.deleteEmployee()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@DeleteMapping(\"/{id}\")\n    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {\n        employeeService.deleteEmployee(id);\n        return ResponseEntity.noContent().build();\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.searchByDepartment()",
+      "text": "#### `EmployeeController.searchByDepartment()`\n- **Signature**: `ResponseEntity<List<EmployeeResponse>> searchByDepartment(String department)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 57-62)\n- **Annotations**: @GetMapping(\"/search\")\n- **REST endpoint**: `GET /api/v1/employees/search`\n- **Calls**: `EmployeeService.searchByDepartment()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@GetMapping(\"/search\")\n    public ResponseEntity<List<EmployeeResponse>> searchByDepartment(\n            @RequestParam String department) {\n        List<EmployeeResponse> employees = employeeService.searchByDepartment(department);\n        return ResponseEntity.ok(employees);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeController.getHighEarners()",
+      "text": "#### `EmployeeController.getHighEarners()`\n- **Signature**: `ResponseEntity<List<EmployeeResponse>> getHighEarners(BigDecimal salary)`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 64-69)\n- **Annotations**: @GetMapping(\"/high-earners\")\n- **REST endpoint**: `GET /api/v1/employees/high-earners`\n- **Calls**: `EmployeeService.findHighEarners()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@GetMapping(\"/high-earners\")\n    public ResponseEntity<List<EmployeeResponse>> getHighEarners(\n            @RequestParam BigDecimal salary) {\n        List<EmployeeResponse> employees = employeeService.findHighEarners(salary);\n        return ResponseEntity.ok(employees);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeMapper.toEntity()",
+      "text": "#### `EmployeeMapper.toEntity()`\n- **Signature**: `Employee toEntity(EmployeeCreateRequest request)`\n- **Location**: `src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java` (lines 11-19)\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeService.createEmployee()`\n\n```java\npublic Employee toEntity(EmployeeCreateRequest request) {\n        return new Employee(\n                request.getEmployeeNumber(),\n                request.getFirstName(),\n                request.getLastName(),\n                request.getEmail(),\n                request.getDepartment(),\n                request.getSalary());\n    }\n```"
+    },
+    {
+      "heading": "EmployeeMapper.toResponse()",
+      "text": "#### `EmployeeMapper.toResponse()`\n- **Signature**: `EmployeeResponse toResponse(Employee employee)`\n- **Location**: `src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java` (lines 21-33)\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeService.createEmployee()`, `EmployeeService.getEmployeeById()`, `EmployeeService.updateEmployee()`\n\n```java\npublic EmployeeResponse toResponse(Employee employee) {\n        return new EmployeeResponse(\n                employee.getId(),\n                employee.getEmployeeNumber(),\n                employee.getFirstName(),\n                employee.getLastName(),\n                employee.getEmail(),\n                employee.getDepartment(),\n                employee.getSalary(),\n                employee.getActive(),\n                employee.getCreatedAt(),\n                employee.getUpdatedAt());\n    }\n```"
+    },
+    {
+      "heading": "EmployeeRepository.findByEmployeeNumber()",
+      "text": "#### `EmployeeRepository.findByEmployeeNumber()`\n- **Signature**: `Optional<Employee> findByEmployeeNumber(String employeeNumber)`\n- **Location**: `src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java` (lines 16-16)\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeService.createEmployee()`, `EmployeeService.createEmployee()`, `EmployeeService.updateEmployee()`\n\n```java\nOptional<Employee> findByEmployeeNumber(String employeeNumber);\n```"
+    },
+    {
+      "heading": "EmployeeRepository.findByDepartmentIgnoreCase()",
+      "text": "#### `EmployeeRepository.findByDepartmentIgnoreCase()`\n- **Signature**: `List<Employee> findByDepartmentIgnoreCase(String department)`\n- **Location**: `src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java` (lines 18-18)\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeService.searchByDepartment()`\n\n```java\nList<Employee> findByDepartmentIgnoreCase(String department);\n```"
+    },
+    {
+      "heading": "EmployeeRepository.findHighEarners()",
+      "text": "#### `EmployeeRepository.findHighEarners()`\n- **Signature**: `List<Employee> findHighEarners(BigDecimal salary)`\n- **Location**: `src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java` (lines 37-45)\n- **Annotations**: @Query(\"\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"\", nativeQuery = \"true\")\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeService.findHighEarners()`\n\n```java\n@Query(value = \"\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"\", nativeQuery = true)\n    List<Employee> findHighEarners(\n            @Param(\"salary\") BigDecimal salary);\n```"
+    },
+    {
+      "heading": "EmployeeService.createEmployee()",
+      "text": "#### `EmployeeService.createEmployee()`\n- **Signature**: `EmployeeResponse createEmployee(EmployeeCreateRequest request)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 29-44)\n- **Annotations**: @Transactional\n- **Calls**: `EmployeeRepository.findByEmployeeNumber()`, `EmployeeRepository.findByEmployeeNumber()`, `EmployeeMapper.toEntity()`, `EmployeeMapper.toResponse()`\n- **Called by**: `EmployeeController.createEmployee()`\n\n```java\n@Transactional\n    public EmployeeResponse createEmployee(EmployeeCreateRequest request) {\n        // Check for duplicate employee number\n        if (employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {\n            throw new DuplicateEmployeeException(\"employeeNumber\", request.getEmployeeNumber());\n        }\n\n        // Check for duplicate email\n        if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n            throw new DuplicateEmployeeException(\"email\", request.getEmail());\n        }\n\n        Employee employee = employeeMapper.toEntity(request);\n        Employee savedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(savedEmployee);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.getAllEmployees()",
+      "text": "#### `EmployeeService.getAllEmployees()`\n- **Signature**: `List<EmployeeResponse> getAllEmployees()`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 46-52)\n- **Annotations**: @Transactional(readOnly = \"true\")\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeController.getAllEmployees()`\n\n```java\n@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.getEmployeeById()",
+      "text": "#### `EmployeeService.getEmployeeById()`\n- **Signature**: `EmployeeResponse getEmployeeById(Long id)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 54-59)\n- **Annotations**: @Transactional(readOnly = \"true\")\n- **Calls**: `EmployeeMapper.toResponse()`\n- **Called by**: `EmployeeController.getEmployeeById()`\n\n```java\n@Transactional(readOnly = true)\n    public EmployeeResponse getEmployeeById(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        return employeeMapper.toResponse(employee);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.updateEmployee()",
+      "text": "#### `EmployeeService.updateEmployee()`\n- **Signature**: `EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 61-95)\n- **Annotations**: @Transactional\n- **Calls**: `EmployeeRepository.findByEmployeeNumber()`, `EmployeeMapper.toResponse()`\n- **Called by**: `EmployeeController.updateEmployee()`\n\n```java\n@Transactional\n    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n\n        // Check for duplicate email if email is being updated\n        if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) {\n            if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n                throw new DuplicateEmployeeException(\"email\", request.getEmail());\n            }\n        }\n\n        // Update fields\n        if (request.getFirstName() != null) {\n            employee.setFirstName(request.getFirstName());\n        }\n        if (request.getLastName() != null) {\n            employee.setLastName(request.getLastName());\n        }\n        if (request.getEmail() != null) {\n            employee.setEmail(request.getEmail());\n        }\n        if (request.getDepartment() != null) {\n            employee.setDepartment(request.getDepartment());\n        }\n        if (request.getSalary() != null) {\n            employee.setSalary(request.getSalary());\n        }\n        if (request.getActive() != null) {\n            employee.setActive(request.getActive());\n        }\n\n        Employee updatedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(updatedEmployee);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.deleteEmployee()",
+      "text": "#### `EmployeeService.deleteEmployee()`\n- **Signature**: `void deleteEmployee(Long id)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 97-102)\n- **Annotations**: @Transactional\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeController.deleteEmployee()`\n\n```java\n@Transactional\n    public void deleteEmployee(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        employeeRepository.delete(employee);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.searchByDepartment()",
+      "text": "#### `EmployeeService.searchByDepartment()`\n- **Signature**: `List<EmployeeResponse> searchByDepartment(String department)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 104-110)\n- **Annotations**: @Transactional(readOnly = \"true\")\n- **Calls**: `EmployeeRepository.findByDepartmentIgnoreCase()`\n- **Called by**: `EmployeeController.searchByDepartment()`\n\n```java\n@Transactional(readOnly = true)\n    public List<EmployeeResponse> searchByDepartment(String department) {\n        return employeeRepository.findByDepartmentIgnoreCase(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.findHighEarners()",
+      "text": "#### `EmployeeService.findHighEarners()`\n- **Signature**: `List<EmployeeResponse> findHighEarners(BigDecimal salary)`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 120-126)\n- **Annotations**: @Transactional(readOnly = \"true\")\n- **Calls**: `EmployeeRepository.findHighEarners()`\n- **Called by**: `EmployeeController.getHighEarners()`\n\n```java\n@Transactional(readOnly = true)\n    public List<EmployeeResponse> findHighEarners(BigDecimal salary) {\n        return employeeRepository.findHighEarners(salary)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }\n```"
+    }
+  ],
+  "graph": {
+    "live": true,
+    "host": "neo4j+s://7d610372.databases.neo4j.io",
+    "envFile": ".github\\skills\\02-root-cause-analyst\\.env",
+    "depth": 4,
+    "perMethod": {
+      "com.example.migrationdemo.controller.EmployeeController#EmployeeController(EmployeeService)": {
+        "callerChains": [],
+        "calleeChains": [],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.repository.EmployeeRepository#findByEmployeeNumber(String)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.mapper.EmployeeMapper#toEntity(EmployeeCreateRequest)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#createEmployee(EmployeeCreateRequest)",
+            "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+            "com.example.migrationdemo.service.EmployeeService#getAllEmployees()"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#getEmployeeById(Long)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getEmployeeById(Long)",
+            "com.example.migrationdemo.service.EmployeeService#getEmployeeById(Long)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getEmployeeById(Long)",
+            "com.example.migrationdemo.service.EmployeeService#getEmployeeById(Long)",
+            "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+            "com.example.migrationdemo.repository.EmployeeRepository#findByEmployeeNumber(String)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)",
+            "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+            "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#deleteEmployee(Long)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#deleteEmployee(Long)",
+            "com.example.migrationdemo.service.EmployeeService#deleteEmployee(Long)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#searchByDepartment(String)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#searchByDepartment(String)",
+            "com.example.migrationdemo.service.EmployeeService#searchByDepartment(String)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#searchByDepartment(String)",
+            "com.example.migrationdemo.service.EmployeeService#searchByDepartment(String)",
+            "com.example.migrationdemo.repository.EmployeeRepository#findByDepartmentIgnoreCase(String)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      },
+      "com.example.migrationdemo.controller.EmployeeController#getHighEarners(BigDecimal)": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getHighEarners(BigDecimal)",
+            "com.example.migrationdemo.service.EmployeeService#findHighEarners(BigDecimal)"
+          ],
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getHighEarners(BigDecimal)",
+            "com.example.migrationdemo.service.EmployeeService#findHighEarners(BigDecimal)",
+            "com.example.migrationdemo.repository.EmployeeRepository#findHighEarners(BigDecimal)"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      }
+    },
+    "nodeCounts": [
+      {
+        "label": "Method",
+        "count": 127
+      },
+      {
+        "label": "Type",
+        "count": 17
+      },
+      {
+        "label": "ContextNote",
+        "count": 13
+      },
+      {
+        "label": "MavenDependency",
+        "count": 12
+      },
+      {
+        "label": "Package",
+        "count": 11
+      },
+      {
+        "label": "Endpoint",
+        "count": 7
+      },
+      {
+        "label": "ExternalType",
+        "count": 5
+      },
+      {
+        "label": "Module",
+        "count": 1
+      }
+    ],
+    "relationshipCounts": [
+      {
+        "type": "HAS_METHOD",
+        "count": 127
+      },
+      {
+        "type": "CONTAINS",
+        "count": 45
+      },
+      {
+        "type": "ABOUT",
+        "count": 34
+      },
+      {
+        "type": "CALLS",
+        "count": 17
+      },
+      {
+        "type": "DEPENDS_ON",
+        "count": 12
+      },
+      {
+        "type": "EXPOSES",
+        "count": 7
+      },
+      {
+        "type": "USES",
+        "count": 4
+      },
+      {
+        "type": "EXTENDS",
+        "count": 4
+      },
+      {
+        "type": "IMPLEMENTS",
+        "count": 2
+      }
+    ],
+    "moduleDependencies": [
+      {
+        "module": "spring-boot-migration-demo",
+        "dependencies": [
+          "org.springframework.boot:spring-boot-starter-web",
+          "org.springframework.boot:spring-boot-starter-data-jpa",
+          "org.springframework.boot:spring-boot-starter-validation",
+          "org.springframework.boot:spring-boot-starter-security",
+          "org.springframework.boot:spring-boot-starter-actuator",
+          "org.postgresql:postgresql",
+          "com.h2database:h2",
+          "org.springframework.security:spring-security-test",
+          "org.springframework.boot:spring-boot-starter-test",
+          "org.testcontainers:testcontainers",
+          "org.testcontainers:postgresql",
+          "org.testcontainers:junit-jupiter"
+        ]
+      }
+    ],
+    "queries": [
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "graph node counts",
+        "cypher": "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS count ORDER BY count DESC"
+      },
+      {
+        "name": "graph relationship counts",
+        "cypher": "MATCH ()-[r]->() RETURN type(r) AS type, count(*) AS count ORDER BY count DESC"
+      },
+      {
+        "name": "maven dependencies of affected modules",
+        "cypher": "MATCH (m:Module)-[:DEPENDS_ON]->(dep:MavenDependency)\n       WHERE m.name IN $modules\n       RETURN m.name AS module, collect(dep.ga) AS dependencies"
+      }
+    ]
+  }
+}

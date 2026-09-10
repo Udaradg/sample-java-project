@@ -19,7 +19,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { sessionPaths, readJson, writeJson, rel, run } = require('./lib/migration');
+const { sessionPaths, readJson, writeJson, rel, run, DATA_DIR } = require('./lib/migration');
 
 const BUILD_OUTPUT_PATTERNS = ['target/', 'build/', 'out/', '.gradle/', 'node_modules/', '*.class'];
 const EXCLUDED = ['.git', 'target', 'build', 'out', 'node_modules', '.idea', '.gradle', '.mvn/wrapper/maven-wrapper.jar'];
@@ -47,8 +47,18 @@ Options:
   --help, -h   Show this message`);
 }
 
+// True when `child` is `parent` or lives underneath it. Used to keep the copy out of its own
+// output: the sandbox and every other session live inside the project being copied, so without
+// this the walk descends into the tree it is currently writing and recurses until the path is
+// too long for the filesystem.
+function isInside(child, parent) {
+  const relative = path.relative(parent, child);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
 function copyTree(from, to) {
   fs.mkdirSync(to, { recursive: true });
+  const forbidden = [path.resolve(to), path.resolve(DATA_DIR)];
   let copied = 0;
   const skipped = [];
   const walk = (src, dest, depth) => {
@@ -57,6 +67,7 @@ function copyTree(from, to) {
       if (EXCLUDED.includes(entry.name) || EXCLUDED.includes(relative)) continue;
       const srcPath = path.join(src, entry.name);
       const destPath = path.join(dest, entry.name);
+      if (forbidden.some((dir) => isInside(path.resolve(srcPath), dir))) continue;
       if (entry.isSymbolicLink()) continue;
       if (entry.isDirectory()) {
         fs.mkdirSync(destPath, { recursive: true });
@@ -149,15 +160,15 @@ function main() {
     baseline_commit: head,
     files_copied: copied,
     files_skipped: skipped,
-    excluded: EXCLUDED,
+    excluded: [...EXCLUDED, rel(DATA_DIR)],
     mode: 'copy+git-init',
   });
 
   console.log(`\nWorkspace ready`);
   console.log(`  ${'-'.repeat(60)}`);
-  console.log(`  Source project   ${rel(projectDir)}  (never modified by this skill)`);
+  console.log(`  Source project   ${rel(projectDir)}  (written only by apply-migration.js, at the end)`);
   console.log(`  Sandbox          ${rel(paths.workspace)}`);
-  console.log(`  Files copied     ${copied} (excluding ${EXCLUDED.join(', ')})`);
+  console.log(`  Files copied     ${copied} (excluding ${EXCLUDED.join(', ')}, ${rel(DATA_DIR)})`);
   if (skipped.length) {
     console.log(`  Files skipped    ${skipped.length} — in use by another process:`);
     for (const s of skipped) console.log(`                     ${s.file} (${s.reason})`);

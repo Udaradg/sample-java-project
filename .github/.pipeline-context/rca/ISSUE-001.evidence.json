@@ -1,0 +1,466 @@
+{
+  "generatedAt": "2026-09-10T11:45:32.487Z",
+  "issue": {
+    "id": "ISSUE-001",
+    "title": "Unbounded repository findAll() reads whole collections into memory across multiple services",
+    "type": "Vulnerability",
+    "severity": "High",
+    "status": "Open",
+    "reportedOn": "2026-08-06",
+    "reportedBy": "Architecture review (performance and availability)",
+    "services": [
+      "sheduler-service",
+      "report-service"
+    ],
+    "symbols": [
+      "EmployeeSchedulerServiceImpl.getAllEmployees",
+      "EmployeeReportServiceImpl.getEmployees",
+      "WomenDaySchedulerImpl.printWomenDayMessage",
+      "EmployeeSchedulerController.getAllEmployees",
+      "EmployeeReportController.exportToExcel"
+    ],
+    "files": [
+      "sheduler-service/src/main/java/com/aura/vihanga/shedulerservice/service/implementation/EmployeeSchedulerServiceImpl.java",
+      "report-service/src/main/java/com/aura/vihanga/reportservice/service/implementation/EmployeeReportServiceImpl.java"
+    ],
+    "entryPoints": [],
+    "file": "docs/agent_output/00-issues/issue-register.xlsx",
+    "body": "# ISSUE-001 — Unbounded repository findAll() reads whole collections into memory across multiple services\n\n## Summary\n\nMultiple backend services load an entire MongoDB collection into the JVM heap with a bare findAll() call - no pagination, no query filter, no field projection and no result cap. The volume of data returned is decided entirely by how large the collection has grown, not by what the caller actually needs. Two of these call sites sit directly behind public REST endpoints, so a single request can force a service to materialise every employee document at once.\n\n## Data Flow (source → sink)\n\nPath 1 - scheduler read\r\n1. Source: GET /api/v1/employee reaches EmployeeSchedulerController.getAllEmployees (EmployeeSchedulerController.java:19).\r\n2. Propagation: EmployeeSchedulerServiceImpl.getAllEmployees (EmployeeSchedulerServiceImpl.java:17).\r\n3. Sink: EmployeeSchedulerRepository.findAll (EmployeeSchedulerServiceImpl.java:18). The whole employee collection is materialised and returned to the caller as Employee entities.\r\n\r\nPath 2 - scheduled job\r\n1. Source: the cron trigger 0 0 0 8 3 * fires WomenDaySchedulerImpl.printWomenDayMessage (WomenDaySchedulerImpl.java:20).\r\n2. Sink: the same getAllEmployees and findAll pair. The GenderType.FEMALE filter is applied in Java afterwards (WomenDaySchedulerImpl.java:21-22) and is never pushed down to MongoDB.\r\n\r\nPath 3 - payroll export\r\n1. Source: GET /api/v1/export reaches EmployeeReportController.exportToExcel (EmployeeReportController.java:26).\r\n2. Propagation: EmployeeReportServiceImpl.getEmployees (EmployeeReportServiceImpl.java:38) calls EmployeeReportRepository.findAll (line 40), then fetches the full department list from department-service over WebClient (lines 44-48).\r\n3. Sink: the two lists are joined by a nested for loop (lines 53-68), and the result is written into an XSSFWorkbook buffered in a ByteArrayOutputStream (generateExcelFile, line 74) before any byte reaches the response (EmployeeReportController.java:35).\n\n## Observed Behavior\n\nCall site 1 - sheduler-service\r\n\r\n- GET /api/v1/employee returns every employee document in the collection, serialised in full, with no page size, no limit parameter and no filtering. The entity is returned directly, so every persisted field is exposed to the caller.\r\n- The scheduled job WomenDaySchedulerImpl.printWomenDayMessage() calls the same method and then filters for GenderType.FEMALE in Java, after the entire collection has already been transferred and mapped. The filter is never pushed down to the database.\r\n\r\nCall site 2 - report-service\r\n\r\n- GET /api/v1/export loads every employee via findAll(), then performs an outbound HTTP call to department-service for the department list, and then joins the two lists with a nested for loop (employees x departments) purely in memory.\r\n- The complete joined result and the generated XLSX workbook are both held in the heap at the same time, and the workbook is buffered into a ByteArrayOutputStream before a single byte is written to the response.\n\n## Expected Behavior\n\n- Read operations that back a REST endpoint should return a bounded result set - paginated (Pageable/Page), or explicitly limited, with the page size controlled by the API contract rather than by collection size.\r\n- Filtering criteria that are known ahead of time (for example gender for the Women's Day job) should be expressed as a derived query or @Query so the database returns only matching documents.\r\n- Bulk exports should stream or process in chunks so that heap usage stays flat and independent of how many records exist.\r\n- Responses should be projected into DTOs rather than returning persistence entities as-is.\n\n## Steps to Reproduce\n\n1. Start configuaration-server, discovery-service, department-service, sheduler-service and report-service. (Ports are supplied by the config server; sheduler-service defaults to 8503 and report-service to 8502.)\r\n2. Seed the employee collection with a realistic production volume (for example 500,000 documents).\r\n3. Call the scheduler endpoint and observe response size, latency and heap usage:\r\n   curl -s -o /dev/null -w \"%{size_download} bytes in %{time_total}s\\n\" \\\r\n        http://localhost:8503/api/v1/employee\r\n4. Call the export endpoint and watch the JVM heap while it runs:\r\n   curl -s -o employees.xlsx http://localhost:8502/api/v1/export\r\n5. Repeat step 3 or 4 concurrently from a handful of clients. Response times degrade sharply, GC activity rises, and the service becomes unresponsive or terminates with OutOfMemoryError once the collection is large enough.\r\n\r\nReproducibility: Deterministic. Severity scales with collection size - the endpoints appear healthy on a small development dataset and degrade as data grows.\n\n## Impact\n\n- Availability: Heap consumption is proportional to collection size and to the number of concurrent callers. A handful of simultaneous requests to GET /api/v1/employee or GET /api/v1/export is enough to exhaust the heap and take down the instance - an unauthenticated caller can trigger this repeatedly.\r\n- Performance: Full collection scans on every call add sustained load to the shared MongoDB instance, degrading unrelated services that use the same database. The in-memory nested-loop join in report-service compounds the cost as both datasets grow.\r\n- Data exposure: GET /api/v1/employee serialises the Employee entity directly, so the whole workforce dataset - including fields that no client asked for, such as address and phone number - is returned in one unpaginated response.\r\n- Scalability: The pattern is repeated across services, so the same failure mode must be fixed in more than one place and is likely to be copied into new services.\n\n## Detection Notes\n\n- A search for `findAll(` across src/main/java returns exactly the two call sites listed above.\r\n- Neither call site passes a `Pageable`, `Sort`, `Limit` or query argument.\r\n- No endpoint on the REST surface accepts a `page` or `size` parameter, so there is no way for a caller to bound the result set even voluntarily.\n"
+  },
+  "sources": {
+    "issueFile": "docs/agent_output/00-issues/issue-register.xlsx",
+    "architecture": true,
+    "functionReference": true,
+    "artifacts": ".github/.pipeline-context/artifacts.json",
+    "artifactsGeneratedAt": "2026-09-10T11:00:06.470Z",
+    "graphLive": true,
+    "dispatchEdges": 0
+  },
+  "focus": [
+    {
+      "symbol": "EmployeeSchedulerServiceImpl.getAllEmployees",
+      "resolved": true,
+      "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+      "label": "EmployeeService.getAllEmployees()",
+      "typeId": "com.example.migrationdemo.service.EmployeeService",
+      "typeName": "EmployeeService",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+      "startLine": 46,
+      "endLine": 52,
+      "signature": "List<EmployeeResponse> getAllEmployees()",
+      "endpoint": null,
+      "annotations": [
+        "@Transactional"
+      ],
+      "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }",
+      "selfRecursive": false,
+      "directCallers": [
+        {
+          "id": "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+          "label": "EmployeeController.getAllEmployees()",
+          "type": "EmployeeController",
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+          "startLine": 31,
+          "endLine": 35,
+          "signature": "ResponseEntity<List<EmployeeResponse>> getAllEmployees()",
+          "endpoint": "GET /api/v1/employees"
+        }
+      ],
+      "directCallees": [],
+      "collaborators": [
+        {
+          "field": "EmployeeRepository employeeRepository",
+          "inheritedCalls": [
+            "findAll()"
+          ],
+          "typeName": "EmployeeRepository",
+          "typeId": "com.example.migrationdemo.repository.EmployeeRepository",
+          "kind": "interface",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [],
+          "sameNameMethods": []
+        },
+        {
+          "field": "EmployeeMapper employeeMapper",
+          "inheritedCalls": [],
+          "typeName": "EmployeeMapper",
+          "typeId": "com.example.migrationdemo.mapper.EmployeeMapper",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": false,
+          "calledMethods": [],
+          "sameNameMethods": []
+        }
+      ],
+      "upstream": [
+        {
+          "id": "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+          "label": "EmployeeController.getAllEmployees()",
+          "type": "EmployeeController",
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+          "startLine": 31,
+          "endLine": 35,
+          "signature": "ResponseEntity<List<EmployeeResponse>> getAllEmployees()",
+          "endpoint": "GET /api/v1/employees"
+        }
+      ],
+      "downstream": [],
+      "upstreamChains": [
+        [
+          "EmployeeController.getAllEmployees()",
+          "EmployeeService.getAllEmployees()"
+        ]
+      ],
+      "downstreamChains": []
+    },
+    {
+      "symbol": "EmployeeSchedulerServiceImpl.getAllEmployees",
+      "resolved": true,
+      "id": "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+      "label": "EmployeeController.getAllEmployees()",
+      "typeId": "com.example.migrationdemo.controller.EmployeeController",
+      "typeName": "EmployeeController",
+      "module": "spring-boot-migration-demo",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+      "startLine": 31,
+      "endLine": 35,
+      "signature": "ResponseEntity<List<EmployeeResponse>> getAllEmployees()",
+      "endpoint": "GET /api/v1/employees",
+      "annotations": [
+        "@GetMapping"
+      ],
+      "source": "@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }",
+      "selfRecursive": false,
+      "directCallers": [],
+      "directCallees": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+          "label": "EmployeeService.getAllEmployees()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 46,
+          "endLine": 52,
+          "signature": "List<EmployeeResponse> getAllEmployees()",
+          "endpoint": null
+        }
+      ],
+      "collaborators": [
+        {
+          "field": "EmployeeService employeeService",
+          "inheritedCalls": [],
+          "typeName": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "kind": "class",
+          "module": "spring-boot-migration-demo",
+          "implementations": [],
+          "calledByFocusMethod": true,
+          "calledMethods": [
+            "EmployeeService.getAllEmployees()"
+          ],
+          "sameNameMethods": [
+            {
+              "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+              "label": "EmployeeService.getAllEmployees()",
+              "kind": "class",
+              "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+              "startLine": 46,
+              "endLine": 52,
+              "signature": "List<EmployeeResponse> getAllEmployees()",
+              "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+            }
+          ]
+        }
+      ],
+      "upstream": [],
+      "downstream": [
+        {
+          "id": "com.example.migrationdemo.service.EmployeeService#getAllEmployees()",
+          "label": "EmployeeService.getAllEmployees()",
+          "type": "EmployeeService",
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+          "startLine": 46,
+          "endLine": 52,
+          "signature": "List<EmployeeResponse> getAllEmployees()",
+          "endpoint": null
+        }
+      ],
+      "upstreamChains": [],
+      "downstreamChains": [
+        [
+          "EmployeeController.getAllEmployees()",
+          "EmployeeService.getAllEmployees()"
+        ]
+      ]
+    },
+    {
+      "symbol": "EmployeeReportServiceImpl.getEmployees",
+      "resolved": false
+    },
+    {
+      "symbol": "WomenDaySchedulerImpl.printWomenDayMessage",
+      "resolved": false
+    },
+    {
+      "symbol": "EmployeeReportController.exportToExcel",
+      "resolved": false
+    }
+  ],
+  "affectedArea": {
+    "modules": [
+      "spring-boot-migration-demo"
+    ],
+    "types": [
+      "EmployeeController",
+      "EmployeeService"
+    ],
+    "endpoints": [
+      "GET /api/v1/employees"
+    ],
+    "scheduledJobs": [],
+    "crossServiceConsumers": []
+  },
+  "architectureContext": {
+    "moduleRows": [
+      "| `spring-boot-migration-demo` | jar | spring-boot-starter-web, spring-boot-starter-data-jpa, spring-boot-starter-validation, spring-boot-starter-security, spring-boot-starter-actuator, spring-boot-starter-test |"
+    ],
+    "typeBreakdownRows": [
+      "| `spring-boot-migration-demo` | 1 | 1 | 1 | 1 | 3 | 2 | 1 | 2 | 5 |"
+    ],
+    "endpointRows": [
+      "| `POST` | `/api/v1/employees` | EmployeeController.createEmployee() | `spring-boot-migration-demo` |",
+      "| `GET` | `/api/v1/employees` | EmployeeController.getAllEmployees() | `spring-boot-migration-demo` |"
+    ],
+    "serviceMap": "```mermaid\nflowchart LR\n  spring_boot_migration_demo[\"spring-boot-migration-demo\"]\n```",
+    "observations": [
+      "- Each service (`department-service`, `employee-service`, `report-service`, `sheduler-service`) follows the same layered convention: `controller` → `service` → `repository` → `model`/`entity`, backed by MongoDB repositories.",
+      "- `configuaration-server` and `discovery-service` are infrastructure services (Spring Cloud Config + Eureka) that every business service depends on at startup via `bootstrap.properties`.",
+      "- No Feign clients were detected — cross-service calls, if any, likely go through `RestTemplate`/`WebClient` rather than declarative Feign interfaces. Worth confirming if service-to-service coupling should show up as graph edges.",
+      "- The generated Neo4j graph can be queried directly (e.g. `MATCH (m:Module)-[:CONTAINS]->(t:Type) RETURN m.name, count(t)`) for deeper, ad-hoc architecture questions beyond this static document."
+    ]
+  },
+  "functionReferenceExcerpts": [
+    {
+      "heading": "EmployeeController.getAllEmployees()",
+      "text": "#### `EmployeeController.getAllEmployees()`\n- **Signature**: `ResponseEntity<List<EmployeeResponse>> getAllEmployees()`\n- **Location**: `src/main/java/com/example/migrationdemo/controller/EmployeeController.java` (lines 31-35)\n- **Annotations**: @GetMapping\n- **REST endpoint**: `GET /api/v1/employees`\n- **Calls**: `EmployeeService.getAllEmployees()`\n- **Called by**: _none resolved (likely an entry point or only called externally)_\n\n```java\n@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }\n```"
+    },
+    {
+      "heading": "EmployeeService.getAllEmployees()",
+      "text": "#### `EmployeeService.getAllEmployees()`\n- **Signature**: `List<EmployeeResponse> getAllEmployees()`\n- **Location**: `src/main/java/com/example/migrationdemo/service/EmployeeService.java` (lines 46-52)\n- **Annotations**: @Transactional(readOnly = \"true\")\n- **Calls**: _none resolved_\n- **Called by**: `EmployeeController.getAllEmployees()`\n\n```java\n@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }\n```"
+    }
+  ],
+  "graph": {
+    "live": true,
+    "host": "neo4j+s://7d610372.databases.neo4j.io",
+    "envFile": ".github\\skills\\02-root-cause-analyst\\.env",
+    "depth": 4,
+    "perMethod": {
+      "com.example.migrationdemo.service.EmployeeService#getAllEmployees()": {
+        "callerChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+            "com.example.migrationdemo.service.EmployeeService#getAllEmployees()"
+          ]
+        ],
+        "calleeChains": [],
+        "owner": {
+          "typeId": "com.example.migrationdemo.service.EmployeeService",
+          "typeName": "EmployeeService",
+          "module": "spring-boot-migration-demo",
+          "endpoints": []
+        },
+        "fanIn": [
+          {
+            "typeId": "com.example.migrationdemo.controller.EmployeeController",
+            "name": "EmployeeController",
+            "module": "spring-boot-migration-demo"
+          }
+        ],
+        "upstreamModules": [
+          "spring-boot-migration-demo"
+        ]
+      },
+      "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()": {
+        "callerChains": [],
+        "calleeChains": [
+          [
+            "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+            "com.example.migrationdemo.service.EmployeeService#getAllEmployees()"
+          ]
+        ],
+        "owner": {
+          "typeId": "com.example.migrationdemo.controller.EmployeeController",
+          "typeName": "EmployeeController",
+          "module": "spring-boot-migration-demo",
+          "endpoints": [
+            "POST /api/v1/employees",
+            "GET /api/v1/employees",
+            "GET /api/v1/employees/{id}",
+            "PUT /api/v1/employees/{id}",
+            "DELETE /api/v1/employees/{id}",
+            "GET /api/v1/employees/search",
+            "GET /api/v1/employees/high-earners"
+          ]
+        },
+        "fanIn": [],
+        "upstreamModules": []
+      }
+    },
+    "nodeCounts": [
+      {
+        "label": "Method",
+        "count": 127
+      },
+      {
+        "label": "Type",
+        "count": 17
+      },
+      {
+        "label": "ContextNote",
+        "count": 13
+      },
+      {
+        "label": "MavenDependency",
+        "count": 12
+      },
+      {
+        "label": "Package",
+        "count": 11
+      },
+      {
+        "label": "Endpoint",
+        "count": 7
+      },
+      {
+        "label": "ExternalType",
+        "count": 5
+      },
+      {
+        "label": "Module",
+        "count": 1
+      }
+    ],
+    "relationshipCounts": [
+      {
+        "type": "HAS_METHOD",
+        "count": 127
+      },
+      {
+        "type": "CONTAINS",
+        "count": 45
+      },
+      {
+        "type": "ABOUT",
+        "count": 34
+      },
+      {
+        "type": "CALLS",
+        "count": 17
+      },
+      {
+        "type": "DEPENDS_ON",
+        "count": 12
+      },
+      {
+        "type": "EXPOSES",
+        "count": 7
+      },
+      {
+        "type": "USES",
+        "count": 4
+      },
+      {
+        "type": "EXTENDS",
+        "count": 4
+      },
+      {
+        "type": "IMPLEMENTS",
+        "count": 2
+      }
+    ],
+    "moduleDependencies": [
+      {
+        "module": "spring-boot-migration-demo",
+        "dependencies": [
+          "org.springframework.boot:spring-boot-starter-web",
+          "org.springframework.boot:spring-boot-starter-data-jpa",
+          "org.springframework.boot:spring-boot-starter-validation",
+          "org.springframework.boot:spring-boot-starter-security",
+          "org.springframework.boot:spring-boot-starter-actuator",
+          "org.postgresql:postgresql",
+          "com.h2database:h2",
+          "org.springframework.security:spring-security-test",
+          "org.springframework.boot:spring-boot-starter-test",
+          "org.testcontainers:testcontainers",
+          "org.testcontainers:postgresql",
+          "org.testcontainers:junit-jupiter"
+        ]
+      }
+    ],
+    "queries": [
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "upstream callers",
+        "cypher": "MATCH path = (caller:Method)-[:CALLS*1..4]->(target:Method {id: $id})\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "downstream callees",
+        "cypher": "MATCH path = (target:Method {id: $id})-[:CALLS*1..4]->(callee:Method)\n         RETURN [n IN nodes(path) | n.id] AS chain LIMIT 200"
+      },
+      {
+        "name": "owning type, module and exposed endpoints",
+        "cypher": "MATCH (ty:Type)-[:HAS_METHOD]->(m:Method {id: $id})\n         OPTIONAL MATCH (ty)-[:EXPOSES]->(e:Endpoint)\n         RETURN ty.id AS typeId, ty.name AS typeName, ty.module AS module,\n                collect(DISTINCT e.id) AS endpoints"
+      },
+      {
+        "name": "types depending on the owning type",
+        "cypher": "MATCH (other:Type)-[:USES]->(ty:Type)-[:HAS_METHOD]->(:Method {id: $id})\n         RETURN DISTINCT other.id AS typeId, other.name AS name, other.module AS module"
+      },
+      {
+        "name": "modules reaching the focus method",
+        "cypher": "MATCH (caller:Method)-[:CALLS*1..4]->(:Method {id: $id})\n         MATCH (ct:Type)-[:HAS_METHOD]->(caller)\n         RETURN DISTINCT ct.module AS module"
+      },
+      {
+        "name": "graph node counts",
+        "cypher": "MATCH (n) RETURN labels(n)[0] AS label, count(*) AS count ORDER BY count DESC"
+      },
+      {
+        "name": "graph relationship counts",
+        "cypher": "MATCH ()-[r]->() RETURN type(r) AS type, count(*) AS count ORDER BY count DESC"
+      },
+      {
+        "name": "maven dependencies of affected modules",
+        "cypher": "MATCH (m:Module)-[:DEPENDS_ON]->(dep:MavenDependency)\n       WHERE m.name IN $modules\n       RETURN m.name AS module, collect(dep.ga) AS dependencies"
+      }
+    ]
+  }
+}

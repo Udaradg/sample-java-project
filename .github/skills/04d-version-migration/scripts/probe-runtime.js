@@ -9,13 +9,25 @@
  * Run it once on the source JDK before touching anything (`--phase baseline`) and once on the
  * target JDK when the build is green (`--phase final`). The report compares the two request by
  * request — that comparison is the only evidence in this skill that behaviour was preserved.
+ * A third phase, `applied`, re-runs the same probes against the real project once the migration
+ * has been written into it, so "the project is migrated" is a measured claim and not an inference
+ * from the sandbox.
+ *
+ * Two phases are gated — they must come back clean or the run stops:
+ *   - `baseline`, because a migration cannot be measured against an application that was already
+ *     failing before anything changed;
+ *   - `applied`, because the project is only finished when the migrated project itself answers.
+ * `final` is never gated: it is evidence to be compared, and a difference there is a finding for
+ * the report to explain rather than a reason to abort.
  *
  * Probes are supplied by the agent, which reads the application's own routes first. The
- * default set is a bare liveness check and is not a substitute for real endpoints.
+ * default set is a bare liveness check and is not a substitute for real endpoints. A probe may
+ * carry an `expect_status`, which the gated phases check.
  *
  * Usage:
  *   node scripts/probe-runtime.js --slug <slug> --phase baseline --jdk 17 --probes probes.json
  *   node scripts/probe-runtime.js --slug <slug> --phase final --jdk 21 --probes probes.json
+ *   node scripts/probe-runtime.js --slug <slug> --phase applied --jdk 21 --target project --probes probes.json
  */
 const fs = require('fs');
 const path = require('path');
@@ -32,12 +44,18 @@ const DEFAULT_PROBES = {
   requests: [{ name: 'liveness', method: 'GET', path: '/actuator/health' }],
 };
 
+// Phases whose result is a gate rather than a measurement: they have to come back clean.
+const GATED_PHASES = ['baseline', 'applied'];
+const PHASES = ['baseline', 'final', 'applied'];
+const TARGETS = ['workspace', 'project'];
+
 function parseArgs(argv) {
-  const args = { phase: 'baseline', port: 8080, appArgs: [] };
+  const args = { phase: 'baseline', port: 8080, appArgs: [], target: 'workspace' };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--slug' || a === '-s') args.slug = argv[++i];
     else if (a === '--phase') args.phase = argv[++i];
+    else if (a === '--target') args.target = argv[++i];
     else if (a === '--jdk' || a === '-j') args.jdk = argv[++i];
     else if (a === '--probes' || a === '-p') args.probes = argv[++i];
     else if (a === '--port') args.port = Number(argv[++i]);
@@ -53,11 +71,14 @@ function parseArgs(argv) {
 function usage() {
   console.log(`Version Migration — Runtime probe
 
-  node scripts/probe-runtime.js --slug <slug> --phase <baseline|final> --jdk <major> [--probes <file>]
+  node scripts/probe-runtime.js --slug <slug> --phase <baseline|final|applied> --jdk <major> [--probes <file>]
 
 Options:
   --slug, -s      Session name
-  --phase         baseline (before migrating) or final (after the build is green)
+  --phase         baseline (before migrating), final (after the build is green), or applied
+                  (against the real project once the migration has been written into it).
+                  baseline and applied are gates: every probe must answer as expected
+  --target        workspace (the sandbox, default) or project (the real project directory)
   --jdk, -j       JDK major version to run the application on
   --probes, -p    JSON file of requests to replay. Default: a single liveness check
   --port          Port to run and probe on (default 8080)
@@ -73,8 +94,8 @@ Probe file shape:
     "auth": { "type": "basic", "username": "demo", "password": "demo123" },
     "readiness": { "path": "/actuator/health", "timeout_seconds": 120 },
     "requests": [
-      { "name": "list employees", "method": "GET", "path": "/api/v1/employees" },
-      { "name": "unauthenticated is rejected", "method": "GET", "path": "/api/v1/employees", "no_auth": true },
+      { "name": "list employees", "method": "GET", "path": "/api/v1/employees", "expect_status": 200 },
+      { "name": "unauthenticated is rejected", "method": "GET", "path": "/api/v1/employees", "no_auth": true, "expect_status": 401 },
       { "name": "create employee", "method": "POST", "path": "/api/v1/employees",
         "headers": { "Content-Type": "application/json" }, "body": { "firstName": "A" } }
     ]
@@ -141,8 +162,22 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  if (!['baseline', 'final'].includes(args.phase)) {
-    console.error('--phase must be "baseline" or "final".');
+  if (!PHASES.includes(args.phase)) {
+    console.error(`--phase must be one of: ${PHASES.join(', ')}.`);
+    process.exitCode = 1;
+    return;
+  }
+  if (!TARGETS.includes(args.target)) {
+    console.error(`--target must be one of: ${TARGETS.join(', ')}.`);
+    process.exitCode = 1;
+    return;
+  }
+  // The `applied` phase exists to answer "is the project migrated?". Pointed at the sandbox it
+  // would answer a different question under the same name, which is the one thing the record
+  // must never do.
+  if (args.phase === 'applied' && args.target !== 'project') {
+    console.error('--phase applied probes the project, so it requires --target project.');
+    console.error('  Use --phase final to probe the sandbox after the last round.');
     process.exitCode = 1;
     return;
   }
@@ -151,6 +186,13 @@ async function main() {
   const baseline = readJson(paths.baseline);
   if (!baseline || !fs.existsSync(paths.workspace)) {
     console.error(`Session "${args.slug}" is not set up — run detect-baseline.js then prepare-workspace.js.`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const runDir = args.target === 'project' ? path.resolve(baseline.project.dir) : paths.workspace;
+  if (!fs.existsSync(runDir)) {
+    console.error(`Nothing to run at ${rel(runDir)}.`);
     process.exitCode = 1;
     return;
   }
@@ -179,7 +221,7 @@ async function main() {
   const readiness = probes.readiness || DEFAULT_PROBES.readiness;
   const readyTimeout = (args.timeout || readiness.timeout_seconds || 120) * 1000;
 
-  const tool = resolveBuildTool(paths.workspace);
+  const tool = resolveBuildTool(runDir);
   if (!tool.command) {
     console.error(`No ${tool.tool} build tool found for the workspace.`);
     process.exitCode = 1;
@@ -187,14 +229,15 @@ async function main() {
   }
 
   console.log(`\nRuntime probe — phase ${args.phase} on JDK ${jdk.major} (${jdk.version})`);
-  console.log(`  workspace ${rel(paths.workspace)}`);
+  console.log(`  ${args.target === 'project' ? 'project  ' : 'workspace'} ${rel(runDir)}`);
+  if (GATED_PHASES.includes(args.phase)) console.log('  gated     every probe must answer, none may 5xx, expectations must hold');
 
-  let artifact = findArtifact(paths.workspace, tool.tool);
+  let artifact = findArtifact(runDir, tool.tool);
   const packaging = { ran: false, exit_code: null, log_tail: null };
   if (!artifact || args.rebuild) {
     console.log('  packaging (tests skipped)…');
     const pkg = runTool(tool.command, buildArgs(tool.tool, 'package-skip-tests'), {
-      cwd: paths.workspace, env: envForJdk(jdk), timeout: 900000,
+      cwd: runDir, env: envForJdk(jdk), timeout: 900000,
     });
     packaging.ran = true;
     packaging.exit_code = pkg.status;
@@ -210,21 +253,21 @@ async function main() {
       process.exitCode = 1;
       return;
     }
-    artifact = findArtifact(paths.workspace, tool.tool);
+    artifact = findArtifact(runDir, tool.tool);
   }
   if (!artifact) {
     console.error('  No runnable jar was produced — cannot start the application.');
     process.exitCode = 1;
     return;
   }
-  console.log(`  artifact  ${rel(artifact, paths.workspace)}`);
+  console.log(`  artifact  ${rel(artifact, runDir)}`);
 
   const appArgs = [...args.appArgs];
   if (!args.noPortArg) appArgs.push(`--server.port=${args.port}`);
 
   const startedAt = Date.now();
   const child = spawn(path.join(jdk.home, 'bin', IS_WIN ? 'java.exe' : 'java'), ['-jar', artifact, ...appArgs], {
-    cwd: paths.workspace, env: envForJdk(jdk), detached: !IS_WIN, windowsHide: true,
+    cwd: runDir, env: envForJdk(jdk), detached: !IS_WIN, windowsHide: true,
   });
   let appLog = '';
   child.stdout.on('data', (d) => { appLog += d.toString(); });
@@ -259,12 +302,15 @@ async function main() {
       if (request.body !== undefined) init.body = typeof request.body === 'string' ? request.body : JSON.stringify(request.body);
       const at = Date.now();
       const outcome = await attempt(`${baseUrl}${request.path}`, init);
+      const expected = request.expect_status === undefined ? null : request.expect_status;
       results.push({
         name: request.name || `${request.method || 'GET'} ${request.path}`,
         method: request.method || 'GET',
         path: request.path,
         authenticated: !request.no_auth && Boolean(probes.auth),
         duration_ms: Date.now() - at,
+        expected_status: expected,
+        meets_expectation: expected === null ? null : outcome.status === expected,
         ...outcome,
       });
     }
@@ -274,31 +320,68 @@ async function main() {
   await sleep(500);
 
   const startupLine = (/Started [\w$.]+ in ([\d.]+) seconds/.exec(appLog) || [, null])[1];
+
+  // What "runs without error" means, concretely: the application answered, every probe reached
+  // it, nothing came back 5xx, and every probe that declared an expected status got it. A 401 or
+  // a 404 the probe asked for is a pass — the check is against what the endpoint is supposed to
+  // do, not against 200.
+  const unreachable = results.filter((r) => !r.ok);
+  const serverErrors = results.filter((r) => r.ok && r.status >= 500);
+  const unmetExpectations = results.filter((r) => r.meets_expectation === false);
+  const clean = ready && !unreachable.length && !serverErrors.length && !unmetExpectations.length;
+  const gated = GATED_PHASES.includes(args.phase);
+
   const record = {
     slug: args.slug,
     phase: args.phase,
+    target: args.target,
     generated_at: new Date().toISOString(),
     jdk: { major: jdk.major, version: jdk.version, home: jdk.home },
-    artifact: rel(artifact, paths.workspace),
+    artifact: rel(artifact, runDir),
     base_url: baseUrl,
     packaging,
     started: ready,
+    gate: {
+      name: `${args.phase}-runtime-clean`,
+      required: gated,
+      met: clean,
+      unreachable: unreachable.map((r) => r.name),
+      server_errors: serverErrors.map((r) => `${r.name} → ${r.status}`),
+      unmet_expectations: unmetExpectations.map((r) => `${r.name}: expected ${r.expected_status}, got ${r.status}`),
+    },
     startup_seconds: startupLine ? Number(startupLine) : (readyAfterMs ? readyAfterMs / 1000 : null),
     readiness: { path: readiness.path, status: readinessStatus, ready_after_ms: readyAfterMs },
     probes: results,
-    app_log_tail: tail(stripRootFromText(appLog, paths.workspace), 6000),
+    app_log_tail: tail(stripRootFromText(appLog, runDir), 6000),
   };
   const file = writeJson(path.join(paths.runtimeDir, `${args.phase}.json`), record);
 
   console.log(`\n  Started     ${ready ? `yes (${record.startup_seconds ?? '?'}s, readiness ${readinessStatus})` : 'NO — did not answer in time'}`);
   if (results.length) {
-    console.log(`\n  ${'Probe'.padEnd(38)} ${'Status'.padEnd(8)} Bytes`);
+    console.log(`\n  ${'Probe'.padEnd(38)} ${'Status'.padEnd(8)} ${'Bytes'.padEnd(8)} Expected`);
     for (const r of results) {
-      console.log(`  ${r.name.slice(0, 37).padEnd(38)} ${String(r.ok ? r.status : 'ERR').padEnd(8)} ${r.body_length ?? '-'}`);
+      const verdict = r.meets_expectation === null ? '—' : (r.meets_expectation ? `${r.expected_status} ✓` : `${r.expected_status} ✗`);
+      console.log(`  ${r.name.slice(0, 37).padEnd(38)} ${String(r.ok ? r.status : 'ERR').padEnd(8)} ${String(r.body_length ?? '-').padEnd(8)} ${verdict}`);
     }
   }
   if (!ready) console.log(`\n  Last log lines:\n${record.app_log_tail.split(/\r?\n/).slice(-15).map((l) => `    ${l}`).join('\n')}`);
   console.log(`\n  Written ${rel(file)}\n`);
+
+  if (gated && !clean) {
+    const where = args.target === 'project' ? 'the project' : 'the sandbox';
+    console.error(`  ${args.phase.toUpperCase()} RUNTIME GATE FAILED — ${where} did not run cleanly.`);
+    if (!ready) console.error('    - the application never answered its readiness path');
+    for (const r of record.gate.unreachable) console.error(`    - no response: ${r}`);
+    for (const r of record.gate.server_errors) console.error(`    - server error: ${r}`);
+    for (const r of record.gate.unmet_expectations) console.error(`    - wrong status: ${r}`);
+    console.error('');
+    console.error(args.phase === 'baseline'
+      ? '  The migration does not start from an application that is already failing: every later\n  difference would be unattributable. Get it running cleanly first, then re-record round 0.'
+      : '  The migrated project itself must run before the migration counts as done. Read the log\n  tail above; apply-migration.js --revert puts the project back as it was.');
+    console.error('');
+    process.exitCode = 1;
+    return;
+  }
   if (!ready) process.exitCode = 1;
 }
 

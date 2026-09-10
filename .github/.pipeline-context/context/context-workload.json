@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-09-10T11:00:06.610Z",
+  "artifactsGeneratedAt": "2026-09-10T11:00:06.470Z",
+  "options": {
+    "typeThreshold": 3,
+    "methodThreshold": 3,
+    "minPackageTypes": 2,
+    "maxNodes": 400,
+    "all": false
+  },
+  "selectedCount": 39,
+  "reusedCount": 39,
+  "nodes": []
+}

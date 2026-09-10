@@ -1,0 +1,49 @@
+{
+  "round": 0,
+  "label": "Pre-migration reference build",
+  "baseline": true,
+  "gate": {
+    "name": "baseline-build-green",
+    "required": true,
+    "met": true,
+    "intent": "package"
+  },
+  "started_at": "2026-09-08T01:07:00.665Z",
+  "duration_ms": 28034,
+  "jdk": {
+    "major": 17,
+    "version": "17.0.20",
+    "home": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot",
+    "source": "JAVA_HOME"
+  },
+  "build": {
+    "tool": "maven",
+    "kind": "path",
+    "command": "C:\\Tools\\apache-maven-3.9.16\\bin\\mvn.cmd -B clean package",
+    "intent": "package",
+    "exit_code": 0,
+    "spawn_error": null
+  },
+  "outcome": "passed",
+  "declared": {
+    "java": "17",
+    "parent": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-parent",
+      "version": "3.5.0"
+    },
+    "dependency_count": 12
+  },
+  "workspace": {
+    "changed_files": [],
+    "diff_stat": "no changes yet"
+  },
+  "error_summary": {
+    "total": 0,
+    "byCategory": [],
+    "byFile": []
+  },
+  "errors": [],
+  "errors_truncated": 0,
+  "log_tail": "…(truncated, showing last 8000 chars)…\nted_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-08T06:37:25.347+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        lower(e1_0.department)=lower(?) \r\n        and e1_0.active=true\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        lower(e1_0.department)=lower(?) \r\n        and e1_0.active=true\r\n2026-09-08T06:37:25.356+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\n2026-09-08T06:37:25.360+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-08T06:37:25.379+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        e1_0.employee_number=?\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        e1_0.employee_number=?\r\n2026-09-08T06:37:25.390+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\n2026-09-08T06:37:25.393+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-08T06:37:25.397+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-08T06:37:25.402+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-08T06:37:25.408+05:30 DEBUG 11120 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        upper(e1_0.department)=upper(?)\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        upper(e1_0.department)=upper(?)\r\n[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.141 s -- in com.example.migrationdemo.integration.EmployeeRepositoryIntegrationTest\r\n[INFO] Running com.example.migrationdemo.mapper.EmployeeMapperTest\r\n[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.example.migrationdemo.mapper.EmployeeMapperTest\r\n[INFO] Running com.example.migrationdemo.service.EmployeeServiceTest\r\n[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.328 s -- in com.example.migrationdemo.service.EmployeeServiceTest\r\n[INFO] \r\n[INFO] Results:\r\n[INFO] \r\n[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0\r\n[INFO] \r\n[INFO] \r\n[INFO] --- jar:3.4.2:jar (default-jar) @ spring-boot-migration-demo ---\r\n[INFO] Building jar: .\\target\\spring-boot-migration-demo-1.0.0.jar\r\n[INFO] \r\n[INFO] --- spring-boot:3.5.0:repackage (repackage) @ spring-boot-migration-demo ---\r\n[INFO] Replacing main artifact .\\target\\spring-boot-migration-demo-1.0.0.jar with repackaged archive, adding nested dependencies in BOOT-INF/.\r\n[INFO] The original artifact has been renamed to .\\target\\spring-boot-migration-demo-1.0.0.jar.original\r\n[INFO] ------------------------------------------------------------------------\r\n[INFO] BUILD SUCCESS\r\n[INFO] ------------------------------------------------------------------------\r\n[INFO] Total time:  26.299 s\r\n[INFO] Finished at: 2026-09-08T06:37:28+05:30\r\n[INFO] ------------------------------------------------------------------------\r\n\nOpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended\r\n"
+}

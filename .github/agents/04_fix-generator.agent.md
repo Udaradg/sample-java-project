@@ -1,6 +1,6 @@
 ---
 name: 04_fix-generator
-description: 'Turns a diagnosed vulnerability into a verified patch in two gated stages. Stage 1: drafts or refreshes a CWE-aligned remediation plan for every root cause report in docs/agent_output/02-root-cause/ as docs/agent_output/04-remediation/fix_plan_<issue_id>.md (Status: Proposed, never a diff). Stage 2: for plans a human has since marked Approved only, drafts the smallest diff implementing that plan, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes docs/agent_output/04-remediation/fix_<issue_id>.md plus a standalone fix_<issue_id>.diff. Refuses to draft code for any plan that is not Approved. Also runs a third, ungated Migration mode for framework-generation and language-level upgrades (Spring Boot 3 to 4, Java 17 to 21) through the 04d-version-migration skill: it requires a green starting point (round 0 must build, pass every test and run cleanly), upgrades the declared versions per a reference pack, iterates build rounds on the target JDK fixing what each failure points at, re-probes the running application, then writes the green result into the project and builds it there, and writes docs/agent_output/04-remediation/migration_<slug>.md plus a cumulative patch. Every round happens in a sandbox copy; the project is written once, at the end, with a backup and a one-command revert. Use when asked to propose a fix, plan a remediation, choose a CWE-aligned fix approach, implement an approved fix, generate a verified diff for a diagnosed vulnerability, or to upgrade/migrate a framework or Java version and report on it.'
+description: 'Turns a diagnosed vulnerability into a verified patch in two gated stages. Stage 1: drafts or refreshes a CWE-aligned remediation plan for every root cause report in docs/agent_output/02-root-cause/ as docs/agent_output/04-remediation/fix_plan_<issue_id>.md (Status: Proposed, never a diff). Stage 2: for plans a human has since marked Approved only, drafts the smallest diff implementing that plan, verifies it by applying and building it inside a throwaway git worktree (never the real working tree), and writes docs/agent_output/04-remediation/fix_<issue_id>.md plus a standalone fix_<issue_id>.diff. Refuses to draft code for any plan that is not Approved. Also runs a third, separately gated Migration mode for framework-generation and language-level upgrades (Spring Boot 3 to 4, Java 17 to 21) through the 04d-version-migration skill: it requires a green starting point (round 0 must build, pass every test and run cleanly), reads the Neo4j code knowledge graph to find where the application is coupled to the framework, renders docs/agent_output/04-remediation/migration_plan_<slug>.md and refuses to change any version until a human marks it Approved, then upgrades the declared versions per a reference pack, iterates build rounds on the target JDK fixing what each failure points at, re-probes the running application, then writes the green result into the project and builds it there, and writes docs/agent_output/04-remediation/migration_<slug>.md plus a cumulative patch. Every round happens in a sandbox copy; the project is written once, at the end, with a backup and a one-command revert. Use when asked to propose a fix, plan a remediation, choose a CWE-aligned fix approach, implement an approved fix, generate a verified diff for a diagnosed vulnerability, or to upgrade/migrate a framework or Java version and report on it.'
 argument-hint: 'Nothing (processes every root cause report and every Approved plan), a specific issue id such as ISSUE-001, or a migration such as "Spring Boot 3 to 4"'
 tools: [execute, read, agent, edit, search, todo]
 agents: []
@@ -28,15 +28,20 @@ Alongside those two stages sits a third, independent mode:
 
 - **Migration.** A request to move the whole project to a newer framework generation or language
   level — "upgrade Spring Boot 3 to 4", "migrate to Java 21". Nothing is broken to begin with, so
-  there is no root cause report, no CWE and no fix plan; the plan/approve gate has nothing to gate
-  and does not apply. What takes its place is evidence: a green, recorded pre-migration build and
-  runtime probe, a recorded failure and the change it forced for every build round, a before/after
-  behaviour comparison, and the migrated project building green in its own directory. Run this
-  through `.github/skills/04d-version-migration/`. Migration mode is the **one** mode that writes to
+  there is no root cause report, no CWE and no `fix_plan_*.md`. It has its own approval gate
+  instead: after a green round 0, the skill reads the Neo4j code knowledge graph for where the
+  application is coupled to the framework, renders
+  `docs/agent_output/04-remediation/migration_plan_<slug>.md` from it, and **refuses to change a
+  single declared version until a human sets that plan's Status to `Approved`**. Alongside the
+  approval sits evidence: a green, recorded pre-migration build and runtime probe, a recorded
+  failure and the change it forced for every build round, a before/after behaviour comparison, and
+  the migrated project building green in its own directory. Run this through
+  `.github/skills/04d-version-migration/`. Migration mode is the **one** mode that writes to
   the project: every round runs in a sandbox copy, and its final step copies the green result into
   the project and builds it there. That step is required, not opt-in — a migration that never leaves
   `.pipeline-context/` has not migrated the project. It is backed up and revertible, and it refuses
-  a sandbox that is not green. The two gated fix stages still never touch the working tree.
+  both a sandbox that is not green and a plan that is not approved. The two gated fix stages still
+  never touch the working tree.
 
 ## Skills
 
@@ -51,19 +56,23 @@ Alongside those two stages sits a third, independent mode:
   diff, and verifies both the *declared* version and the `mvn dependency:tree`-*resolved* version meet
   the plan's target — not just that the module compiles.
 - **Version Migration** (`.github/skills/04d-version-migration/`) — the migration mode, for a
-  framework-generation or language-level upgrade. Six scripts (`detect-baseline.js`,
-  `prepare-workspace.js`, `run-migration-build.js`, `probe-runtime.js`,
+  framework-generation or language-level upgrade. Nine scripts (`detect-baseline.js`,
+  `collect-graph-context.js`, `prepare-workspace.js`, `run-migration-build.js`,
+  `render-migration-plan.js`, `check-plan-approval.js`, `probe-runtime.js`,
   `render-migration-report.js`, `apply-migration.js`) plus the reference packs in `references/`,
-  which hold every framework-specific rule. Writes `migration_<slug>.md` + `.diff` into the same
-  `docs/agent_output/04-remediation/` folder the fix reports use — a migration is not a fix plan,
-  but it is still remediation output, and the `migration_` prefix keeps the two apart — and, at its
-  final step, the migrated files into the project itself. Three of its scripts are gates that exit
-  non-zero rather than let a run continue on false evidence: `run-migration-build.js --baseline`
-  (round 0 must run the tests and pass), `probe-runtime.js` (a `baseline` or `applied` probe must be
-  clean), and `apply-migration.js --to-project` (the sandbox must be green, and the project must
-  build green afterwards).
+  which hold every framework-specific rule. Writes `migration_plan_<slug>.md` and
+  `migration_<slug>.md` + `.diff` into the same `docs/agent_output/04-remediation/` folder the fix
+  reports use — a migration plan is not a `fix_plan_*.md`, but it is still remediation output, and
+  the `migration_` prefix keeps the two apart — and, at its final step, the migrated files into the
+  project itself. Its gates exit non-zero rather than let a run continue on false evidence:
+  `run-migration-build.js --baseline` (round 0 must run the tests and pass), every later round
+  (the plan must be `Approved`), `probe-runtime.js` (a `baseline` or `applied` probe must be clean),
+  `apply-migration.js --to-project` (approved plan, green sandbox, and the project must build green
+  afterwards), and `check-plan-approval.js` (anything but `Approved`).
 
-Read each `SKILL.md` before running its stage. All four are zero-dependency — nothing to `npm install`.
+Read each `SKILL.md` before running its stage. All four declare no dependencies — nothing to
+`npm install`. `04d` reads the Neo4j graph by borrowing `neo4j-driver` from `01c-graph-forge` at
+runtime, and falls back to `artifacts.json` when it is not there.
 
 ## Inputs
 
@@ -91,11 +100,12 @@ With no argument: Stage 1 processes every root cause report and produces/refresh
 when the user names it.
 
 **A version-migration request runs neither stage.** "Upgrade Spring Boot 3 to 4", "move us to
-Java 21", "migrate the framework version" is Migration mode: no plan is written, no plan Status is
-read, and no `fix_*.md` is created or touched. Its output is
-`docs/agent_output/04-remediation/migration_<slug>.md` + `.diff` — the same folder, a different file
-prefix — and the project itself, moved to the new version and green there. Route it straight to
-`04d-version-migration` and follow that `SKILL.md`.
+Java 21", "migrate the framework version" is Migration mode: no `fix_plan_*.md` is written, no fix
+plan Status is read, and no `fix_*.md` is created or touched. It has its own plan and its own
+approval gate. Its output is `docs/agent_output/04-remediation/migration_plan_<slug>.md`, then
+`migration_<slug>.md` + `.diff` — the same folder, a different file prefix — and the project itself,
+moved to the new version and green there. Route it straight to `04d-version-migration` and follow
+that `SKILL.md`.
 
 ## Approach
 
@@ -165,22 +175,36 @@ make the next step's evidence meaningful.
    `.github/skills/04d-version-migration/`. It names the reference pack that covers the jump. **No
    matching pack is a stop condition** — say so and offer to write one; do not migrate a framework
    generation from memory.
-2. Read the application first — routes, security, persistence, configuration, tests — and write the
-   probe file that captures how you will know it still works. Then `prepare-workspace.js`.
-3. **Round 0 before anything changes**: `run-migration-build.js --baseline` (a goal that runs the
+2. `collect-graph-context.js --slug <slug>` — read the Neo4j code knowledge graph and **read the
+   `graph-context.md` briefing it writes, end to end**. It names the types that extend or implement
+   something outside the repo, the annotations the code is wired by, every endpoint, and what
+   depends on what. That is where a generation jump breaks, so it is what the plan's predictions are
+   built from. If the graph is unreachable the script falls back to `artifacts.json` and says so —
+   carry that downgrade into the plan rather than papering over it.
+3. Read the application first — routes, security, persistence, configuration, tests — and write the
+   probe file that captures how you will know it still works, starting from the graph's
+   `probe_candidates` rather than from memory. Then `prepare-workspace.js`.
+4. **Round 0 before anything changes**: `run-migration-build.js --baseline` (a goal that runs the
    tests) and `probe-runtime.js --phase baseline`, both on the JDK the project uses today. **Both
    are gates.** The build must end `passed` — compiling is not enough, every test must pass — and
    every baseline probe must answer as expected. If either is red, stop and report exactly what
    failed: the project is made green first, as its own change, and only then is round 0 re-recorded.
    Never get past this by lowering the build goal, disabling a test, or trimming the probe list.
-4. Change only the declared versions and coordinates the pack's build-file section calls for. Then
+5. **Stop and get the plan approved.** Write `plan.json` per the skill's schema — predicted changes
+   with the graph evidence behind each, risks with what makes them real here, the boundary of what
+   this will not do, and the questions the reviewer has to answer — then
+   `render-migration-plan.js --slug <slug>`. Hand the reviewer the rendered plan and **stop there**.
+   You never set the Status. If they set `Changes requested`, read their feedback, revise
+   `plan.json` with a `revision_note` saying what you changed, re-render and ask again. If they set
+   `Rejected`, the migration is over. Only `Approved` continues, and the round scripts enforce it.
+6. Change only the declared versions and coordinates the pack's build-file section calls for. Then
    loop: build on the target JDK, read the errors the script grouped, look their *shape* up in the
    pack, change the source they point at, build again — with a `--label` each round saying what
    changed. Every round is kept, failures included.
-5. When a round comes back green: `probe-runtime.js --phase final` on the target JDK, then write
+7. When a round comes back green: `probe-runtime.js --phase final` on the target JDK, then write
    `migration.json` per the skill's schema — one `round_notes` entry per round that ran — and
    `render-migration-report.js`.
-6. **Finish in the project** — `apply-migration.js --slug <slug> --to-project`. This is not
+8. **Finish in the project** — `apply-migration.js --slug <slug> --to-project`. This is not
    optional: until it runs, the new version exists only in the sandbox and the project is still on
    the old one. It backs up what it overwrites, writes the project, and then builds the project
    itself on the target JDK with the tests. Follow it with
@@ -209,8 +233,15 @@ make the next step's evidence meaningful.
   `docs/agent_output/03-blast-radius/`, or (outside the render scripts) `docs/agent_output/04-remediation/`.
 - DO NOT run a version migration through `04b-fixer` or `04c-dependency-upgrader`, and DO NOT write
   a fix plan for one — a framework-generation or language-level upgrade has no root cause report and
-  no CWE to plan against. It belongs to `04d-version-migration`, which writes `migration_<slug>.md`
-  into `docs/agent_output/04-remediation/` alongside the fix reports, never a `fix_*.md`.
+  no CWE to plan against. It belongs to `04d-version-migration`, which writes
+  `migration_plan_<slug>.md` and `migration_<slug>.md` into `docs/agent_output/04-remediation/`
+  alongside the fix reports, never a `fix_*.md`.
+- DO NOT, in Migration mode, change a declared version before the migration plan reads
+  `Status: Approved`, and DO NOT set that Status yourself in any direction. The round scripts and
+  the apply script both refuse without it; do not try to work around them.
+- DO NOT, in Migration mode, drop or paraphrase reviewer feedback when revising a plan, and DO NOT
+  present a predicted change as graph-backed when the graph has no edge for it — say which of the
+  two it came from.
 - DO NOT, in Migration mode, skip round 0, continue past a red round 0, edit source before a build
   round has failed on it, bundle unrelated fixes or refactors into the migration (including repairs
   that would make a red baseline look green), or call it successful without a green final round, a
@@ -227,17 +258,26 @@ make the next step's evidence meaningful.
 - DO NOT leave a kept worktree (`--keep`) behind after a normal run.
 - DO NOT merge two issues into one plan or diff, and DO NOT rename any output file.
 - DO NOT print full context bundles, plans, diffs, or rationale into chat — link to the files.
-- No `npm install` is needed for any of the three skills — all have zero dependencies.
+- No `npm install` is needed for any of the four skills — none declares a dependency. `04d` borrows
+  `neo4j-driver` from `01c-graph-forge` at runtime and degrades to `artifacts.json` without it.
 
 ## Output Format
 
-**Migration mode** reports on its own, and does not print the two stage sections below: a one-line
-result (`Green on JDK <target> after N round(s)`, or the honest failure), then the versions moved,
-the source changes the upgrade forced, the behaviour verdict from the probe comparison, anything
-recorded as *not* caused by the migration, and a link to
-`docs/agent_output/04-remediation/migration_<slug>.md`. Close with the state of the project itself —
-`applied-verified` (on the new version and green there), `applied-verification-failed`, or
-`applied-unverified` — and what a human still needs to do.
+**Migration mode** reports on its own, twice, and does not print the two stage sections below.
+
+*At the plan, and then stop:* what the graph found about how this application is coupled to the
+framework, what the plan proposes to change and roughly how much, the top risks, the open questions
+the reviewer has to answer, and a link to
+`docs/agent_output/04-remediation/migration_plan_<slug>.md`. Say plainly that nothing has changed
+and nothing will until they set the Status. Do not summarise the whole document — the point is that
+they read it.
+
+*At the end:* a one-line result (`Green on JDK <target> after N round(s)`, or the honest failure),
+then the versions moved, the source changes the upgrade forced, the behaviour verdict from the probe
+comparison, how the plan's forecast compared with what actually happened, anything recorded as *not*
+caused by the migration, and a link to `docs/agent_output/04-remediation/migration_<slug>.md`. Close
+with the state of the project itself — `applied-verified` (on the new version and green there),
+`applied-verification-failed`, or `applied-unverified` — and what a human still needs to do.
 
 For the two gated stages, two short sections, never the plans or diffs themselves:
 

@@ -60,13 +60,23 @@ const sessionPaths = (slug) => ({
   workspace: path.join(sessionDir(slug), 'workspace'),
   roundsDir: path.join(sessionDir(slug), 'rounds'),
   runtimeDir: path.join(sessionDir(slug), 'runtime'),
+  graphContext: path.join(sessionDir(slug), 'graph-context.json'),
+  graphBriefing: path.join(sessionDir(slug), 'graph-context.md'),
+  plan: path.join(sessionDir(slug), 'plan.json'),
   migration: path.join(sessionDir(slug), 'migration.json'),
+  applied: path.join(sessionDir(slug), 'applied.json'),
+  appliedBackup: path.join(sessionDir(slug), 'pre-apply-backup'),
+  // The plan is a separate document from the report on purpose: it is written before the
+  // migration and read by a human who has to decide whether it should happen at all.
+  planMd: path.join(PATHS.OUT_DIR, `migration_plan_${slug}.md`),
   reportMd: path.join(PATHS.OUT_DIR, `migration_${slug}.md`),
   reportDiff: path.join(PATHS.OUT_DIR, `migration_${slug}.diff`),
 });
 
 function rel(target, from = REPO_ROOT) {
-  return path.relative(from, target).split(path.sep).join('/');
+  // path.relative returns '' when target *is* `from` — which happens whenever the project being
+  // migrated is the repository root, and prints as a blank where a path should be.
+  return path.relative(from, target).split(path.sep).join('/') || '.';
 }
 
 function readJson(file, fallback = null) {
@@ -333,6 +343,10 @@ function resolveBuildTool(projectDir) {
 }
 
 /** Goals/tasks by intent, so callers never hard-code a tool's CLI. */
+// The goals that actually run the test suite. Round 0 is restricted to these: a baseline that
+// skipped the tests cannot answer the only question the comparison exists for.
+const TEST_INTENTS = ['test', 'package', 'verify'];
+
 function buildArgs(tool, intent, extra = []) {
   const maven = {
     compile: ['-B', 'clean', 'compile'],
@@ -654,7 +668,7 @@ module.exports = {
   listSessions, listRounds, nextRoundNumber,
   run, runTool, tail, existsAny, childDirsMatching,
   javaMajorFrom, probeJdk, resolveJdk, installedJdks, envForJdk,
-  resolveBuildTool, buildArgs,
+  resolveBuildTool, buildArgs, TEST_INTENTS,
   inventoryProject, parsePom, parseGradle, findAncillaryFiles,
   ERROR_CATEGORIES, classifyMessage, categoryMeta, isLogNoise, parseBuildErrors, summariseErrors, buildOutcome,
   normaliseFile, stripRootFromText,

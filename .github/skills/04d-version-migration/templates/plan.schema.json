@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Version Migration — migration plan input",
+  "description": "The proposal half of a migration. Written by the agent to .github/.pipeline-context/version-migration/<slug>/plan.json AFTER round 0 is green and the graph context has been collected, but BEFORE any version is changed, and rendered by scripts/render-migration-plan.js into docs/agent_output/04-remediation/migration_plan_<slug>.md for a human to approve. Facts about the project's current versions come from baseline.json and facts about its architecture come from graph-context.json — never restate either here. This file carries the judgement: what will be changed, why the graph says it will be changed, what could go wrong, and what will not be attempted.",
+  "type": "object",
+  "required": ["slug", "title", "summary", "target", "phases", "predicted_changes", "risks"],
+  "additionalProperties": false,
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "The session slug, matching the directory name under .github/.pipeline-context/version-migration/."
+    },
+    "title": {
+      "type": "string",
+      "description": "One line naming the jump being proposed, e.g. \"Spring Boot 3.5.0 to 4.1.1 on Java 21\"."
+    },
+    "summary": {
+      "type": "string",
+      "description": "3-6 sentences for the person approving this, who may not be an engineer: what will move, roughly how much of the code has to change because of it, how long it is expected to take, and what the risk is. Written before the work, so say what is expected rather than what happened."
+    },
+    "drivers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Why do this migration at all — end of support, a CVE only fixed in the new generation, a dependency that requires it, a platform requirement. One line each. An upgrade with no driver is worth saying so."
+    },
+    "target": {
+      "type": "object",
+      "required": ["reference_pack", "language", "platform"],
+      "additionalProperties": false,
+      "properties": {
+        "reference_pack": { "type": "string", "description": "Reference file this migration will follow, e.g. references/spring-boot-3-to-4.md." },
+        "language": {
+          "type": "object",
+          "required": ["name", "from", "to"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "from": { "type": "string" },
+            "to": { "type": "string" }
+          }
+        },
+        "platform": {
+          "type": "object",
+          "required": ["name", "from", "to"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string", "description": "Framework or platform being moved, e.g. Spring Boot." },
+            "from": { "type": "string" },
+            "to": { "type": "string", "description": "The exact target version, pinned. \"Latest\" is not a target — the managed versions underneath depend on which release it is." }
+          }
+        }
+      }
+    },
+    "architecture_reading": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the code graph said about this application, in the agent's words. The counts, tables and rankings are rendered from graph-context.json — this is the interpretation of them.",
+      "properties": {
+        "summary": { "type": "string", "description": "What the graph shows about how this application is coupled to the framework, and what that implies for the jump." },
+        "framework_coupling": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The specific coupling points that matter for this migration, one line each, each naming what the graph showed."
+        },
+        "blind_spots": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What the graph could NOT tell us — configuration, infrastructure, anything with no code edge, anything the graph reported as stale."
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The migration as a sequence of intended phases. This is a forecast of the round loop, not a promise: the compiler decides how many rounds each phase really takes.",
+      "items": {
+        "type": "object",
+        "required": ["name", "goal"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Short phase name, e.g. \"Build file and coordinates\"." },
+          "goal": { "type": "string", "description": "What this phase is trying to achieve, in one sentence." },
+          "build_intent": { "type": "string", "enum": ["compile", "test-compile", "test", "package", "verify"], "description": "The build goal this phase iterates on." },
+          "expected_failures": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "What the build is expected to complain about during this phase. Being wrong here is fine and interesting — the report compares forecast against what actually happened."
+          },
+          "estimated_rounds": { "type": "integer", "description": "How many build rounds this phase is expected to take." },
+          "graph_evidence": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "What in the graph says this phase is needed — an external base type, an annotation, a coupled file."
+          }
+        }
+      }
+    },
+    "predicted_changes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The files expected to change, and why. Predicted from the reference pack's rules applied to the coupling the graph actually shows — not from guessing.",
+      "items": {
+        "type": "object",
+        "required": ["file", "area", "what", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "file": { "type": "string", "description": "Path relative to the project root, or a build/config file." },
+          "area": { "type": "string", "description": "Short grouping label, e.g. \"JSON handling\", \"Health monitoring\", \"Build file\", \"Test wiring\". Used for the change-distribution chart." },
+          "what": { "type": "string", "description": "One sentence: what is expected to change in this file." },
+          "why": { "type": "string", "description": "One sentence: the API, package or coordinate change that will force it." },
+          "reference_rule": { "type": "string", "description": "The heading or rule id in the reference pack this prediction comes from." },
+          "graph_evidence": { "type": "string", "description": "What the graph shows about this file — the external type it extends, the annotation it carries, the endpoints it exposes." },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How sure this file will actually need to change. Low is a legitimate answer and is more useful than a confident guess." }
+        }
+      }
+    },
+    "dependency_plan": {
+      "type": "array",
+      "description": "Declared coordinates, properties and plugins the plan intends to change before the first build round.",
+      "items": {
+        "type": "object",
+        "required": ["coordinate", "from", "to", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": { "type": "string", "description": "groupId:artifactId, a property name, or a plugin id." },
+          "from": { "type": "string", "description": "Current version, or \"absent\" / the old artifact name when being renamed." },
+          "to": { "type": "string", "description": "Intended version, or \"removed\" when being dropped." },
+          "reason": { "type": "string", "description": "One sentence citing the reference rule that requires it." },
+          "kind": { "type": "string", "enum": ["version", "rename", "added", "removed", "property", "plugin"] }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "minItems": 1,
+      "description": "What could go wrong. A migration plan with no risks is a plan that has not been read.",
+      "items": {
+        "type": "object",
+        "required": ["risk", "likelihood", "impact", "mitigation"],
+        "additionalProperties": false,
+        "properties": {
+          "risk": { "type": "string", "description": "What could go wrong, concretely." },
+          "likelihood": { "type": "string", "enum": ["high", "medium", "low"] },
+          "impact": { "type": "string", "enum": ["high", "medium", "low"] },
+          "mitigation": { "type": "string", "description": "What the migration will do about it — a probe, a phase order, a gate." },
+          "graph_evidence": { "type": "string", "description": "What in the graph makes this a real risk here rather than a generic one." }
+        }
+      }
+    },
+    "behaviour_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the plan proposes to prove the application still behaves the same.",
+      "properties": {
+        "summary": { "type": "string", "description": "What \"unchanged behaviour\" will mean for this application and how it will be shown." },
+        "probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "why"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "description": "The probe, e.g. \"GET /api/v1/employees/1\"." },
+              "why": { "type": "string", "description": "What this probe proves — the happy path, an error contract, an auth boundary." },
+              "expect_status": { "type": "integer" },
+              "criticality": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+            }
+          }
+        },
+        "not_covered": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Behaviour the probes will NOT check — background jobs, scheduled work, anything needing infrastructure the sandbox does not have."
+        }
+      }
+    },
+    "effort": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "estimated_rounds": { "type": "integer", "description": "Total build rounds expected across every phase." },
+        "estimated_duration": { "type": "string", "description": "Wall-clock estimate, e.g. \"2-4 hours\". Say what it assumes." },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+      }
+    },
+    "rollback": {
+      "type": "string",
+      "description": "How the project gets back to where it is today if the migration is abandoned or the applied result is bad. Name the actual command."
+    },
+    "out_of_scope": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What this migration deliberately will NOT do — refactors, bug fixes, unrelated dependency bumps, new features. Setting this boundary before the work is what makes it enforceable afterwards."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What the reviewer has to decide, phrased as questions they can answer in the feedback block of the rendered plan. Empty is fine when there is genuinely nothing to ask."
+    },
+    "revision_note": {
+      "type": "string",
+      "description": "When re-rendering a plan after the reviewer asked for changes: one line saying what changed in the plan and which piece of feedback it answers. The rendered plan keeps the full review history, so this is the entry for this revision only."
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "slug": "boot4-upgrade",
+  "title": "Spring Boot 3.5.0 to 4.1.1 on Java 21",
+  "summary": "The employee service now runs on Spring Boot 4.1.1 and Java 21, and it behaves the same as it did before. Five build rounds were needed after the verified-green starting point. The upgrade forced changes in five files: the build descriptor, one Jackson configuration class that had to be rewritten against Jackson 3's new API, one health-check class whose imports moved package, and three test classes whose slice annotations moved package. No business logic, no REST contract and no database code changed. All nineteen tests pass on the new version, exactly as they did on the old one, and all fifteen recorded requests return the same status they returned before. Three response payloads that the framework owns - the health document, the 401 body and the framework-rendered validation error - changed shape without changing status; none of them is produced by application code, and the reviewer confirmed nothing downstream parses them.",
+  "migration": {
+    "reference_pack": "references/spring-boot-3-to-4.md",
+    "language": { "name": "Java", "from": "17", "to": "21" },
+    "platform": { "name": "Spring Boot", "from": "3.5.0", "to": "4.1.1" }
+  },
+  "dependency_changes": [
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-parent",
+      "from": "3.5.0",
+      "to": "4.1.1",
+      "kind": "version",
+      "reason": "1.1 - the generation jump itself; it is what pulls in Spring Framework 7.0.9, Spring Security 7.1.1, Hibernate ORM 7.4.5.Final and Jackson 3.1.5."
+    },
+    {
+      "coordinate": "java.version",
+      "from": "17",
+      "to": "21",
+      "kind": "property",
+      "reason": "1.2 - the language level the Boot 4 generation is built and tested against."
+    },
+    {
+      "coordinate": "org.apache.maven.plugins:maven-compiler-plugin",
+      "from": "source 17 / target 17",
+      "to": "release 21",
+      "kind": "plugin",
+      "reason": "1.2 - an explicit stale source/target overrides the java.version property and would have silently kept compiling at 17."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-web",
+      "from": "spring-boot-starter-web",
+      "to": "spring-boot-starter-webmvc",
+      "kind": "rename",
+      "reason": "1.3 - Boot 4 names the servlet starter for its stack. Changed up front with the other coordinates; it resolved first time, so no resolution failure was ever recorded for it."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-webmvc-test",
+      "from": "absent",
+      "to": "4.1.1 (managed, test scope)",
+      "kind": "added",
+      "reason": "4.3 - @WebMvcTest and @AutoConfigureMockMvc live in this module in Boot 4. Added in response to round 2's errors, not pre-emptively."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-data-jpa-test",
+      "from": "absent",
+      "to": "4.1.1 (managed, test scope)",
+      "kind": "added",
+      "reason": "4.3 - @DataJpaTest moved into its own test starter. Added in response to round 2's errors."
+    },
+    {
+      "coordinate": "org.springframework.security:spring-security-test",
+      "from": "spring-security-test (managed, test scope)",
+      "to": "org.springframework.boot:spring-boot-starter-security-test",
+      "kind": "rename",
+      "reason": "4.4 - the MockMvc security test auto-configuration that applies the test SecurityContext ships in Boot's own security-test starter in Boot 4. Swapped only after round 4 proved the failure, so the change traces to a recorded regression rather than to the pack."
+    }
+  ],
+  "code_changes": [
+    {
+      "file": "src/main/java/com/example/migrationdemo/config/JacksonConfig.java",
+      "category": "JSON handling",
+      "what": "The hand-built ObjectMapper bean was replaced by a JsonMapperBuilderCustomizer bean, keeping all three of its original settings and dropping the manual JavaTimeModule registration.",
+      "why": "Jackson 3 moved its package root from com.fasterxml.jackson to tools.jackson, replaced ObjectMapper with JsonMapper, moved the date/time features onto DateTimeFeature, renamed setDefaultPropertyInclusion to changeDefaultPropertyInclusion, and Boot 4 replaced Jackson2ObjectMapperBuilderCustomizer with JsonMapperBuilderCustomizer.",
+      "reference_rule": "2.1 Package and type moves, 2.2 Configuration API",
+      "before": "import com.fasterxml.jackson.databind.ObjectMapper;\nimport com.fasterxml.jackson.databind.SerializationFeature;\nimport com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;\n\n@Bean\npublic ObjectMapper objectMapper() {\n    ObjectMapper mapper = new ObjectMapper();\n    mapper.registerModule(new JavaTimeModule());\n    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);\n    mapper.setDefaultPropertyInclusion(\n            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);\n    mapper.disable(SerializationFeature.INDENT_OUTPUT);\n    return mapper;\n}",
+      "after": "import com.fasterxml.jackson.annotation.JsonInclude;\nimport org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;\nimport tools.jackson.databind.SerializationFeature;\nimport tools.jackson.databind.cfg.DateTimeFeature;\n\n@Bean\npublic JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {\n    return builder -> builder\n            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)\n            .changeDefaultPropertyInclusion(\n                    inclusion -> inclusion.withValueInclusion(JsonInclude.Include.NON_NULL))\n            .disable(SerializationFeature.INDENT_OUTPUT);\n}",
+      "found_in_round": 1
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java",
+      "category": "Health monitoring",
+      "what": "Two import statements repointed. The class body, the builder calls and the @Component(\"database\") registration are byte-for-byte unchanged.",
+      "why": "Boot 4 relocated Health and HealthIndicator out of the actuator module into the new health-contributor module; the types and their API are identical.",
+      "reference_rule": "3. Actuator - health contributor package",
+      "before": "import org.springframework.boot.actuate.health.Health;\nimport org.springframework.boot.actuate.health.HealthIndicator;",
+      "after": "import org.springframework.boot.health.contributor.Health;\nimport org.springframework.boot.health.contributor.HealthIndicator;",
+      "found_in_round": 1
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java",
+      "category": "Test wiring",
+      "what": "Five lines: the @WebMvcTest import repointed, @MockBean replaced by @MockitoBean with its new import, and the injected mapper's type changed from ObjectMapper to JsonMapper. The @WebMvcTest(EmployeeController.class) slice itself was deliberately kept.",
+      "why": "Boot 4 removed @MockBean in favour of Spring Framework's @MockitoBean, moved the slice annotations into the modular webmvc-test artifact under a new package, and auto-configures a Jackson 3 JsonMapper instead of an ObjectMapper.",
+      "reference_rule": "4.1 Mocking annotations, 4.2 Slice tests and injected mappers, 4.3 Test starters",
+      "before": "import com.fasterxml.jackson.databind.ObjectMapper;\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.boot.test.mock.mockito.MockBean;\n\n@MockBean\nprivate EmployeeService employeeService;\n\n@Autowired\nprivate ObjectMapper objectMapper;",
+      "after": "import tools.jackson.databind.json.JsonMapper;\nimport org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;\nimport org.springframework.test.context.bean.override.mockito.MockitoBean;\n\n@MockitoBean\nprivate EmployeeService employeeService;\n\n@Autowired\nprivate JsonMapper objectMapper;",
+      "found_in_round": 2
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/actuator/ActuatorEndpointsTest.java",
+      "category": "Test wiring",
+      "what": "One import line repointed for @AutoConfigureMockMvc. Nothing else in the class changed.",
+      "why": "The annotation moved artifact and package together into the modular webmvc-test starter.",
+      "reference_rule": "4.3 Test starters - and the slice annotations that moved with them",
+      "before": "import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;",
+      "after": "import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;",
+      "found_in_round": 2
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java",
+      "category": "Test wiring",
+      "what": "One import line repointed for @DataJpaTest. The Testcontainers wiring, the PostgreSQL container and every assertion are unchanged.",
+      "why": "Boot 4 split the JPA test slice into its own starter and moved the annotation's package with it.",
+      "reference_rule": "4.3 Test starters - and the slice annotations that moved with them",
+      "before": "import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;",
+      "after": "import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;",
+      "found_in_round": 2
+    },
+    {
+      "file": "Dockerfile",
+      "category": "Container image",
+      "what": "The base image moved from the Java 17 JRE to the Java 21 JRE.",
+      "why": "A jar compiled at class-file version 65 will not start on a Java 17 JRE - the build stays green and the container fails at startup instead.",
+      "reference_rule": "8. Container image and CI",
+      "before": "FROM eclipse-temurin:17-jre",
+      "after": "FROM eclipse-temurin:21-jre",
+      "found_in_round": 1
+    }
+  ],
+  "round_notes": [
+    {
+      "round": 0,
+      "diagnosis": "The reference point, recorded on the JDK the project uses today and before a single version was touched. It establishes two things that every later round is measured against: that all nineteen tests across five classes pass on Boot 3.5.0 under JDK 17, including the Testcontainers PostgreSQL integration test, and that the running application answers all fifteen recorded requests with the status each one is contractually supposed to return. Without this, the round 4 test failures could not have been attributed to the migration rather than to pre-existing breakage - which is exactly the trap the reference pack's own worked example fell into.",
+      "changes": []
+    },
+    {
+      "round": 1,
+      "diagnosis": "The first build on the new generation, and its failures are the clearest statement of what Boot 4 actually is: 27 error lines, concentrated in exactly two files and nowhere else. Both are places where application code reaches directly into the framework. JacksonConfig broke because Jackson 3 changed its package root wholesale - com.fasterxml.jackson.databind and the jsr310 datatype module simply do not exist any more - which cascaded into every symbol in the class. DatabaseHealthIndicator broke because Boot 4 moved Health and HealthIndicator into a new health-contributor module, and the 'method does not override or implement a method from a supertype' line is the same relocation seen from the other side: with the interface unresolvable, the @Override on health() had nothing to attach to. What this round ruled out is as useful as what it found. The starter rename resolved first time, so no dependency-resolution failure appeared at all. The whole of the business layer - controller, service, repository, entity, mapper, DTOs, exceptions, security configuration - compiled untouched, confirming the plan's reading that high graph exposure is not the same thing as migration exposure.",
+      "changes": [
+        "pom.xml: spring-boot-starter-parent 3.5.0 to 4.1.1",
+        "pom.xml: java.version property 17 to 21",
+        "pom.xml: maven-compiler-plugin source/target 17 replaced by release 21",
+        "pom.xml: spring-boot-starter-web renamed to spring-boot-starter-webmvc",
+        "Dockerfile: base image eclipse-temurin:17-jre to 21-jre"
+      ]
+    },
+    {
+      "round": 2,
+      "diagnosis": "Main source now compiles, and the failure moved wholesale into the test layer - the round-later break the reference pack says to expect, because test sources are only compiled once main sources are clean. The error count fell from 27 to 16 and the file list changed completely: not one main-source file appears. All five distinct problems are the same kind of thing, Boot 4's modularisation of the single test starter into per-slice modules, and the annotations moving package along with their new artifacts. The one error that is not a slice annotation, ObjectMapper in the controller test, is the Jackson 3 package move again, this time reaching the test that injects the auto-configured mapper. This round is also the plan's largest blind spot being confirmed empirically: the code graph holds no test types at all, so none of these three files was predicted from measured coupling - they were predicted from the reference pack and a direct read of the sources, and all three turned out to be right.",
+      "changes": [
+        "src/main/java/com/example/migrationdemo/config/JacksonConfig.java: ObjectMapper bean replaced by a JsonMapperBuilderCustomizer, imports moved to tools.jackson.databind, WRITE_DATES_AS_TIMESTAMPS moved to DateTimeFeature, setDefaultPropertyInclusion replaced by changeDefaultPropertyInclusion, manual JavaTimeModule registration dropped",
+        "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java: Health and HealthIndicator imports repointed to org.springframework.boot.health.contributor"
+      ]
+    },
+    {
+      "round": 3,
+      "diagnosis": "Green, and it compiled everything including the tests. The reference pack warns that adding the modularised test starters alone changes nothing, because the slice annotations moved package as well as artifact - it records that as the most commonly wasted round in this migration. Doing both together in one edit is why this took one round rather than two. Every replacement package was resolved out of the jars on the classpath beforehand rather than taken from the pack on trust, which is why there was no second pass on a mistyped import. What this round cannot say anything about is behaviour: test-compile does not run a single test, and the next round is where that shows.",
+      "changes": [
+        "pom.xml: added spring-boot-starter-webmvc-test and spring-boot-starter-data-jpa-test at test scope",
+        "src/test/.../controller/EmployeeControllerTest.java: @WebMvcTest import repointed to org.springframework.boot.webmvc.test.autoconfigure, @MockBean replaced by @MockitoBean, injected ObjectMapper changed to JsonMapper",
+        "src/test/.../actuator/ActuatorEndpointsTest.java: @AutoConfigureMockMvc import repointed to org.springframework.boot.webmvc.test.autoconfigure",
+        "src/test/.../integration/EmployeeRepositoryIntegrationTest.java: @DataJpaTest import repointed to org.springframework.boot.data.jpa.test.autoconfigure"
+      ]
+    },
+    {
+      "round": 4,
+      "diagnosis": "The most important round in the migration, and it produced no compiler error whatsoever. Raising the goal to package - the same goal round 0 used - ran the suite for the first time on Boot 4, and five tests failed. The pattern is the diagnosis: every failure is a status assertion that got 401 instead, every one of them is in a test annotated @WithMockUser, and the two tests in the same class that authenticate differently both passed - the one sending real credentials with .with(httpBasic(...)) and the one that asserts an unauthenticated request is rejected. That split rules out the obvious explanation. The security filter chain is working perfectly: it authenticates real credentials and it rejects anonymous requests. What stopped working is the test-side machinery that installs a mock SecurityContext before the request reaches the chain, so @WithMockUser requests arrived genuinely unauthenticated and were correctly refused. The cause is the same modularisation that broke round 2 from a different angle - the MockMvc security test auto-configuration now ships in Boot's own security-test starter, and this project declared the raw spring-security-test artifact directly, so the upgrade left it without that auto-configuration. Note the test total: 19 run, identical to round 0, so nothing was lost or silently skipped - only the outcome of five of them changed. Had the migration been verified by compilation alone, this would have shipped.",
+      "changes": []
+    },
+    {
+      "round": 5,
+      "diagnosis": "Green, with 19 tests run and 0 failures - class for class identical to round 0: 2 in the actuator test, 7 in the controller test, 5 in the repository integration test, 2 in the mapper test, 3 in the service test. Swapping the raw spring-security-test artifact for Boot's spring-boot-starter-security-test restored the test-side SecurityContext and all five @WithMockUser tests went back to passing, which confirms the round 4 diagnosis rather than merely working around it: nothing about the tests, the security configuration or the controller was altered, only the artifact supplying the test auto-configuration. Because this round and round 0 ran the same goal on the same suite, the comparison is like for like and shows the migration cost no test coverage. Compilation being clean since round 3 also means these five failures were never a code problem, which is why no source file was touched to fix them.",
+      "changes": [
+        "pom.xml: org.springframework.security:spring-security-test replaced by org.springframework.boot:spring-boot-starter-security-test at test scope"
+      ]
+    }
+  ],
+  "behaviour": {
+    "verdict": "changed",
+    "notes": "No contract broke: all 15 probes returned exactly the status they returned on Boot 3.5.0, so every endpoint, every error path and every authentication boundary is preserved. Seven of the 15 response bodies are byte-for-byte identical, including all five business reads - the employee list, the single employee, both department searches and the native-SQL high-earners query. Of the eight bodies that differ, five are not migration differences at all and three are. NOT migration differences: the 404 bodies (three probes) and the 400 validation body are the project's own ErrorResponse and are identical field for field, in the same order, differing only in the embedded timestamp value, which is LocalDateTime.now() and necessarily differs between two runs 43 minutes apart. REAL, framework-owned changes, none of them produced by application code: (1) /actuator/health returned 548 bytes and now returns 667, with the same information but the keys reordered - 'components' now precedes 'status' at the top level and 'details' precedes 'status' within each contributor. (2) The 401 body's timestamp format changed from '2026-09-10T11:06:10.179+00:00' to '2026-09-10T11:49:17.789Z' - same fields, same order, different instant format. (3) The framework-rendered validation error for a missing required query parameter, served as application/problem+json, dropped its '\"type\":\"about:blank\"' member and reordered the remainder alphabetically: it was {type,title,status,detail,instance} at 154 bytes and is now {detail,instance,status,title} at 133. Items 1 and 3 are the same underlying effect - Boot 4 serialises these framework-owned, map-backed payloads with different property ordering - and the project's own POJO-backed ErrorResponse kept its declared field order throughout, which is precisely the divergence the plan's fifth risk predicted between the two error-rendering paths. The reviewer confirmed at approval that nothing downstream parses the health document or the error timestamp, so none of the three is a blocking finding here; a client asserting on exact JSON text or field order would nonetheless see all three."
+  },
+  "out_of_scope_changes": [
+    {
+      "change": "The testcontainers.version property is pinned to 1.21.4 in pom.xml, overriding the version the Boot parent manages.",
+      "why_separate": "It predates the migration. It was added as a separate pre-migration fix because the version Boot 3.5.0 managed requested a Docker API level below the local engine's minimum, and it is part of what made round 0 green. The migration did not touch it, and no build round failed on it under Boot 4.1.1, so it was deliberately left in place rather than tidied away."
+    },
+    {
+      "change": "ActuatorEndpointsTest loads the full context via AbstractIntegrationTest rather than sitting in a @WebMvcTest slice.",
+      "why_separate": "Also pre-existing pre-migration state, restored before round 0 because actuator endpoints are contributed by auto-configuration and are not registered inside a @WebMvcTest slice. The migration changed exactly one import line in that file and nothing about what it verifies."
+    },
+    {
+      "change": "The comment block above the Dockerfile's FROM line still reads 'Java 17 base image / During Spring Boot 4 migration, this will be updated to Java 21', and the MIGRATION-DEMO comments in JacksonConfig and pom.xml still describe the Boot 3 state.",
+      "why_separate": "These are now stale, but rewriting them is documentation work no build failure forced, and it would have added diff noise to the migration. Flagged for a human rather than silently corrected."
+    },
+    {
+      "change": "The known defects the code graph documented were left exactly as they are: the duplicate-email check in EmployeeService that queries the employeeNumber column with an email value and so returns 500 instead of 409, the missing DataIntegrityViolationException handler, /h2-console falling into anyRequest().permitAll(), and the health endpoint serving database details to anonymous callers.",
+      "why_separate": "All of these were wrong before the upgrade and are equally wrong after it. Fixing any of them inside the migration would be indistinguishable from migration work in the diff and would have destroyed the before/after comparison the report is built on. They were declared out of scope in the approved plan."
+    }
+  ],
+  "manual_follow_ups": [
+    "Build and run the container. The Dockerfile now uses eclipse-temurin:21-jre, but nothing in this migration built the image or started it - that base image change is verified only by inspection.",
+    "Decide whether the framework-owned payload changes matter to any real consumer. The reviewer confirmed there are none for this project, but the health document, the 401 body and the problem+json validation error all changed shape, and the '\"type\":\"about:blank\"' member disappearing from problem+json responses is the kind of thing a strict client schema would reject.",
+    "Consider whether the H2 console and the anonymous health-detail exposure should still be enabled now that the application is being touched anyway - as a separate change, not part of this one.",
+    "Re-run the code graph (01a/01b/01c). The graph that this migration was planned from describes the Boot 3 source; JacksonConfig in particular no longer looks the way the graph says it does.",
+    "Update the stale MIGRATION-DEMO comments in the Dockerfile, JacksonConfig and pom.xml if the team wants them to reflect the post-migration state."
+  ],
+  "residual_risk": [
+    "Behaviour was proved against H2, not PostgreSQL. The application's datasource defaults to a file-backed H2 database, so the /high-earners endpoint - which is native PostgreSQL SQL - was probed on an engine it was not written for, exactly as it is today. Hibernate 7's stricter parsing has therefore been demonstrated safe for that query only on H2 and via the Testcontainers integration test, not against a real PostgreSQL deployment serving live traffic.",
+    "No probe performs a successful write. All three write routes were exercised through their error contracts to keep the two runs comparable, so a regression affecting only a successful POST, PUT or DELETE would have to have been caught by the test suite rather than by the probe comparison.",
+    "Configuration remains the least instrumented area. spring-boot-properties-migrator was not added - the reviewer did not answer that open question either way, so the conservative path was taken - which means a Boot 3 property that Boot 4 silently ignores would not have announced itself. The application starts cleanly and every probe passes, so nothing behaviourally visible is being missed, but a setting that is now inert would not necessarily show up in any of them.",
+    "The graph could not see the test layer, and three of the five changed source files are tests. That gap was covered by reading the files directly and it turned out accurate, but it was not measured evidence.",
+    "GlobalExceptionHandler, SecurityConfig, EmployeeRepository, application.yml and application-test.yml were all predicted as possible low-confidence changes and none of them needed touching. The two configuration files in particular were never proved correct - they were simply never contradicted, since a stale property fails silently rather than loudly."
+  ]
+}

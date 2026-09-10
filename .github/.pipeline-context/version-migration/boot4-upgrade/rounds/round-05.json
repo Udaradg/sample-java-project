@@ -1,0 +1,73 @@
+{
+  "round": 5,
+  "label": "spring-security-test -> spring-boot-starter-security-test (restores the MockMvc test SecurityContext)",
+  "baseline": false,
+  "gate": null,
+  "started_at": "2026-09-10T11:48:29.235Z",
+  "duration_ms": 25779,
+  "jdk": {
+    "major": 21,
+    "version": "21.0.12.1",
+    "home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.101-hotspot",
+    "source": "C:\\Program Files\\Eclipse Adoptium"
+  },
+  "build": {
+    "tool": "maven",
+    "kind": "path",
+    "command": "C:\\Tools\\apache-maven-3.9.16\\bin\\mvn.cmd -B clean package",
+    "intent": "package",
+    "exit_code": 0,
+    "spawn_error": null
+  },
+  "outcome": "passed",
+  "declared": {
+    "java": "21",
+    "parent": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-parent",
+      "version": "4.1.1"
+    },
+    "dependency_count": 14
+  },
+  "workspace": {
+    "changed_files": [
+      {
+        "state": "M",
+        "file": "Dockerfile"
+      },
+      {
+        "state": "M",
+        "file": "pom.xml"
+      },
+      {
+        "state": "M",
+        "file": "src/main/java/com/example/migrationdemo/config/JacksonConfig.java"
+      },
+      {
+        "state": "M",
+        "file": "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java"
+      },
+      {
+        "state": "M",
+        "file": "src/test/java/com/example/migrationdemo/actuator/ActuatorEndpointsTest.java"
+      },
+      {
+        "state": "M",
+        "file": "src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java"
+      },
+      {
+        "state": "M",
+        "file": "src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java"
+      }
+    ],
+    "diff_stat": "7 files changed, 44 insertions(+), 34 deletions(-)"
+  },
+  "error_summary": {
+    "total": 0,
+    "byCategory": [],
+    "byFile": []
+  },
+  "errors": [],
+  "errors_truncated": 0,
+  "log_tail": "…(truncated, showing last 8000 chars)…\n=true\r\n2026-09-10T17:18:51.724+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\n2026-09-10T17:18:51.728+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-10T17:18:51.789+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        e1_0.employee_number=?\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        e1_0.employee_number=?\r\n2026-09-10T17:18:51.803+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0\r\n2026-09-10T17:18:51.806+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-10T17:18:51.809+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-10T17:18:51.811+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\nHibernate: \r\n    insert \r\n    into\r\n        employees\r\n        (active, created_at, department, email, employee_number, first_name, last_name, salary, updated_at) \r\n    values\r\n        (?, ?, ?, ?, ?, ?, ?, ?, ?)\r\n2026-09-10T17:18:51.819+05:30 DEBUG 2884 --- [spring-boot-migration-demo] [           main] org.hibernate.SQL                        : \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        upper(e1_0.department)=upper(?)\r\nHibernate: \r\n    select\r\n        e1_0.id,\r\n        e1_0.active,\r\n        e1_0.created_at,\r\n        e1_0.department,\r\n        e1_0.email,\r\n        e1_0.employee_number,\r\n        e1_0.first_name,\r\n        e1_0.last_name,\r\n        e1_0.salary,\r\n        e1_0.updated_at \r\n    from\r\n        employees e1_0 \r\n    where\r\n        upper(e1_0.department)=upper(?)\r\n2026-09-10T17:18:51.830+05:30  WARN 2884 --- [spring-boot-migration-demo] [           main] o.j.j.e.d.AbstractExtensionContext       : Type implements CloseableResource but not AutoCloseable: org.testcontainers.junit.jupiter.TestcontainersExtension$StoreAdapter\r\n[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.050 s -- in com.example.migrationdemo.integration.EmployeeRepositoryIntegrationTest\r\n[INFO] Running com.example.migrationdemo.mapper.EmployeeMapperTest\r\n[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.example.migrationdemo.mapper.EmployeeMapperTest\r\n[INFO] Running com.example.migrationdemo.service.EmployeeServiceTest\r\n[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.210 s -- in com.example.migrationdemo.service.EmployeeServiceTest\r\n[INFO] \r\n[INFO] Results:\r\n[INFO] \r\n[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0\r\n[INFO] \r\n[INFO] \r\n[INFO] --- jar:3.5.1:jar (default-jar) @ spring-boot-migration-demo ---\r\n[INFO] Building jar: .\\target\\spring-boot-migration-demo-1.0.0.jar\r\n[INFO] \r\n[INFO] --- spring-boot:4.1.1:repackage (repackage) @ spring-boot-migration-demo ---\r\n[INFO] Replacing main artifact .\\target\\spring-boot-migration-demo-1.0.0.jar with repackaged archive, adding nested dependencies in BOOT-INF/.\r\n[INFO] The original artifact has been renamed to .\\target\\spring-boot-migration-demo-1.0.0.jar.original\r\n[INFO] ------------------------------------------------------------------------\r\n[INFO] BUILD SUCCESS\r\n[INFO] ------------------------------------------------------------------------\r\n[INFO] Total time:  24.029 s\r\n[INFO] Finished at: 2026-09-10T17:18:54+05:30\r\n[INFO] ------------------------------------------------------------------------\r\n\nMockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3\r\nWARNING: A Java agent has been loaded dynamically (C:\\Users\\USER\\.m2\\repository\\net\\bytebuddy\\byte-buddy-agent\\1.18.11\\byte-buddy-agent-1.18.11.jar)\r\nWARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning\r\nWARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information\r\nWARNING: Dynamic loading of agents will be disallowed by default in a future release\r\nOpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended\r\n"
+}

@@ -1,0 +1,398 @@
+{
+  "slug": "boot4-upgrade",
+  "title": "Spring Boot 3.5.0 to 4.1.1 on Java 21",
+  "summary": "This proposes moving the employee service from Spring Boot 3.5.0 to Spring Boot 4.1.1, and its language level from Java 17 to Java 21. Spring Boot 4 is a whole-generation jump: it brings Spring Framework 7, Spring Security 7, Hibernate ORM 7 and Jackson 3 with it, so the source code has to change, not just the version numbers. The REST contract is expected to survive untouched - all seven endpoints, the authentication boundary and the 404/400 error paths are recorded today and will be replayed on the new runtime and compared request by request. The work is expected to take roughly seven build rounds across five phases, most of it mechanical import repointing in two main-source files and three test files, plus one genuine rewrite of the Jackson configuration bean. The single biggest risk is not a compile error at all: the tests that authenticate with @WithMockUser can start returning 401 while still compiling, which only a round that actually runs the tests will catch. Nothing in the project changes until this plan is approved.",
+  "drivers": [
+    "Spring Boot 3.5.x is the tail of the 3.x line; 4.x is the generation that receives feature work and, in time, the security fixes.",
+    "Java 21 is the LTS the Boot 4 generation is built and tested against - the reference pack is explicit that Boot 4 can still compile under Java 17, so this is a deliberate move rather than something the compiler forces.",
+    "The 4.1.1 BOM carries Spring Framework 7.0.9, Spring Security 7.1.1, Hibernate ORM 7.4.5.Final and Jackson 3.1.5 (read from the resolved spring-boot-dependencies:4.1.1 pom), replacing four ecosystem generations in one managed step.",
+    "Honest counterweight: no CVE, customer requirement or blocking dependency forces this today. It is a planned generation move, and the reviewer is entitled to say 'not yet'."
+  ],
+  "target": {
+    "reference_pack": "references/spring-boot-3-to-4.md",
+    "language": { "name": "Java", "from": "17", "to": "21" },
+    "platform": { "name": "Spring Boot", "from": "3.5.0", "to": "4.1.1" }
+  },
+  "architecture_reading": {
+    "summary": "The live Neo4j graph shows a small, conventionally wired service with a narrow but sharp framework surface: 17 types in one module, 5 external base types held by 6 types, 11 distinct framework annotations, and 7 REST endpoints. That narrowness is the good news - a generation jump breaks code exactly where it touches the framework, and here that is a handful of files rather than a layer. Of the 5 touchpoints, only one (DatabaseHealthIndicator implements HealthIndicator) sits on a type the reference pack says actually relocates in this jump; JpaRepository, CommandLineRunner and RuntimeException are expected to be inert, and ResponseEntityExceptionHandler is the one the pack has no rule for and therefore the one I am least sure about. The graph also ranks EmployeeController, EmployeeRepository and EmployeeService as the most exposed files, but exposure ranks where to look, not what changes: none of those three is predicted to change, because the coupling they carry is annotations and interfaces this jump does not move. The real concentration of work is somewhere the exposure ranking puts near the bottom - JacksonConfig, rank 12 with zero dependents, is the largest single source change in the migration.",
+    "framework_coupling": [
+      "5 framework touchpoints: DatabaseHealthIndicator implements HealthIndicator, EmployeeRepository extends JpaRepository, GlobalExceptionHandler extends ResponseEntityExceptionHandler, DataInitializer implements CommandLineRunner, and two exception types extend RuntimeException.",
+      "DatabaseHealthIndicator is the clearest hit: the graph marks HealthIndicator as an ExternalType, and the pack moves that type from org.springframework.boot.actuate.health to org.springframework.boot.health.contributor - which I confirmed against the spring-boot-health-4.1.1 jar.",
+      "GlobalExceptionHandler extends ResponseEntityExceptionHandler, a Spring Framework 7-owned base class whose protected method signatures the project overrides. The pack has no rule for it, so the graph is pointing at a file the reference material does not cover.",
+      "The graph carries the 12 declared coordinates for this module, including org.springframework.boot:spring-boot-starter-web and org.springframework.security:spring-security-test - both of which the pack flags as renamed or replaced in Boot 4.",
+      "11 annotations wire the application, but only the two @Configuration classes matter for this jump: SecurityConfig and JacksonConfig. @RestController, @Service, @Repository, @Entity, @Table, @Component and @SpringBootApplication are unchanged across the generation.",
+      "The graph's semantic layer explicitly marks SecurityConfig, JacksonConfig and both @Query methods on EmployeeRepository as planted MIGRATION-DEMO breakage points for Security 6-to-7, Jackson 2-to-3 and Hibernate query parsing - so those four places are where this project was built to break.",
+      "All 7 endpoints hang off one controller and are the contract the migration must preserve; every one of them is in the probe list."
+    ],
+    "blind_spots": [
+      "The graph holds no test types at all - 0 of the 6 test sources appear anywhere in it. Every test-layer prediction in this plan therefore comes from the reference pack plus my own direct read of those files, not from measured coupling, and the migration's worst known failure mode (@WithMockUser returning 401) lives entirely in that blind spot.",
+      "The graph has no edges for pom.xml, the Dockerfile, application.yml or application-test.yml. The parent version, the java.version property, the compiler plugin's source/target and the container base image are all invisible to it; those predictions come from the baseline inventory and the pack.",
+      "Configuration property renames are invisible to both the graph and the compiler. The graph's own cross-cutting notes describe three config-coupling facts (health details served anonymously, /h2-console reachable via anyRequest().permitAll(), the H2 file-backed datasource default) that exist only as combinations of settings with no code edge - exactly the class of thing Boot 4 can change silently.",
+      "The graph reports 0 stale descriptions, so it is a current snapshot rather than a description of older code - but it is still a snapshot of main source only.",
+      "Runtime and infrastructure are outside it: the Docker daemon that Testcontainers needs, the PostgreSQL image the integration test starts, and the fact that the probes run against H2 while one repository query is PostgreSQL-native SQL."
+    ]
+  },
+  "phases": [
+    {
+      "name": "Build file and coordinates",
+      "goal": "Move the parent, the language level and the renamed starters so the resolver and the compiler can tell us what no longer exists.",
+      "build_intent": "compile",
+      "estimated_rounds": 2,
+      "expected_failures": [
+        "Could not resolve dependencies for spring-boot-starter-web:jar:4.1.1 - the servlet starter is named spring-boot-starter-webmvc in Boot 4",
+        "package com.fasterxml.jackson.databind does not exist in JacksonConfig",
+        "package org.springframework.boot.actuate.health does not exist in DatabaseHealthIndicator"
+      ],
+      "graph_evidence": [
+        "The graph lists all 12 declared coordinates for this module; spring-boot-starter-web is one of them and is the coordinate the pack renames.",
+        "The parent version, java.version and the maven-compiler-plugin source/target have no graph node - this part of the phase is from the baseline inventory and the pack, not from the graph."
+      ]
+    },
+    {
+      "name": "Main source relocations",
+      "goal": "Repoint the two main-source files the generation jump actually moves - the Jackson configuration and the health indicator - driven by the errors the previous round produces.",
+      "build_intent": "test-compile",
+      "estimated_rounds": 2,
+      "expected_failures": [
+        "cannot find symbol: variable WRITE_DATES_AS_TIMESTAMPS once SerializationFeature comes from tools.jackson.databind",
+        "cannot find symbol: method setDefaultPropertyInclusion on the Jackson 3 builder",
+        "package org.springframework.boot.autoconfigure.jackson does not exist for Jackson2ObjectMapperBuilderCustomizer"
+      ],
+      "graph_evidence": [
+        "DatabaseHealthIndicator is one of the 5 framework touchpoints - it implements HealthIndicator, which the graph records as an ExternalType.",
+        "JacksonConfig is one of the 2 @Configuration types, and the graph's semantic layer marks it a planted Jackson 2-to-3 breakage point."
+      ]
+    },
+    {
+      "name": "Test layer",
+      "goal": "Fix the second wave of compile errors, which only appears once main source compiles: the modularised test starters and the annotations that moved package with them.",
+      "build_intent": "test-compile",
+      "estimated_rounds": 2,
+      "expected_failures": [
+        "package org.springframework.boot.test.autoconfigure.web.servlet does not exist (@WebMvcTest, @AutoConfigureMockMvc)",
+        "package org.springframework.boot.test.autoconfigure.orm.jpa does not exist (@DataJpaTest)",
+        "package org.springframework.boot.test.mock.mockito does not exist (@MockBean)",
+        "cannot find symbol: class ObjectMapper in EmployeeControllerTest"
+      ],
+      "graph_evidence": [
+        "None. The graph contains no test types, so this entire phase is predicted from the reference pack (4.1, 4.2, 4.3) and a direct read of the six test files - it is the plan's largest un-measured area."
+      ]
+    },
+    {
+      "name": "Full test run and behavioural regressions",
+      "goal": "Run the same goal round 0 ran (package, tests included) so the suite is compared like for like, and catch the breakages that produce no compiler error.",
+      "build_intent": "package",
+      "estimated_rounds": 2,
+      "expected_failures": [
+        "Tests annotated @WithMockUser returning 401 while the .with(httpBasic(...)) tests keep passing - the signature of a missing spring-boot-starter-security-test",
+        "Possible Hibernate 7 startup or query-parse failure on the native PostgreSQL query or the JPQL finder"
+      ],
+      "graph_evidence": [
+        "The Hibernate half is graph-backed: EmployeeRepository extends JpaRepository (a touchpoint), and the graph notes findHighEarners is nativeQuery = true PostgreSQL SQL while findActiveEmployeesByDepartment is JPQL parsed only at context build.",
+        "The @WithMockUser half is not graph-backed - no test types are in the graph."
+      ]
+    },
+    {
+      "name": "Prove behaviour and land it in the project",
+      "goal": "Replay the same 15 probes on JDK 21, compare them request by request against the baseline, then write the green sandbox into the project and build the project itself on Java 21.",
+      "build_intent": "package",
+      "estimated_rounds": 1,
+      "expected_failures": [
+        "No build failure expected here; the expected differences are in the probe bodies - the actuator health document and the framework-rendered error timestamp",
+        "A post-apply project build that differs from the sandbox because of something the copy did not carry, such as a stale target/ or local configuration"
+      ],
+      "graph_evidence": [
+        "All 7 endpoints the graph records are covered by the probe list, so the comparison covers the whole REST surface the graph knows about."
+      ]
+    }
+  ],
+  "predicted_changes": [
+    {
+      "file": "pom.xml",
+      "area": "Build file",
+      "what": "Parent 3.5.0 to 4.1.1; java.version 17 to 21; maven-compiler-plugin source/target 17 replaced by release 21; spring-boot-starter-web renamed to spring-boot-starter-webmvc; spring-boot-starter-webmvc-test and spring-boot-starter-data-jpa-test added; spring-security-test replaced by spring-boot-starter-security-test.",
+      "why": "The parent manages every Boot, Jackson, Hibernate and test-stack version, Boot 4 names the servlet starter for its stack, and it splits the single test starter into per-slice modules.",
+      "reference_rule": "1.1 Parent / BOM, 1.2 Language level, 1.3 Starter renames, 4.3 Test starters, 4.4 security-test starter",
+      "graph_evidence": "Partly graph-backed: the graph carries all 12 declared coordinates for this module, including org.springframework.boot:spring-boot-starter-web and org.springframework.security:spring-security-test, the two the pack renames or replaces. The graph records no version on any coordinate and has no node for the parent, the java.version property or the compiler plugin - those three come from baseline.json and the reference pack, not from measurement.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/config/JacksonConfig.java",
+      "area": "JSON handling",
+      "what": "The hand-built ObjectMapper bean is replaced by a JsonMapperBuilderCustomizer bean: imports move to tools.jackson.databind, WRITE_DATES_AS_TIMESTAMPS moves from SerializationFeature to DateTimeFeature, setDefaultPropertyInclusion becomes changeDefaultPropertyInclusion, and the manual JavaTimeModule registration is dropped because java.time support is built in.",
+      "why": "Jackson 3 changes its package root, its entry-point type and its configuration API, and Boot 4's Jackson auto-configuration changes with it.",
+      "reference_rule": "2.1 Package and type moves, 2.2 Configuration API",
+      "graph_evidence": "Graph-backed as a location: JacksonConfig is one of the 2 @Configuration types the graph records, and the graph's semantic layer explicitly names it a planted Jackson 2-to-3 breakage point. The specific target packages are not from the graph - I verified tools.jackson.databind.json.JsonMapper, tools.jackson.databind.SerializationFeature and tools.jackson.databind.cfg.DateTimeFeature inside jackson-databind-3.1.5.jar, and org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer inside spring-boot-jackson-4.1.1.jar.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java",
+      "area": "Health monitoring",
+      "what": "Two imports repointed from org.springframework.boot.actuate.health to org.springframework.boot.health.contributor. The builder API, the @Component(\"database\") registration and the method body are expected to be untouched.",
+      "why": "Boot 4 relocates the Health and HealthIndicator types into the new health-contributor module; the types themselves are unchanged.",
+      "reference_rule": "3. Actuator - health contributor package",
+      "graph_evidence": "Directly graph-backed: this is one of the 5 framework touchpoints, recorded as implementing HealthIndicator, which the graph classes as an ExternalType - the exact shape of coupling a package relocation lands on. I confirmed org/springframework/boot/health/contributor/Health.class and HealthIndicator.class are present in spring-boot-health-4.1.1.jar.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/controller/EmployeeControllerTest.java",
+      "area": "Test wiring",
+      "what": "@WebMvcTest and its slice imports repoint to org.springframework.boot.webmvc.test.autoconfigure, @MockBean becomes @MockitoBean from org.springframework.test.context.bean.override.mockito, and the injected ObjectMapper becomes a JsonMapper.",
+      "why": "Boot 4 removes @MockBean, moves the slice annotations into the modular webmvc-test artifact under a new package, and the auto-configured mapper is now a Jackson 3 JsonMapper.",
+      "reference_rule": "4.1 Mocking annotations, 4.2 Slice tests and injected mappers, 4.3 Test starters",
+      "graph_evidence": "None - the graph contains no test types whatsoever, so nothing here was measured. This prediction is the reference pack applied to a direct read of the file, which today imports org.springframework.boot.test.mock.mockito.MockBean, org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest and com.fasterxml.jackson.databind.ObjectMapper. I verified WebMvcTest.class and AutoConfigureMockMvc.class are in org/springframework/boot/webmvc/test/autoconfigure/ inside spring-boot-webmvc-test-4.1.1.jar.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/integration/EmployeeRepositoryIntegrationTest.java",
+      "area": "Test wiring",
+      "what": "The @DataJpaTest import repoints from org.springframework.boot.test.autoconfigure.orm.jpa to org.springframework.boot.data.jpa.test.autoconfigure. The Testcontainers wiring and the assertions are expected to be untouched.",
+      "why": "Boot 4 splits the JPA test slice into its own starter and moves the annotation's package with it.",
+      "reference_rule": "4.3 Test starters - and the slice annotations that moved with them",
+      "graph_evidence": "None - no test types are in the graph. From the pack plus a read of the file, which imports org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest today. I verified DataJpaTest.class is in org/springframework/boot/data/jpa/test/autoconfigure/ inside spring-boot-data-jpa-test-4.1.1.jar.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/test/java/com/example/migrationdemo/actuator/ActuatorEndpointsTest.java",
+      "area": "Test wiring",
+      "what": "The @AutoConfigureMockMvc import repoints to org.springframework.boot.webmvc.test.autoconfigure. Nothing else in the class is expected to move.",
+      "why": "Same modularisation as the controller test - the annotation moved artifact and package together.",
+      "reference_rule": "4.3 Test starters - and the slice annotations that moved with them",
+      "graph_evidence": "None - no test types are in the graph. From the pack plus a read of the file, which imports org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc today.",
+      "confidence": "high"
+    },
+    {
+      "file": "Dockerfile",
+      "area": "Container image",
+      "what": "Base image FROM eclipse-temurin:17-jre becomes eclipse-temurin:21-jre.",
+      "why": "A jar compiled at class-file version 65 will not start on a Java 17 JRE; the build stays green and the container fails at runtime.",
+      "reference_rule": "8. Container image and CI",
+      "graph_evidence": "None - the graph has no edge to container files. This comes from baseline.json's ancillary-file inventory, which lists the Dockerfile, and from a direct read of it. There is no CI workflow in this repository to update, and docker-compose.yml pins no Java version (only postgres:16), so neither is expected to change.",
+      "confidence": "high"
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java",
+      "area": "Error handling",
+      "what": "Possibly nothing; at most the overridden handleMethodArgumentNotValid signature, if Spring Framework 7 changed the protected contract it inherits.",
+      "why": "The class extends a framework-owned base whose protected method signatures are not the project's to control, and this jump moves Spring Framework 6 to 7.",
+      "reference_rule": "No rule - the pack does not cover ResponseEntityExceptionHandler. This prediction comes from the graph rather than the reference material, which is why its confidence is low.",
+      "graph_evidence": "Graph-backed as a location: it is one of the 5 framework touchpoints, recorded as EXTENDS ResponseEntityExceptionHandler, an ExternalType. The graph also notes that framework-raised errors rendered by this inherited base do not use the project's ErrorResponse shape, so a change here is visible to clients in a way the project's own handlers are not. What the graph cannot say is whether that signature actually moved in Framework 7 - I have not verified it against the jar, and only a build round will settle it.",
+      "confidence": "low"
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/config/SecurityConfig.java",
+      "area": "Security",
+      "what": "Expected to need no change at all; at most a DSL adjustment if Security 7 removed something this chain uses.",
+      "why": "The chain is already written in the lambda DSL that Security 7 keeps; the pack says only the removed chained/and() style breaks, and this file does not use it.",
+      "reference_rule": "5. Spring Security 6 to 7",
+      "graph_evidence": "Graph-backed as a location and as a reason to watch it: the graph ranks SecurityConfig a critical-criticality configuration type, records it as the only @EnableWebSecurity type, and its semantic layer marks it a planted Security 6-to-7 breakage point. Set against that, my read of the file shows csrf(...), authorizeHttpRequests(...) and httpBasic(Customizer.withDefaults()) - all lambda-DSL forms the pack says survive. Listed at low confidence because the graph says look here and the code says nothing to do; the compiler decides.",
+      "confidence": "low"
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+      "area": "Persistence",
+      "what": "Expected to need no source change; the risk is a runtime or startup failure rather than a compile error, and if anything moves it will be the native SQL or the JPQL fragment.",
+      "why": "Hibernate 7 parses HQL/JPQL more strictly and drops some legacy API surface, but derived query methods and JpaRepository itself carry over.",
+      "reference_rule": "6. Hibernate 6 to 7 and Spring Data JPA",
+      "graph_evidence": "Graph-backed: it is one of the 5 framework touchpoints (EXTENDS JpaRepository), ranks second on exposure with 2 dependents and high criticality, and the graph's semantic layer records that findHighEarners is nativeQuery = true PostgreSQL SQL run against the default H2 datasource, while findActiveEmployeesByDepartment is JPQL parsed only when the context builds - two different failure symptoms, neither of which the compiler will show.",
+      "confidence": "low"
+    },
+    {
+      "file": "src/main/resources/application.yml",
+      "area": "Configuration",
+      "what": "Possibly a renamed or removed property under spring.jackson.*, spring.jpa.* or management.*; most likely nothing.",
+      "why": "Boot 4 removes properties deprecated across the 3.x line, and a property that no longer exists is inert rather than an error.",
+      "reference_rule": "7. Configuration properties and runtime",
+      "graph_evidence": "None - the graph has no configuration edges, and it says so itself: its cross-cutting notes describe three config-coupling facts (anonymous access to health details, /h2-console falling into anyRequest().permitAll(), the H2 file-backed datasource default) that exist only as combinations of settings with no code edge. That is precisely why this entry is low confidence: neither the graph nor the compiler can see it, so only the probe comparison would catch it.",
+      "confidence": "low"
+    },
+    {
+      "file": "src/test/resources/application-test.yml",
+      "area": "Configuration",
+      "what": "Possibly the explicit spring.jpa.database-platform: org.hibernate.dialect.H2Dialect line, if Hibernate 7 relocated or removed that dialect class.",
+      "why": "Hibernate 7 removed a number of dialect classes and prefers auto-detection; an explicitly pinned dialect that no longer exists fails at context startup, not at compile time.",
+      "reference_rule": "6. Hibernate 6 to 7 - startup fails on dialect or driver resolution",
+      "graph_evidence": "None - no configuration edges and no test sources in the graph. From a direct read of the file, which pins the dialect explicitly, plus the pack's symptom table.",
+      "confidence": "low"
+    }
+  ],
+  "dependency_plan": [
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-parent",
+      "from": "3.5.0",
+      "to": "4.1.1",
+      "kind": "version",
+      "reason": "1.1 - the generation jump itself; every managed version underneath follows from this one. 4.1.1 is the newest GA release on Maven Central (4.2.0-M1 is a milestone) and was confirmed to resolve with mvn dependency:get."
+    },
+    {
+      "coordinate": "java.version",
+      "from": "17",
+      "to": "21",
+      "kind": "property",
+      "reason": "1.2 - the language level the Boot 4 generation is built and tested against."
+    },
+    {
+      "coordinate": "org.apache.maven.plugins:maven-compiler-plugin",
+      "from": "source/target 17",
+      "to": "release 21",
+      "kind": "plugin",
+      "reason": "1.2 - an explicit stale source/target overrides the java.version property and would silently keep compiling at 17."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-web",
+      "from": "spring-boot-starter-web",
+      "to": "spring-boot-starter-webmvc",
+      "kind": "rename",
+      "reason": "1.3 - Boot 4 names the servlet starter for its stack; the old coordinate does not exist at 4.x and fails at resolution, not compile."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-webmvc-test",
+      "from": "absent",
+      "to": "4.1.1 (managed)",
+      "kind": "added",
+      "reason": "4.3 - @WebMvcTest and @AutoConfigureMockMvc live in this module in Boot 4, and their package moved with it."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-starter-data-jpa-test",
+      "from": "absent",
+      "to": "4.1.1 (managed)",
+      "kind": "added",
+      "reason": "4.3 - @DataJpaTest moved into its own test starter and package."
+    },
+    {
+      "coordinate": "org.springframework.security:spring-security-test",
+      "from": "spring-security-test (managed)",
+      "to": "org.springframework.boot:spring-boot-starter-security-test",
+      "kind": "rename",
+      "reason": "4.4 - the MockMvc security test auto-configuration that applies the test SecurityContext now ships in Boot's own security-test starter; declaring the raw artifact leaves @WithMockUser silently unauthenticated."
+    },
+    {
+      "coordinate": "org.springframework.boot:spring-boot-properties-migrator",
+      "from": "absent",
+      "to": "4.1.1 (managed, runtime scope, temporary)",
+      "kind": "added",
+      "reason": "7 - reports renamed and removed configuration properties at startup with their replacements. It is a migration aid and would be removed again before the result is applied to the project. Proposed, not assumed - see the open questions."
+    },
+    {
+      "coordinate": "testcontainers.version",
+      "from": "1.21.4",
+      "to": "1.21.4 (unchanged)",
+      "kind": "property",
+      "reason": "Listed to state the boundary explicitly: this override predates the migration and exists because the Boot-managed 1.21.0 requests a Docker API below the local engine's floor. The migration will not touch it unless a build round fails on it, and if the Boot 4.1.1 BOM already manages a version at or above 1.21.4 the override is left in place rather than tidied away."
+    }
+  ],
+  "risks": [
+    {
+      "risk": "The tests that authenticate with @WithMockUser start returning 401 while compiling perfectly, so a migration verified by compilation alone would ship a broken security test layer.",
+      "likelihood": "high",
+      "impact": "high",
+      "mitigation": "The fourth phase runs the same package goal round 0 ran, so the 19-test count is compared like for like; the plan already names spring-boot-starter-security-test as the fix, and the diagnostic split (httpBasic tests pass, @WithMockUser tests fail) is written down in advance so the round is read correctly rather than misdiagnosed as a filter-chain break.",
+      "graph_evidence": "Not graph-backed, and that is the point: the graph holds no test types at all, so this risk is invisible to the evidence base this plan is otherwise built on. It comes from the pack's 4.4 and my read of EmployeeControllerTest.java, which mixes @WithMockUser and .with(httpBasic(\"demo\",\"demo123\")) in the same class - the exact combination that produces the diagnostic split."
+    },
+    {
+      "risk": "The /actuator/health document changes shape, so anything scraping it sees a different payload even though no application code changed.",
+      "likelihood": "high",
+      "impact": "medium",
+      "mitigation": "Health is probed before and after and its body compared; the pack already documents key reordering and a larger payload for this jump, so the comparison will report it as a client-visible change rather than rounding it down to 'unchanged'.",
+      "graph_evidence": "Graph-backed twice over: DatabaseHealthIndicator is one of the 5 touchpoints and is itself predicted to move package, and the graph's config-coupling note records that /actuator/health is permitAll while management.endpoint.health.show-details is 'always' and the indicator attaches details - so the document is served to anonymous callers and any shape change is externally visible."
+    },
+    {
+      "risk": "A configuration property is renamed or removed in Boot 4 and silently stops applying - an endpoint quietly exposed or hidden, a log level that stops taking effect, a serialization default that changes.",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Add spring-boot-properties-migrator at runtime scope during the migration so startup reports renamed properties by name, and rely on the probe comparison for anything it misses. Remove the migrator before applying to the project.",
+      "graph_evidence": "This is the graph's own declared blind spot: it has no configuration edges, and its cross-cutting notes describe three behaviours that exist only as combinations of settings (anonymous health details, /h2-console under anyRequest().permitAll(), the H2 file-backed default). Nothing in a build round will surface any of them."
+    },
+    {
+      "risk": "Hibernate 7's stricter query parsing or its removed dialect classes break the application at startup or at query time, with no compiler error anywhere.",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "The high-earners endpoint (the native query) and the search endpoint are both probed, and the @DataJpaTest integration test runs against real PostgreSQL via Testcontainers in the package rounds. A JPQL parse error is a context-startup failure, so it will surface as a failed probe rather than a subtly wrong answer.",
+      "graph_evidence": "Graph-backed: EmployeeRepository extends JpaRepository (a touchpoint) and the graph records that findHighEarners is nativeQuery = true PostgreSQL SQL while findActiveEmployeesByDepartment is JPQL parsed only when the context builds - two distinct symptoms. The graph additionally marks both @Query methods as planted Hibernate query-parsing breakage points."
+    },
+    {
+      "risk": "GlobalExceptionHandler fails to compile against Spring Framework 7, or the framework-rendered error bodies it inherits change shape while the project's own ErrorResponse stays the same - so clients see two error formats diverge.",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Three probes pin error contracts on both sides of that split: the 404 and the 400 validation failure render the project's ErrorResponse, while the missing-required-parameter 400 is rendered by the inherited base. A shape change in the third with the first two unchanged is exactly this risk materialising, and the body excerpts are recorded for both runs.",
+      "graph_evidence": "Graph-backed: GlobalExceptionHandler is one of the 5 touchpoints (EXTENDS ResponseEntityExceptionHandler), and the graph explicitly notes that framework-raised errors - wrong method, malformed JSON, missing @RequestParam, non-numeric path variable - do not use the project's ErrorResponse shape, and that the split does not follow status-code lines."
+    },
+    {
+      "risk": "The behavioural evidence is collected against H2, while the one native query in the application is PostgreSQL SQL - so a green probe run does not prove that endpoint works on the database a real deployment would use.",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "State the limitation rather than paper over it, and lean on the Testcontainers PostgreSQL integration test in the package rounds for the JPA layer. This is a pre-existing property of the project, not something the migration introduces.",
+      "graph_evidence": "Graph-backed: the graph's config-coupling note records that the datasource defaults to jdbc:h2:file:./data/employee_db when DB_URL is unset while findHighEarners is native PostgreSQL SQL, and that nothing fails loudly in that combination."
+    },
+    {
+      "risk": "The Docker daemon that Testcontainers needs stops during the migration, turning later rounds red for environmental reasons that look identical to migration damage in the round record.",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Round 0 is already recorded green with all 19 tests including the Testcontainers integration test, so any later Testcontainers error can be attributed by comparison rather than guessed at, and will be reported as environmental rather than as a migration regression.",
+      "graph_evidence": "Not graph-backed - this is environment, and the graph has no edge to the Docker daemon or the postgres:16 image. It is included because the pack's own round-history section records a previous run of this exact pack being derailed by it."
+    },
+    {
+      "risk": "The sandbox goes green but the project's own post-apply build does not, because something the copy did not carry differs - a stale target/, local configuration, or the file-backed H2 database in data/ that the sandbox copies but the project keeps writing to.",
+      "likelihood": "low",
+      "impact": "medium",
+      "mitigation": "apply-migration.js --to-project backs up every file it overwrites and then builds the project itself on JDK 21 with the tests; the result is reported as applied-verified, applied-verification-failed or applied-unverified, and --revert restores the backup. Nothing is reported as successful on a sandbox result alone.",
+      "graph_evidence": "Not graph-backed - this is a property of the migration harness, not of the application. Noted because the project does carry a data/employee_db.mv.db that is copied into the sandbox and is live state rather than source."
+    }
+  ],
+  "behaviour_plan": {
+    "summary": "Unchanged behaviour means all seven REST endpoints in the graph answer with the same status they answer with today, the authentication boundary holds in all three of its forms, and the two error-rendering paths (the project's own ErrorResponse and the framework's inherited one) still produce their contracted statuses. Fifteen requests were recorded against the running application on JDK 17 before anything was touched, and all fifteen met their expected status. The same fifteen will be replayed on JDK 21 once a round comes back green, and compared request by request. Every probe is non-mutating by design - the write endpoints are exercised through their error contracts rather than by creating rows - so the two runs see identical seed data and body differences mean something.",
+    "probes": [
+      { "name": "GET /actuator/health (no auth)", "why": "The permitAll side of the auth boundary, and the framework-owned payload most likely to change shape.", "expect_status": 200, "criticality": "high" },
+      { "name": "GET /actuator/info (no auth)", "why": "The second explicitly permitted actuator path, confirming the permit rules are still applied in order.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees", "why": "The happy path and the shape of the collection response.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees/1", "why": "The single-resource happy path against a seeded id, and the Jackson serialization of LocalDateTime and BigDecimal fields.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees/search?department=Technology", "why": "The derived-query read path with a required query parameter.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees/search?department=technology", "why": "Pins the case-insensitive semantics the graph documents, so a Hibernate 7 change in the derived query is visible.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees/high-earners?salary=80000", "why": "The only endpoint backed by native SQL - the one most exposed to Hibernate 7's parsing.", "expect_status": 200, "criticality": "medium" },
+      { "name": "GET /api/v1/employees/99999", "why": "The 404 error contract rendered by the project's own ErrorResponse shape.", "expect_status": 404, "criticality": "high" },
+      { "name": "PUT /api/v1/employees/99999", "why": "Covers the PUT route the graph marks high criticality, through its error contract so nothing is mutated.", "expect_status": 404, "criticality": "high" },
+      { "name": "DELETE /api/v1/employees/99999", "why": "Covers the DELETE route the graph marks high criticality, through its error contract so nothing is mutated.", "expect_status": 404, "criticality": "high" },
+      { "name": "POST /api/v1/employees with an invalid payload", "why": "Covers the POST route and the Bean Validation path that renders through the overridden handleMethodArgumentNotValid, without creating a row.", "expect_status": 400, "criticality": "high" },
+      { "name": "GET /api/v1/employees/search with no department parameter", "why": "The other error-rendering path - a framework-raised error rendered by the inherited ResponseEntityExceptionHandler, not by the project's ErrorResponse.", "expect_status": 400, "criticality": "high" },
+      { "name": "GET /api/v1/employees (no auth)", "why": "The authentication boundary on a read.", "expect_status": 401, "criticality": "critical" },
+      { "name": "POST /api/v1/employees (no auth)", "why": "The authentication boundary on a write, with CSRF disabled - confirms Security 7 still rejects before validation.", "expect_status": 401, "criticality": "critical" },
+      { "name": "GET /api/v1/employees with wrong credentials", "why": "Distinguishes 'no credentials rejected' from 'bad credentials rejected' - a password encoder or user-details change would show here and nowhere else.", "expect_status": 401, "criticality": "critical" }
+    ],
+    "not_covered": [
+      "Successful writes. No probe creates, updates or deletes a real row, so a regression that only affects a successful POST, PUT or DELETE would not be caught by the probe comparison - only by the test suite.",
+      "The PostgreSQL path. The probes run against the default file-backed H2 datasource; the native PostgreSQL query is exercised on a different engine than a real deployment would use. Only the Testcontainers integration test touches real PostgreSQL, and only in the build rounds.",
+      "Framework-rendered type-mismatch errors such as GET /api/v1/employees/abc. I did not confirm the exact status Boot 3 returns for it today, and asserting an unverified contract in the gated baseline would have been guessing rather than measuring.",
+      "The H2 console at /h2-console, which the graph notes falls into anyRequest().permitAll(). Not probed, and its access rules are out of scope for this migration.",
+      "DataInitializer's seeding behaviour on an empty table - the sandbox carries an already-populated database, so the CommandLineRunner path is not exercised on either runtime.",
+      "The metrics actuator endpoint, which is exposed by configuration but has no contract this application defines.",
+      "Anything asynchronous or scheduled - there is none in this application."
+    ]
+  },
+  "effort": {
+    "estimated_rounds": 7,
+    "estimated_duration": "Half a day, assuming both JDKs stay installed, the Docker daemon stays up for the Testcontainers test, and the first build on the new BOM (a large one-off download) is not counted as a representative round.",
+    "confidence": "medium"
+  },
+  "rollback": "Nothing in the project changes until the very last step - every round happens in the sandbox at .github/.pipeline-context/version-migration/boot4-upgrade/workspace/, and the project is written exactly once by apply-migration.js --to-project, which backs up every file it overwrites into the session's pre-apply-backup/ folder first. If the applied result is bad, `node scripts/apply-migration.js --slug boot4-upgrade --revert` restores every overwritten file from that backup. Abandoning the migration before the apply step requires no action at all: the project is untouched.",
+  "out_of_scope": [
+    "The duplicate-email defect the graph documents at EmployeeService.java:37 and :68, where both write paths call findByEmployeeNumber with an email value so the intended 409 becomes a 500. It is wrong today and will be equally wrong after the migration. Fixing it here would be indistinguishable from migration work in the diff.",
+    "Adding the missing findByEmail method to EmployeeRepository, or a DataIntegrityViolationException handler to GlobalExceptionHandler - the two changes that would actually fix the above.",
+    "The security posture findings the graph raises: /h2-console reachable through anyRequest().permitAll(), CSRF disabled globally rather than for /api/** only, and the health document exposing database details and exception text to anonymous callers. Configuration revalidation, not a Security 7 API break, and the pack is explicit that these belong in a separate change.",
+    "DataInitializer seeding demo employees unconditionally in any environment where the table is empty.",
+    "The file-backed H2 default datasource, the absence of Flyway or Liquibase, and hibernate.ddl-auto: update applying schema drift at boot.",
+    "Test-quality improvements: replacing @WithMockUser with real credentials beyond what the migration forces, adding assertions, or widening coverage. If a slice has to be widened to @SpringBootTest to compile, that will be reported as a behavioural change to the test rather than passed off as a mechanical import edit.",
+    "The unreachable code paths the graph notes - EmployeeService.findActiveEmployeesByDepartment with no route, EmployeeMapper.updateEntityFromRequest with no caller.",
+    "Formatting, import reordering, and any refactor that is not forced by a build failure.",
+    "The Testcontainers 1.21.4 override already in the pom. It is a pre-existing pre-migration fix, not migration work, and will be left exactly as it is unless a round fails on it.",
+    "Any dependency bump not required by the jump. There is no springdoc-openapi in this project, so the pack's usual manual-bump trap does not apply here."
+  ],
+  "open_questions": [
+    "Is 4.1.1 the right target? It is the newest GA release on Maven Central - 4.2.0-M1 is a milestone and is not proposed - but 4.0.8 is the tail of the more conservative 4.0.x line if you would rather take the generation jump without also taking the 4.1 minor. All the coordinates in this plan were verified to resolve at 4.1.1.",
+    "Is Java 21 the intended language level? JDK 25 is also installed on this machine. The reference pack targets 21 as the LTS the Boot 4 generation is built and tested against, and this plan follows it, but 21 is a decision here rather than something the compiler forces - Boot 4 will compile under Java 17.",
+    "If the @WebMvcTest slice in EmployeeControllerTest cannot be kept once the annotations move, do you accept widening it to @SpringBootTest with @AutoConfigureMockMvc? That is a real behavioural change to the test - it would load the whole application context instead of a controller slice - and I would rather have your answer than make that call inside a build round.",
+    "May the spring-security-test to spring-boot-starter-security-test swap be made up front with the other coordinate changes, or should it wait until a round actually fails on it? The pack predicts the failure and it costs a round to prove; making it up front is faster but means one coordinate change in the diff that no recorded failure forced.",
+    "Should spring-boot-properties-migrator be added at runtime scope for the migration and removed before the apply? It is the only tool that will report a silently renamed configuration property, and configuration is the largest blind spot in this plan - but it adds a dependency that appears and disappears across the round records.",
+    "Does anything downstream parse /actuator/health or match on the error-response timestamp format? The pack records both changing shape in this jump even when no application code changes, and this application serves the health document to unauthenticated callers with details always on. If there is a monitoring check or dashboard reading it, it should be warned before this lands.",
+    "The behavioural evidence will be collected against H2, not PostgreSQL, because that is the application's default datasource. Is that acceptable for sign-off, given that the /high-earners endpoint runs native PostgreSQL SQL? If not, the probe phase needs a PostgreSQL instance and a DB_URL, which is a change to how the migration is run rather than to the plan."
+  ]
+}

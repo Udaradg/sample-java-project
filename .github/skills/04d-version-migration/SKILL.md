@@ -1,6 +1,6 @@
 ---
 name: 04d-version-migration
-description: 'Migrates a Java project to a new language level and/or framework version — Spring Boot 3 to 4, Java 17 to 21, or any jump with a reference pack in references/. Gates on a green starting point: round 0 must build, pass every test and run cleanly before anything is changed. Then upgrades the declared versions per the reference pack, iterates build rounds on the target JDK — reading each build failure and changing the source it points at — until the build is green, re-probes the running application, writes the result into the project and builds it there, and renders docs/agent_output/04-remediation/migration_<slug>.md plus a cumulative migration_<slug>.diff. Every round happens in a sandbox copy; the project is written once, at the end, from a green sandbox, with a backup and a one-command revert. Use when asked to upgrade or migrate a framework version, move to a newer Java version, modernise a legacy build, or produce a migration report.'
+description: 'Migrates a Java project to a new language level and/or framework version — Spring Boot 3 to 4, Java 17 to 21, or any jump with a reference pack in references/. Reads the Neo4j code knowledge graph to find where the application is actually coupled to the framework, gates on a green starting point (round 0 must build, pass every test and run cleanly), then puts a colour-coded migration plan in front of a human and refuses to change a single version until they approve it. Once approved it upgrades the declared versions per the reference pack, iterates build rounds on the target JDK — reading each build failure and changing the source it points at — until the build is green, re-probes the running application, writes the result into the project and builds it there, and renders docs/agent_output/04-remediation/migration_plan_<slug>.md and migration_<slug>.md plus a cumulative migration_<slug>.diff. Every round happens in a sandbox copy; the project is written once, at the end, from a green sandbox, with a backup and a one-command revert. Use when asked to upgrade or migrate a framework version, move to a newer Java version, modernise a legacy build, or produce a migration plan or report.'
 argument-hint: 'The migration being asked for, e.g. "Spring Boot 3 to 4" or "migrate to Java 21", optionally with the project path'
 ---
 
@@ -23,6 +23,18 @@ That difference drives everything about how this skill works:
   old runtime before anything changes and on the new runtime once it is green, and the two are
   compared request by request. A green build with no behavioural evidence is an unfinished
   migration.
+- **The architecture graph decides where to look; the reference pack decides what to do there.**
+  Before anything is proposed, the Neo4j code knowledge graph is read for the two facts that
+  actually predict a migration's shape: where the application touches the framework (the types it
+  extends and implements, the annotations it is wired by, the coordinates it declares) and what
+  depends on those points. A generation jump breaks code exactly there and nowhere else, so a plan
+  built on measured coupling is a different object from a plan built on guessing which files the
+  pack's rules might land in.
+- **A human decides whether it happens at all.** Once round 0 is green, the migration stops and
+  renders a plan — what would move, what is expected to change and why, what could go wrong, what
+  it deliberately will not do — and waits. The scripts refuse to change a version until a person
+  has set that plan's Status to `Approved`, and the reviewer's own words are carried forward into
+  every later revision and into the final report.
 - **It starts from green or it does not start.** Round 0 must compile, pass every test, and serve
   every probe cleanly on the JDK the project uses today. This is a gate, not a note: measured
   against a broken starting point, every later failure is unattributable and the whole report
@@ -54,13 +66,22 @@ pack, and adding a new migration is a matter of writing one.
 | 1 | The project directory — build descriptor, source, tests, container and CI files | What is being migrated. Read-only |
 | 2 | The requested target version(s) | The jump. Ask if the user only said "upgrade" without a target |
 | 3 | A reference pack in [`references/`](./references/) matching the jump | The only source of framework-specific rules. No matching pack means the migration does not start — see below |
-| 4 | The application's own routes and credentials, read from its source | Builds the probe list that proves behaviour is preserved |
-| 5 | Two JDKs: the version the project builds on today and the target | Round 0 runs on the first, every later round on the second |
-| 6 | A project that is green today — builds, passes its tests, and runs | The reference every later round is compared against. Checked, not assumed — see Step 4 |
+| 4 | The Neo4j code knowledge graph built by [`01a`](../01a-code-cartographer/SKILL.md) → [`01b`](../01b-context-weaver/SKILL.md) → [`01c`](../01c-graph-forge/SKILL.md) | Where the application touches the framework, and what depends on those points. This is what makes the plan's predicted changes evidence rather than guesses — see Step 2 |
+| 5 | The application's own routes and credentials, read from its source and from the graph's endpoint list | Builds the probe list that proves behaviour is preserved |
+| 6 | Two JDKs: the version the project builds on today and the target | Round 0 runs on the first, every later round on the second |
+| 7 | A project that is green today — builds, passes its tests, and runs | The reference every later round is compared against. Checked, not assumed — see Step 5 |
+| 8 | A human reviewer | Approves the migration plan. Nothing changes a version without it — see Step 6 |
 
 **No matching reference pack is a stop condition, not a licence to improvise.** If
 `detect-baseline.js` matches nothing, say so plainly and offer to write a pack for the jump first.
 Migrating a framework generation from memory produces changes nobody can review against anything.
+
+**A missing graph is not a stop condition, but it is a downgrade, and it is reported as one.**
+`collect-graph-context.js` reads Neo4j when it is reachable and falls back to
+`.github/.pipeline-context/artifacts.json` when it is not; if neither exists it says so and the
+plan is rendered with a banner saying its predictions have no coupling evidence behind them. Build
+the graph first when you can — it is the difference between "these six files are coupled to the
+framework" and "the reference pack mentions these areas".
 
 **A red baseline is also a stop condition.** Whatever the environment needs to make the project
 green — a Docker daemon for Testcontainers, a service the tests reach, a JDK — belongs in place
@@ -70,12 +91,46 @@ from the migration's own work in the diff, and it erases the comparison the repo
 
 ## Output
 
-Per migration, two things — and they are not the same kind of thing:
+Per migration, three things — and they are not the same kind of thing:
 
-1. **The project itself, migrated.** The new version, in the project directory, building green
+1. **The plan, before any of it happens:** `docs/agent_output/04-remediation/migration_plan_<slug>.md`.
+   A proposal written for the person who has to approve it, and the checkpoint that gates
+   everything after it.
+2. **The project itself, migrated.** The new version, in the project directory, building green
    there on the target JDK. This is the deliverable.
-2. **The record of how it got there:** `docs/agent_output/04-remediation/migration_<slug>.md` and a
+3. **The record of how it got there:** `docs/agent_output/04-remediation/migration_<slug>.md` and a
    sibling `migration_<slug>.diff` (the cumulative patch, directly `git apply`-able).
+
+### The plan
+
+Written after round 0 comes back green and before a single version is touched. Badges, diagrams and
+a decision at the end, for a reader who may not be an engineer:
+
+- **At a glance** — the **Status** cell a human edits to decide, the revision number, the versions,
+  the verified starting point, the number of files predicted to change, the overall risk, and
+  whether the architecture evidence is a live graph, a static fallback or absent
+- **1. What would move** — a before/after stack diagram and the version matrix
+- **2. What the code graph says about this application** — the framework touchpoints drawn as the
+  coupling they are, files ranked by exposure, the agent's reading of what that means for the jump,
+  and — kept separate and deliberately — what the graph could *not* see
+- **3. How the migration would run** — the phases as a flow diagram from the green starting point
+  through to the project on the new version, with a forecast of what each phase expects to break
+- **4. What is expected to change** — a pie chart of predicted changes by area, then every file
+  with what will change, why, the reference rule behind it, the graph evidence, and a confidence
+- **5. What could go wrong** — a likelihood × impact grid, then each risk with its mitigation and
+  what in the graph makes it real here rather than generic
+- **6. How we would know it still works** — the probe list, and a callout naming any endpoint in
+  the graph the probes do not cover
+- **7. What this migration would not do** — the boundary, stated before the work so it can be
+  checked after it
+- **8. Getting back if it goes wrong** — the sandbox, the backup, the revert command
+- **9. Your decision** — what each status means, the open questions, and a preserved feedback block
+- **10. Review history** — every previous revision's feedback and the revision that answered it
+
+**The plan starts at `Status: Proposed` and only a human changes that.** Re-rendering preserves an
+`Approved` or `Rejected` decision, carries any reviewer feedback into the review history, and bumps
+the revision. `Changes requested` returns to `Proposed` on the next render — the reviewer is being
+shown a different plan now, which is the loop closing rather than a decision being discarded.
 
 **That folder is shared with the fix reports** written by `04a`/`04b`/`04c`. Nothing collides: a
 migration only ever writes files with the `migration_` prefix, which their index scan ignores, and
@@ -83,7 +138,9 @@ the migration table in `04-remediation/README.md` is a self-delimited block writ
 marker, so re-running either renderer preserves the other's index. A migration never creates, reads
 as a gate, or edits a `fix_plan_*.md` or `fix_*.md`.
 
-The report is written for someone who was not in the room — colour-coded, diagrammed, and honest:
+### The report
+
+Written for someone who was not in the room — colour-coded, diagrammed, and honest:
 
 - Badges, a plain-language summary, and an **At a glance** table — result, versions before/after,
   rounds, every file changed, behaviour verdict
@@ -101,19 +158,25 @@ The report is written for someone who was not in the room — colour-coded, diag
   reference rule each came from
 - **5. Every file that changed** — the complete file-by-file list taken from the patch itself, with
   line counts, what changed in each, and each file's own diff. A changed file with no explanation in
-  the migration record is called out rather than passed over
+  the migration record is called out rather than passed over. **5.1** then scores the plan's
+  forecast against what actually happened: predicted and changed, predicted and untouched, changed
+  without being predicted, and forecast rounds against real ones. **5.1** then scores the plan's
+  forecast against what actually happened: predicted and changed, predicted and untouched, changed
+  without being predicted, forecast rounds against real ones
 - **6. Does it still behave the same?** — the before/after probe comparison, request by request
 - **7. Changes that were *not* caused by the upgrade** — kept separate, deliberately
 - **8. Landing it in the project** — what was written into the project, how the project's own build
   went on the new version, and the migrated project answering its probes. A migration that has not
   reached the project says exactly that here
-- **9. What still needs a human** — follow-ups and residual risk
+- **9. What still needs a human** — what the reviewer wrote when they approved the plan, carried
+  through verbatim, then follow-ups and residual risk
 - **10. The patch** — diffstat, the patch file, and how to apply or revert it
 
 Intermediate files live in `.github/.pipeline-context/version-migration/<slug>/` (gitignored):
-`baseline.json`, `workspace.json`, `workspace/`, `rounds/round-NN.{json,log}`,
-`runtime/{baseline,final,applied}.json`, `applied.json`, `pre-apply-backup/`, and the
-agent-written `migration.json`.
+`baseline.json`, `graph-context.json` and its readable `graph-context.md` briefing,
+`workspace.json`, `workspace/`, `rounds/round-NN.{json,log}`,
+`runtime/{baseline,final,applied}.json`, `applied.json`, `pre-apply-backup/`, and the two
+agent-written judgement files `plan.json` and `migration.json`.
 
 ## Procedure
 
@@ -132,13 +195,52 @@ reference pack's `detect:` coordinates and names the pack to follow.
 Confirm the suggested pack is the right one, then **read it end to end before touching anything**.
 Note the slug it printed — every later command takes it.
 
-### Step 2 — Understand the application as it is today
+### Step 2 — Read the architecture out of the code graph
+
+```powershell
+node scripts/collect-graph-context.js --slug <slug>
+```
+
+Queries the Neo4j code knowledge graph for the slice of it a migration actually depends on, and
+writes `<session>/graph-context.json` plus a readable `<session>/graph-context.md`. **Read the
+briefing end to end before predicting anything.** It answers the questions that decide the shape of
+the whole migration:
+
+| The graph shows | What it decides |
+|---|---|
+| Types that extend or implement an `ExternalType` | Where the compiler will fail first. A generation jump lands here before anywhere else |
+| Framework annotations, with the files carrying them | The second coupling surface — the contracts a jump renames, relocates or retires |
+| Declared Maven coordinates per module | Which starters and BOMs the build-file step has to touch |
+| Every `Endpoint`, with its criticality and test hints | The contract that must survive, and therefore the probe list in Step 3 |
+| `USES` fan-in and `ctxCriticality` | How far a change at each point reaches — the blast radius each predicted change carries in the plan |
+| `ContextNote` cross-cutting facts | Couplings no build round will ever surface, because they have no code edge |
+
+It also prints a **framework-exposure ranking**: files scored by coupling to the framework combined
+with how much depends on them. That ranking is where to look, not a prediction that a file changes —
+the plan's predicted-change list is the reference pack's rules applied to what the graph actually
+shows, and every prediction says which of the two it came from.
+
+Credentials come from `../01c-graph-forge/.env` (a local `.env` here overrides it), and the
+`neo4j-driver` is borrowed from whichever sibling skill has it installed — this skill declares no
+dependencies of its own. If Neo4j is unreachable the script falls back to `artifacts.json` and says
+so; if there is no graph at all it exits non-zero and names what to run. **Never present a static
+fallback as "the graph said"** — `graph-context.json` records which source was used and the plan
+prints it in a badge.
+
+### Step 3 — Understand the application as it is today
 
 Before any version changes, read the application: its entry point, controllers and routes, security
 configuration and credentials, persistence layer, configuration files, and its tests. You are
 answering two questions: *what does this application do*, and *how will I know it still does it*.
 
-Write the answer to the second one as a probe file — the requests that will be replayed on both
+The graph has already answered most of the first one, and `graph-context.json` carries a
+`probe_candidates` array — every endpoint it found, with the criticality and test hints the semantic
+layer attached. Start the probe list from that rather than from memory: it is the difference between
+covering the real REST surface and covering the endpoints that came to mind. What the graph cannot
+supply is exactly what makes a probe prove something — the credentials, an id that exists in the
+seed data, and the status each route is contractually supposed to return. Those are yours to add.
+
+Write the answer to the second question as a probe file — the requests that will be replayed on both
 runtimes:
 
 ```json
@@ -160,7 +262,7 @@ Save it in the session directory the scripts printed. Cover the real endpoints, 
 the happy path, an error path, and an authentication boundary, at minimum. Probes that only prove
 the process starts prove almost nothing.
 
-### Step 3 — Create the sandbox
+### Step 4 — Create the sandbox
 
 ```powershell
 node scripts/prepare-workspace.js --slug <slug>
@@ -171,7 +273,7 @@ Copies the project (excluding build output and any VCS metadata) into
 repository. **Every edit from here on is made to files under that workspace path, never to the
 project.** The commit is what makes the cumulative diff exact at the end.
 
-### Step 4 — Round 0: the green starting point
+### Step 5 — Round 0: the green starting point
 
 ```powershell
 node scripts/run-migration-build.js --slug <slug> --baseline --jdk 17
@@ -205,9 +307,60 @@ project is made green first, and how depends on what broke:
 
 None of that work happens inside this skill. Fix it in the project, then re-run
 `prepare-workspace.js` and round 0 so the sandbox and the baseline both hold the green starting
-point. Only then continue to Step 5.
+point. Only then continue to Step 6.
 
-### Step 5 — Change the declared versions
+### Step 6 — Write the plan, and get it approved
+
+**This is where the migration stops and waits.** Everything so far has been measurement: nothing has
+changed, and nothing will until a human says so.
+
+Write `.github/.pipeline-context/version-migration/<slug>/plan.json` per
+[templates/plan.schema.json](./templates/plan.schema.json) (worked example in
+[templates/plan.example.json](./templates/plan.example.json)), then:
+
+```powershell
+node scripts/render-migration-plan.js --slug <slug>
+```
+
+The plan carries only what a script cannot know. Versions come from `baseline.json`, coupling and
+endpoint counts from `graph-context.json`, the starting point from round 0 — **do not restate any of
+them**. What it must carry:
+
+- `predicted_changes` — the reference pack's rules applied to the coupling the graph actually
+  shows. Each entry says which file, what changes, why, the reference rule, **and the graph evidence
+  behind it**. A prediction with no graph evidence is allowed — the build file, the Dockerfile and
+  configuration properties have no graph edges — but it must say so rather than implying measurement
+  it does not have. Set `confidence: low` where it is low; a reviewer can weigh a low-confidence
+  prediction, but not a confident wrong one.
+- `risks` — with `graph_evidence` saying why each is real *here* rather than generic. "Config
+  property renames are invisible to the compiler, and the graph has no configuration edges" is a
+  risk; "upgrades can break things" is not.
+- `out_of_scope` — the boundary, set before the work so it is enforceable afterwards.
+- `open_questions` — what the reviewer actually has to decide.
+
+Then **hand the reviewer the rendered file and stop**. They decide by editing the **Status** cell:
+
+| They set | You do |
+|---|---|
+| `Approved` | Continue to Step 7 |
+| `Changes requested` | Read their feedback, revise `plan.json`, add a `revision_note` saying what you changed and which point it answers, re-render, and ask again |
+| `Rejected` | The migration is over. Report that and stop |
+
+```powershell
+node scripts/check-plan-approval.js --slug <slug>   # exits non-zero unless Approved
+```
+
+**The gate is in the scripts, not just here.** `run-migration-build.js` refuses every round after
+round 0 without an approved plan, and `apply-migration.js --to-project` refuses to write the project
+without one. Round 0 is deliberately exempt: it measures the project as it stands, changes nothing,
+and its result is one of the things the reviewer is shown.
+
+Re-rendering never overwrites a human's decision. An `Approved` or `Rejected` status is preserved,
+the feedback block is carried into the review history with the revision that answered it, and the
+revision number goes up. `Changes requested` returns to `Proposed` on the next render, because what
+the reviewer is now looking at is a different plan.
+
+### Step 7 — Change the declared versions
 
 Apply the reference pack's build-file section inside the sandbox: the parent or BOM version, the
 language level (property *and* any explicit compiler configuration), renamed or split artifacts,
@@ -217,7 +370,7 @@ and CI language versions the baseline listed.
 Do not pre-emptively rewrite source code in this step, even where the pack says it will be needed.
 Let the build tell you. The point is a report where every source change traces to a real failure.
 
-### Step 6 — The round loop
+### Step 8 — The round loop
 
 ```powershell
 node scripts/run-migration-build.js --slug <slug> --jdk 21 --intent test-compile --label "swapped starters and BOM"
@@ -244,7 +397,7 @@ Expect the test layer to break a round after the main code — tests only compil
 Keep going until a round comes back green. Every round is kept; a failed round is evidence, not
 something to hide.
 
-### Step 7 — Prove the behaviour survived
+### Step 9 — Prove the behaviour survived
 
 ```powershell
 node scripts/probe-runtime.js --slug <slug> --phase final --jdk 21 --probes <session>/probes.json
@@ -258,7 +411,7 @@ regression, and say which it is in the behaviour notes. A framework-owned payloa
 (a health document, a default error body) is a real finding for clients even though no application
 code changed — report it rather than rounding it down to "unchanged".
 
-### Step 8 — Write the judgement file
+### Step 10 — Write the judgement file
 
 Write `.github/.pipeline-context/version-migration/<slug>/migration.json` per
 [templates/migration.schema.json](./templates/migration.schema.json) (worked example in
@@ -284,7 +437,7 @@ Two fields carry more weight than their size suggests:
   which is exactly right when the goal was raised instead — so leave it empty in that case rather
   than inventing an entry.
 
-### Step 9 — Render the report
+### Step 11 — Render the report
 
 ```powershell
 node scripts/render-migration-report.js --slug <slug>
@@ -293,7 +446,7 @@ node scripts/render-migration-report.js --slug <slug>
 Writes the report, exports the cumulative patch, and rewrites the index. Fix any validation error it
 prints and re-render.
 
-### Step 10 — Complete the migration in the project
+### Step 12 — Complete the migration in the project
 
 ```powershell
 node scripts/apply-migration.js --slug <slug>                # dry run: lists what would change
@@ -319,26 +472,48 @@ green and the final probe is recorded.
 
 `node scripts/apply-migration.js --slug <slug> --revert` restores the project from the backup.
 
-Then **re-render** (Step 9) so the report's section 8 records what landed in the project — the
+Then **re-render** (Step 11) so the report's section 8 records what landed in the project — the
 render reads `applied.json` and `runtime/applied.json`, so a report rendered before the apply
 truthfully says the migration never reached the project.
 
-### Step 11 — Report back
+### Step 13 — Report back
 
-Lead with the result and the rounds it took, then the versions moved, the source changes forced,
-the behaviour verdict, and — last, because it is the thing that was actually asked for — that the
-project is now on the new version and green there. Link to the report; do not paste it, the diff,
-or build logs into chat.
+There are two moments to report, not one.
+
+**At the plan (after Step 6):** say what the graph found, what the plan proposes, and what it says
+could go wrong — in a few lines, not a summary of the whole document. Then link the plan and stop.
+Name the open questions explicitly, because those are the reason the reviewer has to read it rather
+than skim it. Do not start the migration, and do not imply it has started.
+
+**At the end (after Step 12):** lead with the result and the rounds it took, then the versions
+moved, the source changes forced, the behaviour verdict, how the forecast compared with what
+happened, and — last, because it is the thing that was actually asked for — that the project is now
+on the new version and green there. Link to the report; do not paste it, the diff, or build logs
+into chat.
 
 ## Constraints
 
 - DO NOT edit, create or delete any file in the project directory by hand, at any point. Every
   migration edit goes into the sandbox workspace, and the project is written only by
-  `apply-migration.js --to-project` at Step 10, only from a green final round.
+  `apply-migration.js --to-project` at Step 12, only from a green final round.
 - DO NOT stop at a green sandbox. The deliverable is the project on the new version, building green
   there; a report and a patch with the project still on the old version is an unfinished migration.
 - DO NOT start a migration with no matching reference pack, and DO NOT invent framework rules from
   memory. Report the gap and offer to write the pack first.
+- DO NOT change a single declared version before the plan reads `Status: Approved`. The scripts
+  refuse, and getting past them by editing the sandbox and skipping straight to a later round would
+  be starting a migration nobody authorised.
+- DO NOT set a plan's Status yourself, in any direction, and DO NOT hand-edit a rendered plan
+  outside the render script. Only a human approves a migration, by editing that cell themselves.
+  DO NOT silently reset an already-`Approved` or `Rejected` plan by re-rendering it.
+- DO NOT delete, summarise or paraphrase reviewer feedback when revising a plan. It is carried
+  forward verbatim, with a `revision_note` saying what changed in response — a review history that
+  keeps only the answers and not the objections is not a review history.
+- DO NOT present a prediction backed by nothing as though the graph supported it. `graph_evidence`
+  says where each predicted change came from, and "the reference pack says this area changes" is a
+  legitimate answer where the graph has no edge — pretending otherwise is not.
+- DO NOT describe a static `artifacts.json` read as the code graph. The source is recorded and
+  badged for exactly this reason.
 - DO NOT skip round 0, or run it after changing a version. A migration with no recorded
   pre-migration build and probe cannot demonstrate anything and must be reported as such.
 - DO NOT continue past a red round 0, and DO NOT get past the gate by lowering the build goal,
@@ -364,10 +539,19 @@ or build logs into chat.
 - DO NOT delete or rewrite a round record to make the history look cleaner. The failed rounds are
   the most useful part of the report.
 - DO NOT print full reports, diffs, build logs or probe bodies into chat — link to the files.
-- No `npm install` is needed — this skill has zero dependencies.
+- No `npm install` is needed — this skill has zero dependencies of its own.
 
 ## Known caveats
 
+- **Reading the live graph needs `neo4j-driver` installed somewhere.** This skill borrows it from
+  `01c-graph-forge`, `02-root-cause-analyst` or `03-blast-radius-analyst` rather than declaring it,
+  so `npm install` in one of those is what enables the live read. Without it, and without
+  `artifacts.json`, `collect-graph-context.js` exits non-zero and names what to run.
+- **A graph is a snapshot, and a stale one is worse than none.** The briefing reports how many
+  descriptions the graph marks `ctxStale`, and the plan surfaces the count. Re-run
+  `01a-code-cartographer` and `01b-context-weaver` if the code has moved since the graph was built —
+  predictions drawn from a graph describing older code are predictions about a project that no
+  longer exists.
 - **Two JDKs must be installed.** `detect-baseline.js` lists what it found. If the target JDK is
   missing, install it or point `MIGRATION_JDK_<major>` at an existing install; the round scripts
   refuse rather than silently building on the wrong one.
@@ -400,20 +584,32 @@ or build logs into chat.
 
 - Self-contained folder — zero dependencies, nothing to `npm install`.
 - `scripts/lib/migration.js` holds path resolution, JDK and build-tool discovery, project inventory
-  and build-output classification; `scripts/lib/references.js` holds only reference-pack discovery.
-  Neither imports from another skill — this pipeline duplicates helpers per skill rather than
+  and build-output classification; `scripts/lib/references.js` holds only reference-pack discovery;
+  `scripts/lib/plan.js` holds the approval checkpoint and the shared `04-remediation/README.md`
+  migration block; `scripts/lib/graph.js` holds the graph queries and the static fallback.
+  None of them imports another skill's code — this pipeline duplicates helpers per skill rather than
   coupling skills together, the same choice already made for `04b-fixer` and `04c-dependency-upgrader`.
+- The one thing this skill takes from a sibling is *data*, not code: Neo4j credentials from
+  `01c-graph-forge/.env` and, at runtime only, its installed `neo4j-driver`. That keeps the
+  credentials in one place to rotate and keeps this skill's own dependency list empty. If the driver
+  is not installed anywhere, the graph step falls back to `artifacts.json` and says so.
+- The plan and the report share the migration block in `04-remediation/README.md`, which is why that
+  block lives in `lib/plan.js` and both renderers call the same `rewriteIndex()`. The report scan
+  excludes the `migration_plan_` prefix explicitly — without that, a plan for `foo` reads as a
+  report for `plan_foo`.
 - Error categories in `lib/migration.js` classify by message shape only. They never name a library
   and never propose a fix; that mapping is the reference pack's job, so a new framework needs no
   code change.
 - Adding a migration = adding `references/<id>.md` with the front matter documented in
   [`references/README.md`](./references/README.md). No script changes.
 - Everything written by this skill lands in `.github/.pipeline-context/version-migration/*`,
-  `docs/agent_output/04-remediation/migration_*`, or — at Step 10, through `apply-migration.js`
+  `docs/agent_output/04-remediation/migration_*`, or — at Step 12, through `apply-migration.js`
   alone — the project files the migration changed. Nothing here writes to
   `docs/agent_output/00-issues/`, `02-root-cause/`, `03-blast-radius/`, or any `fix_*` file.
 - The gates are in the scripts, not only in this document: `run-migration-build.js --baseline`
-  refuses a goal that skips tests and exits non-zero on a red round 0; `probe-runtime.js` exits
-  non-zero when a `baseline` or `applied` probe is not clean; `apply-migration.js --to-project`
-  refuses a sandbox that is not green and exits non-zero when the project's own build fails. An
-  agent that ignores a non-zero exit here is defeating the point of the skill.
+  refuses a goal that skips tests and exits non-zero on a red round 0; every later round refuses
+  without an approved plan; `probe-runtime.js` exits non-zero when a `baseline` or `applied` probe
+  is not clean; `apply-migration.js --to-project` requires an approved plan, refuses a sandbox that
+  is not green, and exits non-zero when the project's own build fails; `check-plan-approval.js`
+  exits non-zero for anything but `Approved`. An agent that ignores a non-zero exit here is
+  defeating the point of the skill.

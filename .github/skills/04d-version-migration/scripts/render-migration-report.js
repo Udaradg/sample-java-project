@@ -24,9 +24,10 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  OUT_DIR, OUT_README, sessionPaths, listSessions, listRounds, readJson, rel, run,
+  OUT_DIR, sessionPaths, listSessions, listRounds, readJson, rel, run,
   categoryMeta, classifyMessage, summariseErrors, isLogNoise,
 } = require('./lib/migration');
+const { rewriteIndex, readRenderedPlan, statusMeta } = require('./lib/plan');
 
 // ---------------------------------------------------------------------------
 // CLI
@@ -606,7 +607,17 @@ function testComparison(rounds) {
   return { before, after, verdict, worse };
 }
 
-function atAGlance(baseline, migration, rounds, finalRound, runtime, patchFiles) {
+const APPLY_STATUS = {
+  'applied-verified': { emoji: '🟢', label: 'Applied to the project and green there', colour: '2E7D32' },
+  'applied-verification-failed': { emoji: '🔴', label: 'Applied to the project, its build is not green', colour: 'C62828' },
+  'applied-unverified': { emoji: '🟡', label: 'Applied to the project, not verified there', colour: 'B26A00' },
+  reverted: { emoji: '↩️', label: 'Applied, then reverted', colour: '868E96' },
+};
+
+const applyStatusOf = (applied) => (applied && APPLY_STATUS[applied.status])
+  || { emoji: '⚪', label: 'Not applied — sandbox only', colour: '868E96' };
+
+function atAGlance(baseline, migration, rounds, finalRound, runtime, patchFiles, applied) {
   const lang = migration.migration.language;
   const platform = migration.migration.platform;
   const meta = outcomeOf(finalRound && finalRound.outcome);
@@ -629,8 +640,26 @@ function atAGlance(baseline, migration, rounds, finalRound, runtime, patchFiles)
     const compared = compareProbes(runtime);
     rows.push(['**Runtime behaviour**', compared.verdictText]);
   }
+  const round0 = rounds.find((r) => r.baseline);
+  if (round0) {
+    const gate = round0.gate || {};
+    const probe = runtime.baseline && runtime.baseline.gate;
+    const parts = [`build ${round0.outcome === 'passed' ? '🟢 green' : `🔴 ${round0.outcome}`} on JDK ${esc(round0.jdk.major)} via \`${esc(round0.build.intent)}\``];
+    if (probe) parts.push(`runtime ${probe.met ? '🟢 clean' : '🔴 not clean'}`);
+    rows.push(['**Starting point**', `${parts.join(', ')} — the migration only begins from a green baseline`]);
+  }
+  const applyMeta = applyStatusOf(applied);
+  rows.push(['**Project state**', applied && applied.verification && applied.verification.ran
+    ? `${applyMeta.emoji} ${applyMeta.label} — \`${esc(applied.verification.command)}\` on JDK ${esc(applied.verification.jdk.major)}, ${applied.verification.outcome}`
+    : `${applyMeta.emoji} ${applyMeta.label}`]);
   rows.push(['**Reference followed**', code(migration.migration.reference_pack)]);
   rows.push(['**Build tool**', `${esc(baseline.build_tool.tool)}${baseline.build_tool.version ? ` — ${esc(baseline.build_tool.version)}` : ''}`]);
+  // Who authorised this. A migration reached the project because somebody approved a plan, and
+  // the report is where that authorisation has to be findable afterwards.
+  const plan = readRenderedPlan(migration.slug);
+  rows.push(['**Authorised by**', plan
+    ? `${statusMeta(plan.status).emoji} plan ${plan.status.toLowerCase()}${plan.reviewer ? ` by ${esc(plan.reviewer)}` : ''}${plan.decided_on ? ` on ${esc(plan.decided_on)}` : ''} — [migration plan](./migration_plan_${migration.slug}.md) (revision ${plan.revision})`
+    : '⚪ no migration plan on record for this session']);
   return ['| | |', '|---|---|', ...rows.map(([k, v]) => `| ${k} | ${v} |`)].join('\n');
 }
 
@@ -1020,6 +1049,61 @@ function everyFileChanged(migration, patchFiles) {
   return out.join('\n');
 }
 
+/**
+ * The plan's forecast against what actually happened.
+ *
+ * The plan predicted a set of files and a number of rounds before any of it ran. Showing the two
+ * side by side is the only way anyone learns whether the planning was worth anything — and an
+ * unforeseen file is the interesting column, because it is where the plan was blind.
+ */
+function planComparison(slug, patchFiles) {
+  const plan = readJson(sessionPaths(slug).plan);
+  if (!plan || !Array.isArray(plan.predicted_changes) || !plan.predicted_changes.length) return null;
+
+  const normalise = (file) => String(file || '').replace(/\\/g, '/').replace(/^\.\//, '').toLowerCase();
+  const actual = new Set(patchFiles.map((f) => normalise(f.file)));
+  const predicted = plan.predicted_changes.map((c) => ({ ...c, key: normalise(c.file) }));
+  const predictedKeys = new Set(predicted.map((c) => c.key));
+
+  const hit = predicted.filter((c) => actual.has(c.key));
+  const miss = predicted.filter((c) => !actual.has(c.key));
+  const unforeseen = patchFiles.filter((f) => !predictedKeys.has(normalise(f.file)));
+
+  const rounds = listRounds(slug);
+  const forecastRounds = plan.effort && plan.effort.estimated_rounds;
+
+  const out = [];
+  out.push('What the plan said would happen, measured against what did. The plan was written before any version changed, so a wrong prediction here is information, not a failure.');
+  out.push('');
+  out.push('| | Forecast | Actual |');
+  out.push('|---|---|---|');
+  out.push(`| Files changed | ${predicted.length} | ${patchFiles.length} |`);
+  out.push(`| Predicted and did change | — | ${hit.length} of ${predicted.length} |`);
+  out.push(`| Predicted but did not change | — | ${miss.length} |`);
+  out.push(`| Changed but not predicted | — | ${unforeseen.length} |`);
+  if (forecastRounds) out.push(`| Build rounds | ~${forecastRounds} | ${rounds.length} |`);
+  out.push('');
+
+  if (miss.length) {
+    out.push('**Predicted but untouched** — the plan expected these to change and the build never asked for it.');
+    out.push('');
+    out.push('| File | What was expected | Confidence at the time |', '|---|---|---|');
+    for (const c of miss) out.push(`| ${code(c.file)} | ${esc(c.what)} | ${esc(c.confidence) || '—'} |`);
+    out.push('');
+  }
+  if (unforeseen.length) {
+    out.push('**Changed without being predicted** — the plan did not see these coming. Each is explained in its own row in section 5 above.');
+    out.push('');
+    for (const f of unforeseen) out.push(`- ${code(f.file)}`);
+    out.push('');
+  }
+  if (!miss.length && !unforeseen.length) {
+    out.push('The plan named exactly the files that changed.');
+    out.push('');
+  }
+  return out.join('\n');
+}
+
 function allErrorsTable(round) {
   if (!round.error_summary.total) return [];
   const out = ['<details>'];
@@ -1154,6 +1238,72 @@ function behaviourSection(runtime, migration, ctxRounds) {
 // Cumulative patch
 // ---------------------------------------------------------------------------
 
+// The section that says whether any of this reached the project. Everything in it is read from
+// applied.json, which apply-migration.js writes — nothing here is the agent's word for it.
+function appliedSection(applied, runtime, slug) {
+  const out = [];
+  if (!applied) {
+    out.push('_The migration has **not** been applied to the project._ Everything above happened in the');
+    out.push('sandbox copy, and the project directory still holds the pre-migration code. A migration is');
+    out.push('not finished until it is in the project:');
+    out.push('');
+    out.push('```powershell');
+    out.push(`node scripts/apply-migration.js --slug ${slug} --to-project`);
+    out.push('```');
+    return out.join('\n');
+  }
+
+  const meta = applyStatusOf(applied);
+  const v = applied.verification || {};
+  out.push(`**${meta.emoji} ${meta.label}** — ${esc(applied.written)} file(s) written and ${esc(applied.removed)} removed in \`${esc(applied.project_dir)}\` on ${esc(String(applied.applied_at).slice(0, 19).replace('T', ' '))} UTC.`);
+  out.push('');
+  out.push('| | |', '|---|---|');
+  out.push(`| **Applied from** | round ${esc(applied.source_round.round)}, which ended \`${esc(applied.source_round.outcome)}\` on JDK ${esc(applied.source_round.jdk)} |`);
+  out.push(`| **Files written** | ${esc(applied.written)} |`);
+  out.push(`| **Files removed** | ${esc(applied.removed)} |`);
+  out.push(`| **Backup** | ${code(applied.backup && applied.backup.dir)} — \`apply-migration.js --slug ${slug} --revert\` restores it |`);
+  if (v.ran) {
+    out.push(`| **The project's own build** | \`${esc(v.command)}\` on JDK ${esc(v.jdk.major)} (${esc(v.jdk.version)}) |`);
+    out.push(`| **Result** | ${v.outcome === 'passed' ? '🟢' : '🔴'} \`${esc(v.outcome)}\` — exit ${esc(v.exit_code)}, ${durationText(v.duration_ms)} |`);
+    if (v.error_summary && v.error_summary.total) {
+      out.push(`| **Errors** | ${esc(v.error_summary.total)} line(s): ${v.error_summary.byCategory.map((c) => `${esc(c.count)} ${esc(c.label)}`).join(', ')} |`);
+    }
+  } else {
+    out.push(`| **The project's own build** | not run — ${esc(v.reason || 'no reason recorded')} |`);
+  }
+  const appliedProbe = runtime.applied;
+  if (appliedProbe) {
+    const gate = appliedProbe.gate || {};
+    out.push(`| **The project running** | ${gate.met ? '🟢' : '🔴'} ${appliedProbe.started ? 'started' : 'did not start'} on JDK ${esc(appliedProbe.jdk.major)}, ${esc((appliedProbe.probes || []).length)} probe(s) replayed |`);
+  }
+  out.push('');
+
+  if (v.ran && v.outcome !== 'passed') {
+    out.push('The files are in the project but the project does not build green. That gap is between the');
+    out.push('sandbox and the project — local configuration, a stale build directory, or a file the');
+    out.push('sandbox copy never carried — and it has to be closed before the migration is done.');
+    out.push('');
+    out.push('```text');
+    out.push(String(v.log_tail || '').split(/\r?\n/).slice(-25).join('\n'));
+    out.push('```');
+    out.push('');
+  }
+
+  if (appliedProbe && (appliedProbe.probes || []).length) {
+    out.push('**The migrated project, answering:**');
+    out.push('');
+    out.push('| Probe | Method | Path | Status | Expected |', '|---|---|---|---|---|');
+    for (const p of appliedProbe.probes) {
+      const expected = p.expected_status === null || p.expected_status === undefined
+        ? '—'
+        : `${esc(p.expected_status)} ${p.meets_expectation ? '✅' : '❌'}`;
+      out.push(`| ${esc(p.name)} | ${code(p.method)} | ${code(p.path)} | ${p.ok ? esc(p.status) : '**no response**'} | ${expected} |`);
+    }
+    out.push('');
+  }
+  return out.join('\n');
+}
+
 function exportDiff(paths, meta) {
   if (!meta || !fs.existsSync(paths.workspace)) return { text: null, stat: null };
   const git = (...a) => run('git', ['-C', paths.workspace, ...a]);
@@ -1169,7 +1319,7 @@ function exportDiff(paths, meta) {
 
 function renderReport(ctx) {
   const {
-    slug, baseline, migration, rounds, runtime, finalRound, patchStat, meta,
+    slug, baseline, migration, rounds, runtime, finalRound, patchStat, meta, applied,
   } = ctx;
   const outcome = outcomeOf(finalRound && finalRound.outcome);
   const failingRound = rounds
@@ -1187,6 +1337,7 @@ function renderReport(ctx) {
     badge('Java', `${migration.migration.language.from} → ${migration.migration.language.to}`, '6E86E8'),
     badge('Rounds', String(rounds.length), '1F3864'),
     badge('Files changed', String(ctx.patchFiles.length), 'A0399B'),
+    badge('Project', applyStatusOf(applied).label, applyStatusOf(applied).colour),
   ].join(' '));
   out.push('');
   out.push(`> ${migration.summary}`);
@@ -1196,7 +1347,7 @@ function renderReport(ctx) {
 
   out.push('## At a glance');
   out.push('');
-  out.push(atAGlance(baseline, migration, rounds, finalRound, runtime, ctx.patchFiles));
+  out.push(atAGlance(baseline, migration, rounds, finalRound, runtime, ctx.patchFiles, applied));
   out.push('');
 
   out.push('## 1. What moved');
@@ -1247,6 +1398,13 @@ function renderReport(ctx) {
   out.push('');
   out.push(everyFileChanged(migration, ctx.patchFiles));
   out.push('');
+  const forecast = planComparison(slug, ctx.patchFiles);
+  if (forecast) {
+    out.push('### 5.1 Against the plan');
+    out.push('');
+    out.push(forecast);
+    out.push('');
+  }
 
   out.push('## 6. Does it still behave the same?');
   out.push('');
@@ -1264,8 +1422,25 @@ function renderReport(ctx) {
   }
   out.push('');
 
-  out.push('## 8. What still needs a human');
+  out.push('## 8. Landing it in the project');
   out.push('');
+  out.push('A migration is finished when the project itself is on the new version and green there — not');
+  out.push('when the sandbox is. This is that step, and its result:');
+  out.push('');
+  out.push(appliedSection(applied, runtime, slug));
+  out.push('');
+
+  out.push('## 9. What still needs a human');
+  out.push('');
+  const reviewer = readRenderedPlan(slug);
+  if (reviewer && reviewer.feedback) {
+    out.push('**What the reviewer asked for when they approved this**');
+    out.push('');
+    out.push('Carried from the migration plan verbatim, so the migration can be read against what was actually agreed to.');
+    out.push('');
+    out.push(reviewer.feedback.split(/\r?\n/).map((l) => `> ${l}`).join('\n'));
+    out.push('');
+  }
   out.push('**Follow-ups**');
   out.push('');
   out.push(...bullets(migration.manual_follow_ups, '_none recorded_'));
@@ -1275,9 +1450,9 @@ function renderReport(ctx) {
   out.push(...bullets(migration.residual_risk, '_none recorded_'));
   out.push('');
 
-  out.push('## 9. The patch');
+  out.push('## 10. The patch');
   out.push('');
-  out.push(`The whole migration is one cumulative patch against the project as it stood before round 0. It was produced and built inside a sandbox copy — **the project directory itself was never modified**.`);
+  out.push(`The whole migration is one cumulative patch against the project as it stood before round 0. Every round was built inside a sandbox copy; the project directory is written only by the apply step in section 8${applied ? ', which has run' : ', which has not run yet'}.`);
   out.push('');
   if (patchStat) {
     out.push('```text');
@@ -1289,12 +1464,13 @@ function renderReport(ctx) {
   out.push('');
   const diffPath = sessionPaths(slug).reportDiff.split(path.sep).join('/');
   out.push('Applying it, from `.github/skills/04d-version-migration/`. This copies the migrated files');
-  out.push('out of the sandbox, works whether or not the project is version-controlled, and refuses');
-  out.push('unless the final round was green:');
+  out.push('out of the sandbox, works whether or not the project is version-controlled, refuses unless');
+  out.push('the final round was green, and builds the project afterwards to prove it landed:');
   out.push('');
   out.push('```powershell');
   out.push(`node scripts/apply-migration.js --slug ${slug}                # dry run: lists what would change`);
-  out.push(`node scripts/apply-migration.js --slug ${slug} --to-project   # writes the project`);
+  out.push(`node scripts/apply-migration.js --slug ${slug} --to-project   # writes the project, then verifies it`);
+  out.push(`node scripts/apply-migration.js --slug ${slug} --revert       # puts the project back`);
   out.push('```');
   out.push('');
   out.push('Or, if the project is a git repository and you would rather apply the patch itself:');
@@ -1315,7 +1491,8 @@ function renderReport(ctx) {
   out.push(`| Declared versions, dependency list, JDKs available | ${code(rel(sessionPaths(slug).baseline))} | \`detect-baseline.js\` |`);
   out.push(`| Sandbox and baseline commit | ${code(rel(sessionPaths(slug).workspaceMeta))} | \`prepare-workspace.js\` |`);
   out.push(`| Every round's outcome, errors and timings | ${code(`${rel(sessionPaths(slug).roundsDir)}/round-NN.json`)} | \`run-migration-build.js\` |`);
-  out.push(`| Before/after runtime responses | ${code(`${rel(sessionPaths(slug).runtimeDir)}/{baseline,final}.json`)} | \`probe-runtime.js\` |`);
+  out.push(`| Before/after runtime responses | ${code(`${rel(sessionPaths(slug).runtimeDir)}/{baseline,final,applied}.json`)} | \`probe-runtime.js\` |`);
+  out.push(`| What was written into the project, and how it built there | ${code(rel(sessionPaths(slug).applied))} | \`apply-migration.js\` |`);
   out.push(`| Diagnoses, reasons, risks, follow-ups | ${code(rel(sessionPaths(slug).migration))} | the agent |`);
   out.push('');
   out.push(`Sandbox: ${code(meta ? rel(path.resolve(meta.workspace)) : 'not recorded')} · baseline commit ${code(meta ? meta.baseline_commit.slice(0, 10) : '—')}`);
@@ -1329,78 +1506,10 @@ function renderReport(ctx) {
 // Index
 // ---------------------------------------------------------------------------
 
-// docs/agent_output/04-remediation/README.md is shared with 04a-fix-strategist and 04b-fixer.
-// Their renderers keep everything BEFORE their own marker and replace everything after it, so the
-// migration block is self-delimited and always written *above* that marker: their rewrite then
-// carries it through untouched, and this one replaces only what is between its own two markers.
-const BLOCK_START = '<!-- AUTO-GENERATED MIGRATIONS — regenerated by 04_fix-generator (version migration), do not hand-edit between these markers -->';
-const BLOCK_END = '<!-- END AUTO-GENERATED MIGRATIONS -->';
-const FIX_INDEX_MARKER = '<!-- AUTO-GENERATED TABLE — regenerated by 04_fix-generator (plan + fix), do not hand-edit below this line -->';
-
-function defaultReadmeContract() {
-  return `# Remediation
-
-Everything the **Fix Generator** agent (\`04_fix-generator\`) produces lives here.
-
-`;
-}
-
-function migrationBlock() {
-  const rows = (fs.existsSync(OUT_DIR) ? fs.readdirSync(OUT_DIR) : [])
-    .map((f) => /^migration_(.+)\.md$/.exec(f))
-    .filter(Boolean)
-    .map((m) => {
-      const slug = m[1];
-      const text = fs.readFileSync(path.join(OUT_DIR, `migration_${slug}.md`), 'utf8');
-      const cell = (label, fallback) => (new RegExp(`\\|\\s*\\*\\*${label}\\*\\*\\s*\\|\\s*([^|]+)\\|`).exec(text) || [, fallback])[1].trim();
-      return {
-        slug,
-        title: (/^# Migration Report — (.+)$/m.exec(text) || [, slug])[1],
-        result: cell('Result', 'unknown'),
-        rounds: cell('Build rounds', '—'),
-        files: cell('Files changed', '—'),
-        behaviour: cell('Runtime behaviour', '_not probed_'),
-      };
-    })
-    .sort((a, b) => a.slug.localeCompare(b.slug));
-
-  const block = [BLOCK_START, '', '## Version migrations', ''];
-  block.push('Framework-generation and language-level upgrades, written by the');
-  block.push('[`04d-version-migration`](../../.github/skills/04d-version-migration/) skill. A migration runs in a');
-  block.push('sandbox copy of the project under `.github/.pipeline-context/version-migration/`; the project');
-  block.push('directory is never edited by the skill, and applying the patch is a separate, explicit step.');
-  block.push('');
-  if (!rows.length) {
-    block.push('_No migrations rendered yet._', '');
-  } else {
-    block.push('| Migration | Result | Rounds | Files changed | Runtime behaviour | Report | Patch |', '|---|---|---|---|---|---|---|');
-    for (const r of rows) {
-      block.push(`| ${r.title} | ${r.result} | ${r.rounds} | ${r.files} | ${r.behaviour} | [report](./migration_${r.slug}.md) | [patch](./migration_${r.slug}.diff) |`);
-    }
-    block.push('');
-  }
-  block.push(BLOCK_END);
-  return block.join('\n');
-}
-
-function rewriteIndex() {
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  const existing = fs.existsSync(OUT_README) ? fs.readFileSync(OUT_README, 'utf8') : defaultReadmeContract();
-  const block = migrationBlock();
-  let next;
-
-  const start = existing.indexOf(BLOCK_START);
-  const end = existing.indexOf(BLOCK_END);
-  if (start !== -1 && end !== -1 && end > start) {
-    next = existing.slice(0, start) + block + existing.slice(end + BLOCK_END.length);
-  } else {
-    const fixMarker = existing.indexOf(FIX_INDEX_MARKER);
-    next = fixMarker !== -1
-      ? `${existing.slice(0, fixMarker).trimEnd()}\n\n${block}\n\n${existing.slice(fixMarker)}`
-      : `${existing.trimEnd()}\n\n${block}\n`;
-  }
-  fs.writeFileSync(OUT_README, next);
-}
+// docs/agent_output/04-remediation/README.md is shared with 04a-fix-strategist and 04b-fixer, and
+// the migration block in it covers both the plan and the report for each migration. That block is
+// therefore built in lib/plan.js rather than here, so whichever of the two renderers runs last
+// regenerates exactly the same thing from the same scan of the folder.
 
 // ---------------------------------------------------------------------------
 // Main
@@ -1426,14 +1535,16 @@ function renderOne(slug) {
   const runtime = {
     baseline: readJson(path.join(paths.runtimeDir, 'baseline.json')),
     final: readJson(path.join(paths.runtimeDir, 'final.json')),
+    applied: readJson(path.join(paths.runtimeDir, 'applied.json')),
   };
+  const applied = readJson(paths.applied);
   const finalRound = rounds[rounds.length - 1];
   const patch = exportDiff(paths, meta);
   const patchFiles = splitPatchByFile(patch.text);
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const report = renderReport({
-    slug, baseline, migration, rounds, runtime, finalRound, patchStat: patch.stat, patchFiles, meta,
+    slug, baseline, migration, rounds, runtime, finalRound, patchStat: patch.stat, patchFiles, meta, applied,
   });
   fs.writeFileSync(paths.reportMd, report);
   if (patch.text !== null) fs.writeFileSync(paths.reportDiff, patch.text);
@@ -1444,6 +1555,7 @@ function renderOne(slug) {
     diff: patch.text !== null ? rel(paths.reportDiff) : null,
     outcome: finalRound.outcome,
     rounds: rounds.length,
+    applied: applied ? applied.status : null,
   };
 }
 
@@ -1472,13 +1584,14 @@ function main() {
       console.log(`${meta.emoji} ${slug} — ${meta.label} after ${result.rounds} round(s)`);
       console.log(`   report ${result.report}`);
       if (result.diff) console.log(`   patch  ${result.diff}`);
+      console.log(`   project ${result.applied ? result.applied : 'not applied — the migration has not reached the project yet'}`);
     } catch (error) {
       failures += 1;
       console.error(`✗ ${slug} — ${error.message}`);
     }
   }
-  rewriteIndex();
-  console.log(`\nIndex: ${rel(OUT_README)}`);
+  const readme = rewriteIndex();
+  console.log(`\nIndex: ${rel(readme)}`);
   if (failures) process.exitCode = 1;
 }
 
