@@ -1,0 +1,34 @@
+{
+  "issue_id": "boot4-upgrade",
+  "verdict": "NO_BYPASS_FOUND",
+  "confidence": "Medium",
+  "plain_summary": "No alternate framework boundary was shown to bypass the migration, but PostgreSQL and silent configuration behavior remain unproved.",
+  "attempted_vectors": [
+    {
+      "vector": "Use the unchanged SecurityConfig lambda DSL and alternate authentication paths to reach protected /api endpoints.",
+      "description": "Checked the anonymous, invalid Basic, valid Basic, and @WithMockUser paths. SecurityConfig still requires authentication for /api/**, permits only the two actuator endpoints explicitly listed, and retains the lambda DSL; the final starter supplies the MockMvc security integration that round 4 lacked.",
+      "result": "blocked"
+    },
+    {
+      "vector": "Exercise the unchanged GlobalExceptionHandler through validation, missing-resource, and generic request boundaries.",
+      "description": "The Boot 4 compiler accepted the HttpStatusCode-based override. The validation path still builds an ErrorResponse with status 400, message, path, and timestamp, while EmployeeNotFoundException still maps to the application-owned 404 response.",
+      "result": "blocked"
+    },
+    {
+      "vector": "Send the repository JPQL and native-SQL paths through Hibernate 7 using the alternate database boundary.",
+      "description": "findActiveEmployeesByDepartment uses Hibernate-parsed JPQL and findHighEarners uses native SQL with a named salary parameter. Both passed the recorded tests and H2 probes, but H2 does not prove PostgreSQL syntax, column behavior, or query-plan compatibility for the native path.",
+      "result": "uncertain"
+    },
+    {
+      "vector": "Rely on a Boot 3 property that Boot 4 now silently ignores, especially spring.jackson, spring.jpa, or management settings.",
+      "description": "spring.jackson.default-property-inclusion, spring.jpa settings, management exposure, and health detail settings remain in YAML without a properties-migrator report or binding audit. Startup success proves only that the application can run, not that every deprecated property still has effect.",
+      "result": "uncertain"
+    }
+  ],
+  "reasoning": "The red-team scope here is migration bypass rather than input injection: a bypass would be an unchanged framework boundary that compiles but silently loses its intended security, exception, persistence, or configuration behavior. SecurityConfig remained a Spring Security 7-compatible lambda chain, and the final evidence covers anonymous rejection, invalid credentials, valid Basic authentication, and mock-user requests. GlobalExceptionHandler retained its Spring Framework 7 override contract and its application-owned ErrorResponse mappings. The two repository query forms also remained callable after Hibernate 7. The round-4 401 regression was a test dependency wiring defect, not a production authentication bypass, and the Boot security-test starter corrected it without changing the production filter chain. No alternate field or operator surface is introduced by this version migration. Confidence is medium rather than high because the native SQL was not replayed against PostgreSQL and YAML property semantics were not audited with the properties migrator or a binding report.",
+  "residual_risk": [
+    "The native PostgreSQL query was verified through the test suite and an H2 runtime probe, not a live PostgreSQL deployment in this check.",
+    "Unchanged configuration properties may be inert without causing startup or probe failures.",
+    "The current working tree is pre-migration even though the migration artifact records a green applied workspace."
+  ]
+}

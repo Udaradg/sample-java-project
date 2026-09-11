@@ -1,0 +1,18 @@
+{
+  "issue_id": "boot4-upgrade",
+  "verdict": "BEHAVIOR_CHANGED",
+  "confidence": "High",
+  "plain_summary": "Endpoint statuses and application-owned responses stayed stable, but one framework-owned problem-details response changed shape beyond the explicit migration scope.",
+  "in_scope_changes": [
+    "The Java 17 to 21 and Spring Boot 3.5.0 to 4.1.1 platform changes, including the compiler release change and Java 21 container base image.",
+    "Jackson 3 migration: ObjectMapper and JavaTimeModule are replaced by JsonMapperBuilderCustomizer and tools.jackson APIs while ISO date formatting, NON_NULL inclusion, and non-indented output remain configured.",
+    "Boot 4 framework relocations: Health and HealthIndicator move to org.springframework.boot.health.contributor; test slices move to the modular webmvc-test and data-jpa-test starters; MockBean becomes MockitoBean.",
+    "Security test wiring: spring-boot-starter-security-test restores the SecurityContext bridge required by @WithMockUser without changing the production SecurityFilterChain.",
+    "Framework-owned actuator health output and authentication error timestamp formatting changes acknowledged by the migration's runtime comparison.",
+    "All 19 tests passed after the security-test starter correction, and all 15 probes preserved their expected HTTP status, authentication boundary, and application-owned 404/validation semantics."
+  ],
+  "reasoning": "The migration record provides a like-for-like baseline/final comparison: 19 tests passed on both versions and all 15 probes returned the same HTTP statuses. The five business read paths, authentication boundary, unknown-employee 404 path, and invalid-create validation status remained operational. The application's ErrorResponse-backed responses retain their declared fields; their LocalDateTime timestamps differ naturally because the two runtime captures occurred at different times. The observable framework changes are more specific: /actuator/health grew from 548 to 667 bytes and reordered map-backed properties while retaining UP status and the same contributor information; the unauthenticated 401 response kept status, error, path, and timestamp semantics but changed the timestamp representation to a UTC Z form; and the missing-query-parameter application/problem+json response changed from five members including type=about:blank to four members without type, with a different property order. Because a strict behavior guard treats response schema changes as behavior even when HTTP statuses are stable, the final classification remains BEHAVIOR_CHANGED. The health and 401 differences were explicitly anticipated as framework-owned migration effects; the removed problem-details type member is the remaining client-visible contract risk not explicitly approved in the plan.",
+  "out_of_scope_changes": [
+    "The missing-query-parameter problem+json response changed shape: the Boot 3 response contained type=about:blank and five members, while Boot 4 omitted type and returned four reordered members. The plan expected framework-owned body differences generally, but did not explicitly approve removal of this response field; strict clients that validate this payload can observe a contract change."
+  ]
+}

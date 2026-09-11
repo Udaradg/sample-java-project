@@ -1,0 +1,16 @@
+{
+  "issue_id": "boot4-upgrade",
+  "verdict": "FIXED",
+  "confidence": "High",
+  "plain_summary": "The drafted migration removes the Boot 3 and Jackson 2 APIs that failed, and the Boot 4 build plus recorded runtime probes pass.",
+  "reasoning": "The migration closes each failure observed during the recorded upgrade rounds. In pom.xml, spring-boot-starter-parent moves from 3.5.0 to 4.1.1, java.version and compiler release move to 21, the MVC starter is renamed to spring-boot-starter-webmvc, and Boot 4 adds separate webmvc-test and data-jpa-test starters. The raw spring-security-test dependency is replaced with spring-boot-starter-security-test; this is significant because the first Boot 4 package run compiled successfully but five @WithMockUser tests returned 401 when the test-side SecurityContext integration was absent. In JacksonConfig, com.fasterxml.jackson.databind.ObjectMapper and JavaTimeModule are replaced by Boot 4's JsonMapperBuilderCustomizer and tools.jackson APIs, DateTimeFeature replaces the old date feature location, and changeDefaultPropertyInclusion replaces setDefaultPropertyInclusion. DatabaseHealthIndicator imports Health and HealthIndicator from org.springframework.boot.health.contributor. The test sources use the relocated slice annotations, MockitoBean, and JsonMapper. These changes remove the old package, type, and dependency signatures from the patched artifact. The migration record then reports a clean Java 21 package build with 19 tests passing and all 15 runtime probes meeting their expected status, so the predicted compile and test-wiring findings no longer trigger by their original mechanism.",
+  "residual_indicators": [
+    "The current checked-out working tree is still pre-migration; this verdict is for migration_boot4-upgrade.diff and its recorded patched runtime, not for the current source files.",
+    "application.yml and application-test.yml were not changed, so silently ignored Boot 4 properties remain a separate runtime/configuration concern.",
+    "The Jackson migration intentionally removes explicit JavaTimeModule registration because Java time support is supplied by the Jackson 3/Boot 4 mapper stack; this should be checked if custom module ordering is relied on elsewhere."
+  ],
+  "open_questions": [
+    "Run the container image itself; the Dockerfile base-image change was inspected but not built as part of the migration verification.",
+    "Validate the native PostgreSQL query against PostgreSQL rather than only the recorded H2 runtime probe."
+  ]
+}
