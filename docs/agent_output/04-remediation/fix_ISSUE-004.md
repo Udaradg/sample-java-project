@@ -74,22 +74,22 @@ Modules built: `employee-service`
 vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[115,31] cannot find symbol
 [ERROR]   symbol:   method getName()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[116,37] cannot find symbol
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[116,37] cannot find symbol
 [ERROR]   symbol:   method getDepartment()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[117,34] cannot find symbol
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[117,34] cannot find symbol
 [ERROR]   symbol:   method getPhoneNo()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[118,34] cannot find symbol
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[118,34] cannot find symbol
 [ERROR]   symbol:   method getAddress()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[119,33] cannot find symbol
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[119,33] cannot find symbol
 [ERROR]   symbol:   method getGender()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[120,39] cannot find symbol
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[120,39] cannot find symbol
 [ERROR]   symbol:   method getEmployeeType()
 [ERROR]   location: variable employee of type com.aura.vihanga.employeeservice.model.Employee
-[ERROR] /C:/Virtusa/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[121,34] incompatible types: inference variable T has incompatible bounds
+[ERROR] /C:/sample-java-project/.github/.pipeline-context/dependency-upgrader/worktrees/ISSUE-004/employee-service/src/main/java/com/aura/vihanga/employeeservice/service/implementation/EmployeeServiceImpl.java:[121,34] incompatible types: inference variable T has incompatible bounds
 [ERROR]     equality constraints: com.aura.vihanga.employeeservice.dto.EmployeeResponse
 [ERROR]     lower bounds: java.lang.Object
 [ERROR] -> [Help 1]
