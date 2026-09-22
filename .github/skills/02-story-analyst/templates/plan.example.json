@@ -1,0 +1,29 @@
+{
+  "approach": "Add Pageable support to EmployeeController.getAllEmployees()/EmployeeService.getAllEmployees(), backed by a Specification for the optional department/active filters, and introduce a small PageResponse<T> DTO for the envelope.",
+  "affectedFiles": [
+    "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+    "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+    "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+    "src/main/java/com/example/migrationdemo/dto/PageResponse.java"
+  ],
+  "affectedSymbols": [
+    "EmployeeController.getAllEmployees",
+    "EmployeeService.getAllEmployees",
+    "EmployeeRepository"
+  ],
+  "acceptanceCriteriaPlan": [
+    { "criterion": "page/size query params, default 0/20, size capped at 100", "change": "Build a PageRequest from page/size in the controller, clamping size before it reaches the repository." },
+    { "criterion": "sort query param restricted to real fields, 400 on bad input", "change": "Whitelist sortable fields; an unknown field/direction throws a validation exception mapped by GlobalExceptionHandler to 400." },
+    { "criterion": "optional department/active filters", "change": "Add a JpaSpecification that applies each filter only when the corresponding parameter is present." },
+    { "criterion": "response is a page envelope", "change": "Introduce PageResponse<EmployeeResponse> {content, page, size, totalElements, totalPages} and map Page<Employee> into it." },
+    { "criterion": "no query params still returns 200", "change": "Default Pageable covers the no-params case; no separate code path needed." }
+  ],
+  "risks": [
+    "Response shape change from a bare array to an envelope is breaking for any existing caller."
+  ],
+  "testHints": [
+    "Unit test: unknown sort field returns 400 via GlobalExceptionHandler.",
+    "Unit test: department + active filters combine correctly against a mocked repository."
+  ],
+  "openQuestions": []
+}

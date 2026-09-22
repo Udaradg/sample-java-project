@@ -1,14 +1,14 @@
 {
-  "$comment": "Merge arbiter scoring config — externalized and auditable, same philosophy as 04a-fix-strategist's CWE catalog. Edit weights/thresholds here, never in compute-score.js.",
+  "$comment": "Merge arbiter scoring config — externalized and auditable. Edit weights/thresholds here, never in compute-score.js.",
   "hard_gates": {
-    "rescan_still_vulnerable_blocks": true,
+    "acceptance_not_satisfied_blocks": true,
     "build_failed_blocks": true
   },
   "weights": {
-    "redteam": {
-      "NO_BYPASS_FOUND": 30,
+    "edgecase": {
+      "NO_GAPS_FOUND": 30,
       "INCONCLUSIVE": 15,
-      "BYPASS_FOUND": 0
+      "GAPS_FOUND": 0
     },
     "behavior": {
       "BEHAVIOR_PRESERVED": 30,
@@ -21,7 +21,7 @@
     }
   },
   "default_threshold": 85,
-  "severity_thresholds": {
+  "priority_thresholds": {
     "Critical": 90,
     "High": 85,
     "Medium": 75,

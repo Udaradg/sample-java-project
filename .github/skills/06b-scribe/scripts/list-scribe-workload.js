@@ -2,7 +2,7 @@
 /**
  * Scribe — Workload Listing
  *
- * Workload = every fix with a rendered merge-arbiter verdict (docs/agent_output/07-ship/verdict_<id>.md),
+ * Workload = every change with a rendered merge-arbiter verdict (docs/agent_output/06-ship/verdict_<id>.md),
  * regardless of Cleared/Blocked — the Scribe always writes both output files either way.
  *
  * Usage:
@@ -10,13 +10,13 @@
  */
 const fs = require('fs');
 const {
-  SHIP_DIR, rel, listArbitratedFixes, contentPathFor, prPathFor, auditPathFor,
+  SHIP_DIR, rel, listArbitratedChanges, contentPathFor, prPathFor, auditPathFor,
 } = require('./lib/scribe');
 
-function stateOf(fix) {
-  const content = fs.existsSync(contentPathFor(fix.id));
-  const pr = fs.existsSync(prPathFor(fix.id));
-  const audit = fs.existsSync(auditPathFor(fix.id));
+function stateOf(change) {
+  const content = fs.existsSync(contentPathFor(change.id));
+  const pr = fs.existsSync(prPathFor(change.id));
+  const audit = fs.existsSync(auditPathFor(change.id));
   if (pr && audit) return 'pr + audit written';
   if (content) return 'content written — render pending';
   return 'not started';
@@ -24,15 +24,15 @@ function stateOf(fix) {
 
 function main() {
   const asJson = process.argv.includes('--json');
-  const items = listArbitratedFixes().map((f) => ({ ...f, stage: stateOf(f) }));
+  const items = listArbitratedChanges().map((c) => ({ ...c, stage: stateOf(c) }));
 
   if (asJson) { console.log(JSON.stringify(items, null, 2)); return; }
   if (!items.length) { console.log(`No ship verdicts found in ${rel(SHIP_DIR)}. Run the merge-arbiter agent first.`); return; }
 
-  const rows = items.map((f) => [f.id, f.decision || '-', f.score || '-', f.stage, f.title]);
-  const headers = ['ID', 'DECISION', 'SCORE', 'PIPELINE STATE', 'TITLE'];
-  const widths = headers.map((h, c) => Math.max(h.length, ...rows.map((r) => String(r[c]).length)));
-  const line = (cells) => cells.map((cell, c) => String(cell).padEnd(widths[c])).join('  ').trimEnd();
+  const rows = items.map((c) => [c.id, c.decision || '-', c.score || '-', c.stage, c.title]);
+  const headers = ['STORY', 'DECISION', 'SCORE', 'PIPELINE STATE', 'TITLE'];
+  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).length)));
+  const line = (cells) => cells.map((cell, i) => String(cell).padEnd(widths[i])).join('  ').trimEnd();
 
   console.log(`Scribe workload: ${rel(SHIP_DIR)} (${items.length} verdict${items.length === 1 ? '' : 's'})\n`);
   console.log(line(headers));

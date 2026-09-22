@@ -1,0 +1,7 @@
+{
+  "story_id": "JIRA-002",
+  "test_file": "src/test/java/com/example/migrationdemo/service/EmployeeServiceDuplicateEmailTest.java",
+  "what_it_proves": "createEmployee() rejects a request whose email already belongs to another employee with DuplicateEmployeeException, using a mocked EmployeeRepository. Fails on the pre-change code (which calls findByEmployeeNumber(email) and never matches), passes on the patched code (which calls findByEmail(email)).",
+  "mocking_strategy": "Mockito-mock EmployeeRepository; stub findByEmail(...) to return a present Optional and assert the service throws DuplicateEmployeeException before save() is invoked.",
+  "requires_live_dependency": false
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Edge-case Review — agent verdict input",
+  "description": "Written by the existing-app test agent to .github/.pipeline-context/verify/<id>.edgecase.verdict.json after reading <id>.edgecase.facts.md, then consumed by scripts/render-edgecase.js. Answers: does the change survive boundary/error conditions and inputs the plan didn't explicitly cover?",
+  "type": "object",
+  "required": ["story_id", "verdict", "plain_summary", "attempted_vectors", "reasoning"],
+  "additionalProperties": false,
+  "properties": {
+    "story_id": { "type": "string" },
+    "verdict": { "type": "string", "enum": ["NO_GAPS_FOUND", "GAPS_FOUND", "INCONCLUSIVE"] },
+    "confidence": { "type": "string", "enum": ["High", "Medium", "Low"] },
+    "plain_summary": { "type": "string" },
+    "attempted_vectors": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every concrete edge case actually reasoned through against the NEW code — a boundary value, a null/empty input, an unexpected parameter combination — not a restatement of the story.",
+      "items": {
+        "type": "object",
+        "required": ["vector", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "vector": { "type": "string", "description": "What was tried, concretely, e.g. 'updateEmployee with the caller's own current email unchanged'." },
+          "description": { "type": "string" },
+          "result": { "type": "string", "enum": ["handled", "gap", "uncertain"] }
+        }
+      }
+    },
+    "gaps_found": {
+      "type": "array",
+      "description": "Required non-empty when verdict is GAPS_FOUND; omit or leave empty otherwise.",
+      "items": {
+        "type": "object",
+        "required": ["description", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["Critical", "High", "Medium", "Low"] }
+        }
+      }
+    },
+    "reasoning": { "type": "string" }
+  }
+}

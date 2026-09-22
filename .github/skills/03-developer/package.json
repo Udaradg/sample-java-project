@@ -1,0 +1,13 @@
+{
+  "name": "03-developer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Implements an Approved story plan as a real, compiled code change inside a throwaway git worktree. Zero dependencies.",
+  "type": "commonjs",
+  "scripts": {
+    "workload": "node scripts/list-workload.js",
+    "worktree": "node scripts/create-worktree.js",
+    "finalize": "node scripts/finalize-change.js",
+    "render": "node scripts/render-dev-report.js"
+  }
+}

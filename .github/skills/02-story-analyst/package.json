@@ -1,0 +1,12 @@
+{
+  "name": "02-story-analyst",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Turns a JIRA story plus the Architect's artifacts/context into an implementation plan. Zero dependencies.",
+  "type": "commonjs",
+  "scripts": {
+    "workload": "node scripts/list-workload.js",
+    "collect": "node scripts/collect-analysis.js",
+    "render": "node scripts/render-plan.js"
+  }
+}

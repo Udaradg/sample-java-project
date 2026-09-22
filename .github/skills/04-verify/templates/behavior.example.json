@@ -1,0 +1,12 @@
+{
+  "story_id": "JIRA-002",
+  "verdict": "BEHAVIOR_PRESERVED",
+  "confidence": "High",
+  "plain_summary": "Only the duplicate-email lookup changed; the employee-number duplicate check and every other method are untouched.",
+  "in_scope_changes": [
+    "EmployeeRepository gained findByEmail(String email), an additive change.",
+    "createEmployee/updateEmployee now call findByEmail(...) instead of findByEmployeeNumber(...) for the email check, matching the plan's acceptanceCriteriaPlan."
+  ],
+  "out_of_scope_changes": [],
+  "reasoning": "The method signature diff shows one added repository method and no signature changes elsewhere; the diff touches only the two call sites the plan named."
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QA Test Plan — agent input",
+  "description": "Written by the qa-runner agent to .github/.pipeline-context/qa/<story_id>.test-plan.json, alongside a hand-drafted unified diff at .github/.pipeline-context/qa/<story_id>.new-test.diff that adds exactly one new regression test file. Consumed by scripts/run-qa-gate.js (to know which class to run) and scripts/render-qa-report.js. This file explains the test; it does not contain the test's execution result — that comes from the deterministic gate script and is never edited by the agent.",
+  "type": "object",
+  "required": ["story_id", "test_file", "what_it_proves", "mocking_strategy", "requires_live_dependency"],
+  "additionalProperties": false,
+  "properties": {
+    "story_id": { "type": "string" },
+    "test_file": {
+      "type": "string",
+      "description": "Repo-relative path of the new test file added by new-test.diff, e.g. src/test/java/.../EmployeeServiceDuplicateEmailTest.java. The class name (filename minus .java) is what the gate script runs."
+    },
+    "what_it_proves": {
+      "type": "string",
+      "description": "What this test actually asserts, and which acceptance criterion it locks in — it should fail against the pre-change code and pass against the patched code."
+    },
+    "mocking_strategy": {
+      "type": "string",
+      "description": "How the test avoids needing infrastructure this sandbox doesn't have, e.g. Mockito-mocking EmployeeRepository rather than a live database."
+    },
+    "requires_live_dependency": {
+      "type": "boolean",
+      "description": "Must be false for a test the gate script can actually execute in this environment. Set true only if unavoidable — the gate will still attempt it and report the real result, never assume it passed."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "story_id": "JIRA-002",
+  "verdict": "SATISFIED",
+  "confidence": "High",
+  "plain_summary": "The duplicate-email check now actually queries by email, and rejects a real duplicate with the expected 409.",
+  "criteria_results": [
+    { "criterion": "EmployeeRepository exposes findByEmail(String email)", "met": true, "reasoning": "Present in the patched EmployeeRepository.java, mirroring findByEmployeeNumber." },
+    { "criterion": "createEmployee rejects a duplicate email with DuplicateEmployeeException", "met": true, "reasoning": "createEmployee now calls employeeRepository.findByEmail(request.getEmail()) before insert." }
+  ],
+  "reasoning": "Both call sites were changed from findByEmployeeNumber(email) to findByEmail(email); the patched source shows the corrected lookup and unchanged exception type.",
+  "open_questions": []
+}

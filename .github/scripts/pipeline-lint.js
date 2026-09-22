@@ -19,12 +19,11 @@ function forbidText(relativePath, text) {
 
 const requiredDirectories = [
   'docs/agent_output/01-architecture',
-  'docs/agent_output/02-root-cause',
-  'docs/agent_output/03-blast-radius',
-  'docs/agent_output/04-remediation',
-  'docs/agent_output/05-verify',
-  'docs/agent_output/06-test-gate',
-  'docs/agent_output/07-ship',
+  'docs/agent_output/02-story-analysis',
+  'docs/agent_output/03-development',
+  'docs/agent_output/04-verify',
+  'docs/agent_output/05-test-gate',
+  'docs/agent_output/06-ship',
 ];
 
 for (const directory of requiredDirectories) {
@@ -33,31 +32,30 @@ for (const directory of requiredDirectories) {
 
 for (const name of [
   '01_architect',
-  '02_root-cause-analyst',
-  '03_blast-radius-analyst',
-  '04_fix-generator',
-  '05_existing-app-test-agent',
-  '06_additional-test-execution',
-  '07_audit-and-pr',
+  '02_story-analyst',
+  '03_developer',
+  '04_existing-app-test-agent',
+  '05_additional-test-execution',
+  '06_audit-and-pr',
 ]) {
   requireText(`.github/agents/${name}.agent.md`, 'agents: []');
 }
 
 forbidText('.github/agents/01_architect.agent.md', ' web,');
 requireText('.github/agents/01_architect.agent.md', 'npm run all');
-requireText('.github/agents/04_fix-generator.agent.md', '.github/skills/04d-version-migration/');
-requireText('.github/agents/06_additional-test-execution.agent.md', '`Compiled` or `Compile Failed`');
-requireText('.github/agents/07_audit-and-pr.agent.md', 'the rendered verdict\'s Decision is exactly `Cleared`');
-requireText('.github/skills/06a-qa-runner/scripts/lib/qa.js', "const STEP2_ELIGIBLE_STATUSES = ['Compiled', 'Compile Failed'];");
-requireText('.github/skills/06b-build-gatekeeper/scripts/lib/gate.js', "const STEP2_ELIGIBLE_STATUSES = ['Compiled', 'Compile Failed'];");
-requireText('.github/skills/07a-merge-arbiter/scripts/render-verdict.js', "a.override.decision === 'Blocked'");
-requireText('.github/skills/07a-merge-arbiter/scripts/render-verdict.js', "score.computedDecision !== 'Cleared'");
-forbidText('docs/agent_output/05-verify/README.md', '../fixes/');
-forbidText('docs/agent_output/05-verify/README.md', 'verification-layer');
+requireText('.github/agents/03_developer.agent.md', 'refuse plainly and stop');
+requireText('.github/agents/05_additional-test-execution.agent.md', '`Compiled` or `Compile Failed`');
+requireText('.github/agents/06_audit-and-pr.agent.md', "the rendered verdict's Decision is exactly `Cleared`");
+requireText('.github/skills/05a-qa-runner/scripts/lib/qa.js', "const STEP2_ELIGIBLE_STATUSES = ['Compiled', 'Compile Failed'];");
+requireText('.github/skills/05b-build-gatekeeper/scripts/lib/gate.js', "const STEP2_ELIGIBLE_STATUSES = ['Compiled', 'Compile Failed'];");
+requireText('.github/skills/06a-merge-arbiter/scripts/render-verdict.js', "a.override.decision === 'Blocked'");
+requireText('.github/skills/06a-merge-arbiter/scripts/render-verdict.js', "score.computedDecision !== 'Cleared'");
+forbidText('docs/agent_output/04-verify/README.md', '../fixes/');
+forbidText('docs/agent_output/04-verify/README.md', 'verification-layer');
 
 try {
-  JSON.parse(read('.github/skills/07a-merge-arbiter/scoring.json'));
-  JSON.parse(read('.github/skills/07a-merge-arbiter/templates/arbitration.schema.json'));
+  JSON.parse(read('.github/skills/06a-merge-arbiter/scoring.json'));
+  JSON.parse(read('.github/skills/06a-merge-arbiter/templates/arbitration.schema.json'));
 } catch (error) {
   failures.push(`invalid merge-arbiter JSON: ${error.message}`);
 }

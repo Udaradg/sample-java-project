@@ -1,0 +1,12 @@
+{
+  "story_id": "JIRA-002",
+  "verdict": "NO_GAPS_FOUND",
+  "confidence": "Medium",
+  "plain_summary": "The email check does not false-positive when a caller resubmits their own current email during an update.",
+  "attempted_vectors": [
+    { "vector": "updateEmployee called with the employee's own current (unchanged) email", "result": "handled", "description": "The guard clause only runs findByEmail when request.getEmail() differs from employee.getEmail()." },
+    { "vector": "createEmployee with an email differing only by case", "result": "gap", "description": "findByEmail is case-sensitive, matching the story's declared out-of-scope note, so this is expected, not a defect." }
+  ],
+  "gaps_found": [],
+  "reasoning": "The two vectors attempted map directly onto the plan's stated scope; the case-sensitivity behavior is explicitly out of scope per the story, so it is not counted as a gap."
+}

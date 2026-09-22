@@ -1,13 +1,13 @@
 ---
-name: 00-issue-register
-description: "Read and validate the Excel vulnerability issue register. Use when listing registered issues, inspecting a parsed issue row, or checking the issue-register column contract."
-argument-hint: "[--full | --issue ISSUE-001]"
+name: 00-jira-story-register
+description: "Read and validate the markdown JIRA story register. Use when listing queued stories, inspecting a parsed story, or checking the story-file contract."
+argument-hint: "[--full | --story JIRA-001]"
 ---
 
-# Issue Register
+# JIRA Story Register
 
-Canonical instructions and zero-dependency scripts are in `.github/skills/00-issue-register/`.
+Canonical instructions and zero-dependency scripts are in `.github/skills/00-jira-story-register/`.
 
-Read `.github/skills/00-issue-register/SKILL.md` before acting. It defines the read-only spreadsheet contract, issue normalization, markdown-body synthesis, and reporting requirements.
+Read `.github/skills/00-jira-story-register/SKILL.md` before acting. It defines the read-only story-file contract, parsing, and lookup helpers.
 
-Run its scripts from that canonical folder. Never write `docs/agent_output/00-issues/issue-register.xlsx` unless the user explicitly asks to add or change an issue.
+Run its scripts from that canonical folder. Never write a `docs/agent_output/00-jira-stories/jira-story-*.md` file unless the user explicitly asks to add or change a story.

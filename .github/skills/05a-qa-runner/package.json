@@ -1,8 +1,8 @@
 {
-  "name": "06a-qa-runner",
+  "name": "05a-qa-runner",
   "version": "1.0.0",
   "private": true,
-  "description": "Drafts one mocked regression test per Compiled or Compile Failed fix, then runs it (and any named existing test) deterministically inside an isolated git worktree. Phase C step 2, first half.",
+  "description": "Drafts one mocked regression test per Compiled or Compile Failed change, then runs it (and any named existing test) deterministically inside an isolated git worktree. Phase C step 2, first half.",
   "type": "commonjs",
   "scripts": {
     "workload": "node scripts/list-qa-workload.js",

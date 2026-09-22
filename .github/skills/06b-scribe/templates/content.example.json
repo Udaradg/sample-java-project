@@ -1,0 +1,14 @@
+{
+  "story_id": "JIRA-002",
+  "audit_narrative": "JIRA-002 reported that duplicate-email validation checked the wrong repository method ([story](../../../docs/agent_output/00-jira-stories/jira-story-002.md)). The story/impact analyst grounded the fix in EmployeeService/EmployeeRepository and mapped one planned change per acceptance criterion ([plan](../../../docs/agent_output/02-story-analysis/plan_JIRA-002.md)), approved by a human. The developer added EmployeeRepository.findByEmail(...) and switched both call sites to it, compiling cleanly ([development](../../../docs/agent_output/03-development/dev_JIRA-002.md)). All three Step 1 checks passed ([acceptance-check](../../../docs/agent_output/04-verify/acceptance_JIRA-002.md), [edge-case review](../../../docs/agent_output/04-verify/edgecase_JIRA-002.md), [behavior guard](../../../docs/agent_output/04-verify/behavior_JIRA-002.md)), the QA gate passed with a new mocked regression test ([qa](../../../docs/agent_output/05-test-gate/qa_JIRA-002.md)), and the build gate passed with no dependency drift ([build](../../../docs/agent_output/05-test-gate/build_JIRA-002.md)). The merge arbiter scored it 100/100 against a 90-point threshold and cleared it ([verdict](../../../docs/agent_output/06-ship/verdict_JIRA-002.md)).",
+  "pr_title": "fix(employee-service): validate duplicate email via findByEmail (JIRA-002)",
+  "pr_summary": [
+    "Adds EmployeeRepository.findByEmail(String) and uses it in createEmployee/updateEmployee's duplicate-email checks, replacing the incorrect findByEmployeeNumber(email) lookup.",
+    "No API, return type, or call-site changes for callers — a genuinely duplicate email now returns the existing 409 Conflict instead of surfacing as an unhandled 500."
+  ],
+  "pr_test_plan": [
+    "New mocked regression test (EmployeeServiceDuplicateEmailTest) verifying createEmployee throws DuplicateEmployeeException when findByEmail returns a match — passed.",
+    "mvn verify — passed, no dependency drift.",
+    "Not run in CI (no embedded database in this environment): the repository-level findByEmail integration test — run manually against a real Postgres before merging if not exercised elsewhere in CI."
+  ]
+}

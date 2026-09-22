@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Developer narrative for one implemented story",
+  "type": "object",
+  "required": ["summary", "acceptanceCriteriaAddressed"],
+  "properties": {
+    "summary": { "type": "string", "minLength": 1 },
+    "acceptanceCriteriaAddressed": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["criterion", "addressed", "howOrWhyNot"],
+        "properties": {
+          "criterion": { "type": "string" },
+          "addressed": { "type": "boolean" },
+          "howOrWhyNot": { "type": "string" }
+        }
+      }
+    },
+    "deviationsFromPlan": { "type": "array", "items": { "type": "string" } },
+    "followUps": { "type": "array", "items": { "type": "string" } }
+  }
+}
