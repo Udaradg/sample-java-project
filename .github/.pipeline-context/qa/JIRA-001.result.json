@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-09-22T04:21:56.027Z",
+  "id": "JIRA-001",
+  "testFile": "src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java",
+  "className": "EmployeeServicePaginationTest",
+  "worktree": ".github/.pipeline-context/qa/worktrees/JIRA-001",
+  "changedFiles": [
+    "src/main/java/com/example/migrationdemo/controller/EmployeeController.java",
+    "src/main/java/com/example/migrationdemo/dto/PageResponse.java",
+    "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java",
+    "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+    "src/main/java/com/example/migrationdemo/service/EmployeeService.java",
+    "src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java"
+  ],
+  "steps": [
+    {
+      "test": "EmployeeServicePaginationTest",
+      "status": "PASS",
+      "exitCode": 0,
+      "output": "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended\r\n"
+    }
+  ],
+  "passed": true,
+  "stage": "complete"
+}

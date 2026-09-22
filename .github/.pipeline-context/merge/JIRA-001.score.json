@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-09-22T04:24:19.669Z",
+  "id": "JIRA-001",
+  "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+  "priority": "High",
+  "threshold": 85,
+  "upstream": {
+    "acceptance": {
+      "present": true,
+      "file": "docs/agent_output/04-verify/acceptance_JIRA-001.md",
+      "verdict": "SATISFIED"
+    },
+    "edgecase": {
+      "present": true,
+      "file": "docs/agent_output/04-verify/edgecase_JIRA-001.md",
+      "verdict": "GAPS_FOUND"
+    },
+    "behavior": {
+      "present": true,
+      "file": "docs/agent_output/04-verify/behavior_JIRA-001.md",
+      "verdict": "BEHAVIOR_PRESERVED"
+    },
+    "qa": {
+      "present": true,
+      "file": "docs/agent_output/05-test-gate/qa_JIRA-001.md",
+      "verdict": "Passed"
+    },
+    "build": {
+      "present": true,
+      "file": "docs/agent_output/05-test-gate/build_JIRA-001.md",
+      "verdict": "Failed"
+    }
+  },
+  "breakdown": {
+    "edgecase": {
+      "verdict": "GAPS_FOUND",
+      "points": 0,
+      "max": 30
+    },
+    "behavior": {
+      "verdict": "BEHAVIOR_PRESERVED",
+      "points": 30,
+      "max": 30
+    },
+    "qa": {
+      "verdict": "Passed",
+      "points": 40,
+      "max": 40
+    }
+  },
+  "score": 70,
+  "gates": [
+    {
+      "gate": "build-gatekeeper",
+      "reason": "Build gate Status is Failed — the change does not build cleanly."
+    }
+  ],
+  "gateBlocked": true,
+  "scoreCleared": false,
+  "computedDecision": "Blocked"
+}

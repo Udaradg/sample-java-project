@@ -1,0 +1,63 @@
+{
+  "story_id": "JIRA-001",
+  "verdict": "GAPS_FOUND",
+  "confidence": "Medium",
+  "plain_summary": "The new filtering/pagination code doesn't crash on bad input, but a few boundary cases behave inconsistently with the rest of the API.",
+  "attempted_vectors": [
+    {
+      "vector": "GET /api/v1/employees?page=-1",
+      "description": "Negative page number. PageRequest.of(-1, size) throws Spring's own IllegalArgumentException before buildPageable returns.",
+      "result": "handled"
+    },
+    {
+      "vector": "GET /api/v1/employees?size=0",
+      "description": "Zero page size. Math.min(0, 100) leaves size at 0; PageRequest.of(page, 0) throws IllegalArgumentException (\"Page size must not be less than one\").",
+      "result": "handled"
+    },
+    {
+      "vector": "GET /api/v1/employees?page=abc or size=abc",
+      "description": "Non-numeric page/size. Spring's argument conversion fails before the controller method body runs, raising a MethodArgumentTypeMismatchException/TypeMismatchException. GlobalExceptionHandler has no explicit handler for that exception type -- it falls through to ResponseEntityExceptionHandler's own built-in handling, which does NOT produce the custom ErrorResponse shape (unlike the sort-validation 400 path or handleIllegalArgument).",
+      "result": "gap"
+    },
+    {
+      "vector": "GET /api/v1/employees?department= (empty string, not absent)",
+      "description": "buildFilterSpecification only treats department as 'no filter' when it is null. An empty-string department is not null, so criteriaBuilder.equal(root.get(\"department\"), \"\") is added as a real predicate, silently returning zero rows instead of the unfiltered listing a caller sending a blank query value would likely expect.",
+      "result": "gap"
+    },
+    {
+      "vector": "GET /api/v1/employees?department=ENGINEERING (case mismatch)",
+      "description": "The new filter uses criteriaBuilder.equal(root.get(\"department\"), department) -- a case-sensitive exact match -- whereas the existing /api/v1/employees/search endpoint (EmployeeRepository.findByDepartmentIgnoreCase) matches case-insensitively. The same logical filter behaves differently depending on which endpoint is used, which the story/plan never calls out.",
+      "result": "gap"
+    },
+    {
+      "vector": "GET /api/v1/employees?active=notaboolean",
+      "description": "Spring's Boolean converter for a non-'true'/'false' string typically coerces to false rather than throwing, so an invalid active value silently becomes an active=false filter instead of surfacing an error.",
+      "result": "uncertain"
+    },
+    {
+      "vector": "GET /api/v1/employees?sort=lastName, (trailing comma, no direction)",
+      "description": "String.split(\",\") drops the trailing empty token, so parts.length == 1, which hits the existing 'Invalid sort parameter' IllegalArgumentException branch and returns 400 via the ErrorResponse shape.",
+      "result": "handled"
+    },
+    {
+      "vector": "GET /api/v1/employees?sort=department,ASC (uppercase direction)",
+      "description": "Sort.Direction.fromString is case-insensitive, so an uppercase direction token still resolves correctly.",
+      "result": "handled"
+    }
+  ],
+  "gaps_found": [
+    {
+      "description": "Non-numeric page/size query values bypass the story's intended 400-with-ErrorResponse contract: the failure is a framework-level type-mismatch exception with no handler in GlobalExceptionHandler, so it returns a differently-shaped error body than the sort-validation 400 path, inconsistent with criterion 2's stated error contract.",
+      "severity": "Medium"
+    },
+    {
+      "description": "An explicitly-supplied empty-string department (?department=) is treated as a real filter value (equals \"\") rather than 'no filter', silently returning an empty page instead of the full listing -- a surprising result for a caller passing a blank/cleared form field.",
+      "severity": "Low"
+    },
+    {
+      "description": "The new department filter on GET /api/v1/employees is case-sensitive, while the pre-existing /api/v1/employees/search endpoint matches department case-insensitively (findByDepartmentIgnoreCase) -- the same field name behaves inconsistently across two endpoints in the same API.",
+      "severity": "Medium"
+    }
+  ],
+  "reasoning": "Vectors were reasoned through against the new buildPageable/buildFilterSpecification code and GlobalExceptionHandler's handler set specifically, not against the story text. Numeric-range and malformed-sort inputs the plan explicitly designed for (negative/zero size, malformed sort strings, case-insensitive direction) are all caught by either Spring's own PageRequest validation or the new handleIllegalArgument handler. However, type-mismatch on page/size, blank-but-present department, and the department case-sensitivity mismatch against the sibling /search endpoint are boundary conditions the plan's approach and out-of-scope list do not address, and none of them is covered by the story's Out of Scope list."
+}

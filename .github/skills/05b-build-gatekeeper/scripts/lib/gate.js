@@ -113,7 +113,10 @@ function removeWorktreeIfPresent(worktreeDir) {
 /** No `mvnw` is committed in this repo — `mvn` must be on PATH. See 03-developer/scripts/lib/developer.js. */
 function runMaven(mvnArgs, options) {
   if (process.platform === 'win32') {
-    const command = ['mvn.cmd', ...mvnArgs].map((a) => `"${a}"`).join(' ');
+    // cmd.exe's /S quote-stripping only preserves a single outer quote pair; per-token quoting here
+    // produces two+ pairs, so /S falls back to stripping just the outermost pair and mis-parses the
+    // rest as one unrecognized token. A single unquoted, space-joined command avoids that.
+    const command = ['mvn.cmd', ...mvnArgs].join(' ');
     return run('cmd.exe', ['/d', '/s', '/c', `"${command}"`], { ...options, windowsVerbatimArguments: true });
   }
   return run('mvn', mvnArgs, options);

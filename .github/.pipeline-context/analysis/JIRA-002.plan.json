@@ -1,0 +1,48 @@
+{
+  "approach": "Add EmployeeRepository.findByEmail(String email) returning Optional<Employee>, analogous to the existing findByEmployeeNumber. In EmployeeService.createEmployee, replace the erroneous employeeRepository.findByEmployeeNumber(request.getEmail()) duplicate-email check with employeeRepository.findByEmail(request.getEmail()), keeping the existing DuplicateEmployeeException(\"email\", ...) throw unchanged. In EmployeeService.updateEmployee, replace the same erroneous call inside the existing 'email actually changed' guard (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) with employeeRepository.findByEmail(request.getEmail()); that guard already prevents a false positive when a caller resubmits the employee's own current email unchanged. The employeeNumber duplicate checks in both methods are left untouched.",
+  "affectedFiles": [
+    "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+    "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+  ],
+  "affectedSymbols": [
+    "EmployeeRepository.findByEmployeeNumber",
+    "EmployeeService.createEmployee",
+    "EmployeeService.updateEmployee"
+  ],
+  "acceptanceCriteriaPlan": [
+    {
+      "criterion": "EmployeeRepository exposes a findByEmail(String email): Optional<Employee>, analogous to findByEmployeeNumber",
+      "change": "Add Optional<Employee> findByEmail(String email); to EmployeeRepository, a Spring Data derived query mirroring the existing findByEmployeeNumber declaration."
+    },
+    {
+      "criterion": "EmployeeService.createEmployee checks findByEmail(...) not findByEmployeeNumber(...), still throws DuplicateEmployeeException(\"email\", ...) on a match",
+      "change": "Replace employeeRepository.findByEmployeeNumber(request.getEmail()) with employeeRepository.findByEmail(request.getEmail()) in the email duplicate check block of createEmployee; the throw new DuplicateEmployeeException(\"email\", request.getEmail()) statement is unchanged."
+    },
+    {
+      "criterion": "EmployeeService.updateEmployee uses the same findByEmail(...) check when the email changes to one used by a different employee, no false positive on the employee's own unchanged email",
+      "change": "Replace employeeRepository.findByEmployeeNumber(request.getEmail()) with employeeRepository.findByEmail(request.getEmail()) inside the existing if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) guard in updateEmployee; the guard itself is unchanged and already skips the lookup when the submitted email equals the current one."
+    },
+    {
+      "criterion": "the existing employee-number duplicate check is untouched",
+      "change": "No changes to the employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()) call sites in createEmployee or updateEmployee."
+    },
+    {
+      "criterion": "creating/updating with a genuinely unique email still succeeds, no regression",
+      "change": "findByEmail(...) returning an empty Optional for a unique email falls through to employeeRepository.save(...) exactly as the (currently broken) check does today for non-matching input, so the success path is unchanged."
+    },
+    {
+      "criterion": "a duplicate-email attempt is rejected with 409 Conflict and the existing ErrorResponse body, never reaching the DB as a raw DataIntegrityViolationException",
+      "change": "Because findByEmail now actually matches an existing row with the same email, DuplicateEmployeeException is thrown before employeeRepository.save(...) is called, so GlobalExceptionHandler.handleDuplicateEmployee (409, existing ErrorResponse) intercepts it before Hibernate's flush can hit the database unique constraint."
+    }
+  ],
+  "risks": [
+    "Story asks for a minimal diff: keep the change scoped to the new EmployeeRepository method and the two EmployeeService call sites, without restructuring surrounding validation logic.",
+    "EmployeeServiceTest likely has fixtures that mock findByEmployeeNumber for the (currently broken) email-duplicate path; those mocks must be updated to stub findByEmail or the existing tests will pass for the wrong reason and mask the fix."
+  ],
+  "testHints": [
+    "Mirror the existing employee-number duplicate unit tests in EmployeeServiceTest for the email path: createEmployee/updateEmployee throw DuplicateEmployeeException when findByEmail returns a present Optional.",
+    "Regression test: updateEmployee called with the employee's own unchanged email does not trigger a false-positive duplicate and still succeeds.",
+    "Regression test: createEmployee/updateEmployee with a genuinely unique email still saves successfully (no regression)."
+  ],
+  "openQuestions": []
+}

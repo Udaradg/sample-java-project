@@ -106,14 +106,11 @@ function worktreeDirFor(id) {
 
 /**
  * Runs Maven against `cwd`. This repo ships no `mvnw` wrapper, so `mvn` must be on PATH.
- * On Windows, `mvn.cmd` cannot be exec'd directly, so it goes through `cmd.exe /d /s /c` with
- * every argument individually quoted (see 05b-build-gatekeeper for the same fix, applied there
- * to the wrapper script instead of the bare command).
+ * On Windows, `mvn.cmd` cannot be exec'd directly, so it goes through the shell.
  */
 function runMaven(mvnArgs, options) {
   if (process.platform === 'win32') {
-    const command = ['mvn.cmd', ...mvnArgs].map((a) => `"${a}"`).join(' ');
-    return run('cmd.exe', ['/d', '/s', '/c', `"${command}"`], { ...options, windowsVerbatimArguments: true });
+    return run('mvn.cmd', mvnArgs, { ...options, shell: true });
   }
   return run('mvn', mvnArgs, options);
 }

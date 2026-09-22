@@ -1,0 +1,105 @@
+diff --git a/src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java b/src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java
+@@ -0,0 +1,99 @@
++package com.example.migrationdemo.service;
++
++import com.example.migrationdemo.dto.EmployeeResponse;
++import com.example.migrationdemo.dto.PageResponse;
++import com.example.migrationdemo.entity.Employee;
++import com.example.migrationdemo.mapper.EmployeeMapper;
++import com.example.migrationdemo.repository.EmployeeRepository;
++import jakarta.persistence.criteria.CriteriaBuilder;
++import jakarta.persistence.criteria.CriteriaQuery;
++import jakarta.persistence.criteria.Path;
++import jakarta.persistence.criteria.Predicate;
++import jakarta.persistence.criteria.Root;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.extension.ExtendWith;
++import org.mockito.ArgumentCaptor;
++import org.mockito.Mock;
++import org.mockito.junit.jupiter.MockitoExtension;
++import org.springframework.data.domain.PageImpl;
++import org.springframework.data.domain.PageRequest;
++import org.springframework.data.domain.Pageable;
++import org.springframework.data.jpa.domain.Specification;
++
++import java.math.BigDecimal;
++import java.util.List;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.eq;
++import static org.mockito.Mockito.*;
++
++@ExtendWith(MockitoExtension.class)
++class EmployeeServicePaginationTest {
++
++    @Mock
++    private EmployeeRepository employeeRepository;
++
++    private EmployeeMapper employeeMapper;
++    private EmployeeService employeeService;
++
++    @BeforeEach
++    void setUp() {
++        employeeMapper = new EmployeeMapper();
++        employeeService = new EmployeeService(employeeRepository, employeeMapper);
++    }
++
++    @SuppressWarnings("unchecked")
++    @Test
++    void testGetAllEmployees_ReturnsPageEnvelopeWithMappedContent() {
++        Employee employee = new Employee(
++                "EMP010",
++                "Jane",
++                "Smith",
++                "jane@example.com",
++                "Technology",
++                new BigDecimal("95000.00"));
++        employee.setId(10L);
++
++        Pageable pageable = PageRequest.of(0, 20);
++        PageImpl<Employee> page = new PageImpl<>(List.of(employee), pageable, 1);
++
++        when(employeeRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
++
++        PageResponse<EmployeeResponse> response = employeeService.getAllEmployees(pageable, null, null);
++
++        assertNotNull(response);
++        assertEquals(1, response.getContent().size());
++        assertEquals("EMP010", response.getContent().get(0).getEmployeeNumber());
++        assertEquals(0, response.getPage());
++        assertEquals(20, response.getSize());
++        assertEquals(1L, response.getTotalElements());
++        assertEquals(1, response.getTotalPages());
++    }
++
++    @SuppressWarnings("unchecked")
++    @Test
++    void testGetAllEmployees_NoFiltersProduceNoOpSpecification() {
++        Pageable pageable = PageRequest.of(0, 20);
++        PageImpl<Employee> page = new PageImpl<>(List.of(), pageable, 0);
++
++        ArgumentCaptor<Specification> specCaptor = ArgumentCaptor.forClass(Specification.class);
++        when(employeeRepository.findAll(specCaptor.capture(), eq(pageable))).thenReturn(page);
++
++        employeeService.getAllEmployees(pageable, null, null);
++
++        Root<Employee> root = mock(Root.class);
++        CriteriaQuery<?> query = mock(CriteriaQuery.class);
++        CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
++        Predicate emptyAnd = mock(Predicate.class);
++        when(criteriaBuilder.and(any(Predicate[].class))).thenReturn(emptyAnd);
++
++        Predicate result = specCaptor.getValue().toPredicate(root, query, criteriaBuilder);
++
++        assertSame(emptyAnd, result);
++        verify(criteriaBuilder, never()).equal(any(Path.class), any());
++        verify(criteriaBuilder).and(new Predicate[0]);
++    }
++
++}

@@ -1,0 +1,55 @@
+{
+  "story": {
+    "present": true,
+    "file": "docs/agent_output/00-jira-stories/jira-story-001.md"
+  },
+  "plan": {
+    "present": true,
+    "file": "docs/agent_output/02-story-analysis/plan_JIRA-001.md",
+    "title": "JIRA-001 — Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "Approved"
+  },
+  "dev": {
+    "present": true,
+    "file": "docs/agent_output/03-development/dev_JIRA-001.md",
+    "title": "JIRA-001 — Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "Compiled"
+  },
+  "acceptance": {
+    "present": true,
+    "file": "docs/agent_output/04-verify/acceptance_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "SATISFIED"
+  },
+  "edgecase": {
+    "present": true,
+    "file": "docs/agent_output/04-verify/edgecase_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "GAPS_FOUND"
+  },
+  "behavior": {
+    "present": true,
+    "file": "docs/agent_output/04-verify/behavior_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "BEHAVIOR_PRESERVED"
+  },
+  "qa": {
+    "present": true,
+    "file": "docs/agent_output/05-test-gate/qa_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "Passed"
+  },
+  "build": {
+    "present": true,
+    "file": "docs/agent_output/05-test-gate/build_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "Failed"
+  },
+  "verdict": {
+    "present": true,
+    "file": "docs/agent_output/06-ship/verdict_JIRA-001.md",
+    "title": "Add pagination, sorting and filtering to the employee listing endpoint",
+    "status": "Blocked"
+  },
+  "devDiffFile": "docs/agent_output/03-development/dev_JIRA-001.diff"
+}

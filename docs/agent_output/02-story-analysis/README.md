@@ -8,4 +8,5 @@ Implementation plans for stories in [`docs/agent_output/00-jira-stories/`](../00
 
 | Story | Title | Status |
 |---|---|---|
+| JIRA-001 | Add pagination, sorting and filtering to the employee listing endpoint | Proposed |
 | JIRA-002 | Fix duplicate-email validation checking the wrong field | Proposed |

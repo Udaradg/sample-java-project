@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-10T11:00:06.470Z",
-  "repoRoot": "D:\\Office Research\\SDLC_Harness\\claude_agents\\sample-java-project",
+  "generatedAt": "2026-09-22T03:57:26.385Z",
+  "repoRoot": "C:\\Projects\\Repos\\GitHub\\migration\\sample-java-project",
   "modules": [
     {
       "name": "spring-boot-migration-demo",
@@ -57,17 +57,17 @@
         {
           "groupId": "org.testcontainers",
           "artifactId": "testcontainers",
-          "version": null
+          "version": "1.20.1"
         },
         {
           "groupId": "org.testcontainers",
           "artifactId": "postgresql",
-          "version": null
+          "version": "1.20.1"
         },
         {
           "groupId": "org.testcontainers",
           "artifactId": "junit-jupiter",
-          "version": null
+          "version": "1.20.1"
         }
       ]
     }
@@ -111,21 +111,6 @@
         "com.example.migrationdemo.dto.EmployeeResponse",
         "com.example.migrationdemo.entity.Employee",
         "org.springframework.stereotype.Component"
-      ]
-    },
-    {
-      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
-      "module": "spring-boot-migration-demo",
-      "package": "com.example.migrationdemo.repository",
-      "imports": [
-        "com.example.migrationdemo.entity.Employee",
-        "org.springframework.data.jpa.repository.JpaRepository",
-        "org.springframework.data.jpa.repository.Query",
-        "org.springframework.data.repository.query.Param",
-        "org.springframework.stereotype.Repository",
-        "java.math.BigDecimal",
-        "java.util.List",
-        "java.util.Optional"
       ]
     },
     {
@@ -192,6 +177,21 @@
       "module": "spring-boot-migration-demo",
       "package": "com.example.migrationdemo.exception",
       "imports": []
+    },
+    {
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.repository",
+      "imports": [
+        "com.example.migrationdemo.entity.Employee",
+        "org.springframework.data.jpa.repository.JpaRepository",
+        "org.springframework.data.jpa.repository.Query",
+        "org.springframework.data.repository.query.Param",
+        "org.springframework.stereotype.Repository",
+        "java.math.BigDecimal",
+        "java.util.List",
+        "java.util.Optional"
+      ]
     },
     {
       "file": "src/main/java/com/example/migrationdemo/entity/Employee.java",
@@ -319,7 +319,7 @@
           ],
           "startLine": 9,
           "endLine": 11,
-          "source": "public static void main(String[] args) {\n        SpringApplication.run(MigrationDemoApplication.class, args);\n    }"
+          "source": "public static void main(String[] args) {\r\n        SpringApplication.run(MigrationDemoApplication.class, args);\r\n    }"
         }
       ]
     },
@@ -370,7 +370,7 @@
           "calls": [],
           "startLine": 24,
           "endLine": 27,
-          "source": "public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {\n        this.employeeRepository = employeeRepository;\n        this.employeeMapper = employeeMapper;\n    }"
+          "source": "public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {\r\n        this.employeeRepository = employeeRepository;\r\n        this.employeeMapper = employeeMapper;\r\n    }"
         },
         {
           "name": "createEmployee",
@@ -446,7 +446,7 @@
           ],
           "startLine": 29,
           "endLine": 44,
-          "source": "@Transactional\n    public EmployeeResponse createEmployee(EmployeeCreateRequest request) {\n        // Check for duplicate employee number\n        if (employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {\n            throw new DuplicateEmployeeException(\"employeeNumber\", request.getEmployeeNumber());\n        }\n\n        // Check for duplicate email\n        if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n            throw new DuplicateEmployeeException(\"email\", request.getEmail());\n        }\n\n        Employee employee = employeeMapper.toEntity(request);\n        Employee savedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(savedEmployee);\n    }"
+          "source": "@Transactional\r\n    public EmployeeResponse createEmployee(EmployeeCreateRequest request) {\r\n        // Check for duplicate employee number\r\n        if (employeeRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {\r\n            throw new DuplicateEmployeeException(\"employeeNumber\", request.getEmployeeNumber());\r\n        }\r\n\r\n        // Check for duplicate email\r\n        if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\r\n            throw new DuplicateEmployeeException(\"email\", request.getEmail());\r\n        }\r\n\r\n        Employee employee = employeeMapper.toEntity(request);\r\n        Employee savedEmployee = employeeRepository.save(employee);\r\n        return employeeMapper.toResponse(savedEmployee);\r\n    }"
         },
         {
           "name": "getAllEmployees",
@@ -489,7 +489,7 @@
           ],
           "startLine": 46,
           "endLine": 52,
-          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> getAllEmployees() {\n        return employeeRepository.findAll()\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+          "source": "@Transactional(readOnly = true)\r\n    public List<EmployeeResponse> getAllEmployees() {\r\n        return employeeRepository.findAll()\r\n                .stream()\r\n                .map(employeeMapper::toResponse)\r\n                .collect(Collectors.toList());\r\n    }"
         },
         {
           "name": "getEmployeeById",
@@ -527,7 +527,7 @@
           ],
           "startLine": 54,
           "endLine": 59,
-          "source": "@Transactional(readOnly = true)\n    public EmployeeResponse getEmployeeById(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        return employeeMapper.toResponse(employee);\n    }"
+          "source": "@Transactional(readOnly = true)\r\n    public EmployeeResponse getEmployeeById(Long id) {\r\n        Employee employee = employeeRepository.findById(id)\r\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\r\n        return employeeMapper.toResponse(employee);\r\n    }"
         },
         {
           "name": "updateEmployee",
@@ -702,7 +702,7 @@
           ],
           "startLine": 61,
           "endLine": 95,
-          "source": "@Transactional\n    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n\n        // Check for duplicate email if email is being updated\n        if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) {\n            if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\n                throw new DuplicateEmployeeException(\"email\", request.getEmail());\n            }\n        }\n\n        // Update fields\n        if (request.getFirstName() != null) {\n            employee.setFirstName(request.getFirstName());\n        }\n        if (request.getLastName() != null) {\n            employee.setLastName(request.getLastName());\n        }\n        if (request.getEmail() != null) {\n            employee.setEmail(request.getEmail());\n        }\n        if (request.getDepartment() != null) {\n            employee.setDepartment(request.getDepartment());\n        }\n        if (request.getSalary() != null) {\n            employee.setSalary(request.getSalary());\n        }\n        if (request.getActive() != null) {\n            employee.setActive(request.getActive());\n        }\n\n        Employee updatedEmployee = employeeRepository.save(employee);\n        return employeeMapper.toResponse(updatedEmployee);\n    }"
+          "source": "@Transactional\r\n    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest request) {\r\n        Employee employee = employeeRepository.findById(id)\r\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\r\n\r\n        // Check for duplicate email if email is being updated\r\n        if (request.getEmail() != null && !request.getEmail().equals(employee.getEmail())) {\r\n            if (employeeRepository.findByEmployeeNumber(request.getEmail()).isPresent()) {\r\n                throw new DuplicateEmployeeException(\"email\", request.getEmail());\r\n            }\r\n        }\r\n\r\n        // Update fields\r\n        if (request.getFirstName() != null) {\r\n            employee.setFirstName(request.getFirstName());\r\n        }\r\n        if (request.getLastName() != null) {\r\n            employee.setLastName(request.getLastName());\r\n        }\r\n        if (request.getEmail() != null) {\r\n            employee.setEmail(request.getEmail());\r\n        }\r\n        if (request.getDepartment() != null) {\r\n            employee.setDepartment(request.getDepartment());\r\n        }\r\n        if (request.getSalary() != null) {\r\n            employee.setSalary(request.getSalary());\r\n        }\r\n        if (request.getActive() != null) {\r\n            employee.setActive(request.getActive());\r\n        }\r\n\r\n        Employee updatedEmployee = employeeRepository.save(employee);\r\n        return employeeMapper.toResponse(updatedEmployee);\r\n    }"
         },
         {
           "name": "deleteEmployee",
@@ -738,7 +738,7 @@
           ],
           "startLine": 97,
           "endLine": 102,
-          "source": "@Transactional\n    public void deleteEmployee(Long id) {\n        Employee employee = employeeRepository.findById(id)\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\n        employeeRepository.delete(employee);\n    }"
+          "source": "@Transactional\r\n    public void deleteEmployee(Long id) {\r\n        Employee employee = employeeRepository.findById(id)\r\n                .orElseThrow(() -> new EmployeeNotFoundException(id));\r\n        employeeRepository.delete(employee);\r\n    }"
         },
         {
           "name": "searchByDepartment",
@@ -786,7 +786,7 @@
           ],
           "startLine": 104,
           "endLine": 110,
-          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> searchByDepartment(String department) {\n        return employeeRepository.findByDepartmentIgnoreCase(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+          "source": "@Transactional(readOnly = true)\r\n    public List<EmployeeResponse> searchByDepartment(String department) {\r\n        return employeeRepository.findByDepartmentIgnoreCase(department)\r\n                .stream()\r\n                .map(employeeMapper::toResponse)\r\n                .collect(Collectors.toList());\r\n    }"
         },
         {
           "name": "findActiveEmployeesByDepartment",
@@ -834,7 +834,7 @@
           ],
           "startLine": 112,
           "endLine": 118,
-          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> findActiveEmployeesByDepartment(String department) {\n        return employeeRepository.findActiveEmployeesByDepartment(department)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+          "source": "@Transactional(readOnly = true)\r\n    public List<EmployeeResponse> findActiveEmployeesByDepartment(String department) {\r\n        return employeeRepository.findActiveEmployeesByDepartment(department)\r\n                .stream()\r\n                .map(employeeMapper::toResponse)\r\n                .collect(Collectors.toList());\r\n    }"
         },
         {
           "name": "findHighEarners",
@@ -882,7 +882,7 @@
           ],
           "startLine": 120,
           "endLine": 126,
-          "source": "@Transactional(readOnly = true)\n    public List<EmployeeResponse> findHighEarners(BigDecimal salary) {\n        return employeeRepository.findHighEarners(salary)\n                .stream()\n                .map(employeeMapper::toResponse)\n                .collect(Collectors.toList());\n    }"
+          "source": "@Transactional(readOnly = true)\r\n    public List<EmployeeResponse> findHighEarners(BigDecimal salary) {\r\n        return employeeRepository.findHighEarners(salary)\r\n                .stream()\r\n                .map(employeeMapper::toResponse)\r\n                .collect(Collectors.toList());\r\n    }"
         }
       ]
     },
@@ -949,7 +949,7 @@
           ],
           "startLine": 11,
           "endLine": 19,
-          "source": "public Employee toEntity(EmployeeCreateRequest request) {\n        return new Employee(\n                request.getEmployeeNumber(),\n                request.getFirstName(),\n                request.getLastName(),\n                request.getEmail(),\n                request.getDepartment(),\n                request.getSalary());\n    }"
+          "source": "public Employee toEntity(EmployeeCreateRequest request) {\r\n        return new Employee(\r\n                request.getEmployeeNumber(),\r\n                request.getFirstName(),\r\n                request.getLastName(),\r\n                request.getEmail(),\r\n                request.getDepartment(),\r\n                request.getSalary());\r\n    }"
         },
         {
           "name": "toResponse",
@@ -1015,7 +1015,7 @@
           ],
           "startLine": 21,
           "endLine": 33,
-          "source": "public EmployeeResponse toResponse(Employee employee) {\n        return new EmployeeResponse(\n                employee.getId(),\n                employee.getEmployeeNumber(),\n                employee.getFirstName(),\n                employee.getLastName(),\n                employee.getEmail(),\n                employee.getDepartment(),\n                employee.getSalary(),\n                employee.getActive(),\n                employee.getCreatedAt(),\n                employee.getUpdatedAt());\n    }"
+          "source": "public EmployeeResponse toResponse(Employee employee) {\r\n        return new EmployeeResponse(\r\n                employee.getId(),\r\n                employee.getEmployeeNumber(),\r\n                employee.getFirstName(),\r\n                employee.getLastName(),\r\n                employee.getEmail(),\r\n                employee.getDepartment(),\r\n                employee.getSalary(),\r\n                employee.getActive(),\r\n                employee.getCreatedAt(),\r\n                employee.getUpdatedAt());\r\n    }"
         },
         {
           "name": "updateEntityFromRequest",
@@ -1125,105 +1125,7 @@
           ],
           "startLine": 35,
           "endLine": 54,
-          "source": "public void updateEntityFromRequest(EmployeeResponse response, Employee employee) {\n        if (response.getFirstName() != null) {\n            employee.setFirstName(response.getFirstName());\n        }\n        if (response.getLastName() != null) {\n            employee.setLastName(response.getLastName());\n        }\n        if (response.getEmail() != null) {\n            employee.setEmail(response.getEmail());\n        }\n        if (response.getDepartment() != null) {\n            employee.setDepartment(response.getDepartment());\n        }\n        if (response.getSalary() != null) {\n            employee.setSalary(response.getSalary());\n        }\n        if (response.getActive() != null) {\n            employee.setActive(response.getActive());\n        }\n    }"
-        }
-      ]
-    },
-    {
-      "id": "com.example.migrationdemo.repository.EmployeeRepository",
-      "name": "EmployeeRepository",
-      "kind": "interface",
-      "module": "spring-boot-migration-demo",
-      "package": "com.example.migrationdemo.repository",
-      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
-      "startLine": 13,
-      "endLine": 47,
-      "annotations": [
-        {
-          "name": "Repository",
-          "args": {}
-        }
-      ],
-      "extends": [],
-      "implements": [
-        "JpaRepository<Employee, Long>"
-      ],
-      "fields": [],
-      "methods": [
-        {
-          "name": "findByEmployeeNumber",
-          "returnType": "Optional<Employee>",
-          "params": [
-            {
-              "type": "String",
-              "name": "employeeNumber"
-            }
-          ],
-          "annotations": [],
-          "calls": [],
-          "startLine": 16,
-          "endLine": 16,
-          "source": "Optional<Employee> findByEmployeeNumber(String employeeNumber);"
-        },
-        {
-          "name": "findByDepartmentIgnoreCase",
-          "returnType": "List<Employee>",
-          "params": [
-            {
-              "type": "String",
-              "name": "department"
-            }
-          ],
-          "annotations": [],
-          "calls": [],
-          "startLine": 18,
-          "endLine": 18,
-          "source": "List<Employee> findByDepartmentIgnoreCase(String department);"
-        },
-        {
-          "name": "findActiveEmployeesByDepartment",
-          "returnType": "List<Employee>",
-          "params": [
-            {
-              "type": "String",
-              "name": "department"
-            }
-          ],
-          "annotations": [
-            {
-              "name": "Query",
-              "args": {
-                "value": "\"\"\n            select e\n            from Employee e\n            where lower(e.department) = lower(:department)\n            and e.active = true\n            \"\""
-              }
-            }
-          ],
-          "calls": [],
-          "startLine": 24,
-          "endLine": 31,
-          "source": "@Query(\"\"\"\n            select e\n            from Employee e\n            where lower(e.department) = lower(:department)\n            and e.active = true\n            \"\"\")\n    List<Employee> findActiveEmployeesByDepartment(\n            @Param(\"department\") String department);"
-        },
-        {
-          "name": "findHighEarners",
-          "returnType": "List<Employee>",
-          "params": [
-            {
-              "type": "BigDecimal",
-              "name": "salary"
-            }
-          ],
-          "annotations": [
-            {
-              "name": "Query",
-              "args": {
-                "value": "\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"",
-                "nativeQuery": "true"
-              }
-            }
-          ],
-          "calls": [],
-          "startLine": 37,
-          "endLine": 45,
-          "source": "@Query(value = \"\"\"\n            select *\n            from employees\n            where salary > :salary\n            and active = true\n            order by salary desc\n            \"\"\", nativeQuery = true)\n    List<Employee> findHighEarners(\n            @Param(\"salary\") BigDecimal salary);"
+          "source": "public void updateEntityFromRequest(EmployeeResponse response, Employee employee) {\r\n        if (response.getFirstName() != null) {\r\n            employee.setFirstName(response.getFirstName());\r\n        }\r\n        if (response.getLastName() != null) {\r\n            employee.setLastName(response.getLastName());\r\n        }\r\n        if (response.getEmail() != null) {\r\n            employee.setEmail(response.getEmail());\r\n        }\r\n        if (response.getDepartment() != null) {\r\n            employee.setDepartment(response.getDepartment());\r\n        }\r\n        if (response.getSalary() != null) {\r\n            employee.setSalary(response.getSalary());\r\n        }\r\n        if (response.getActive() != null) {\r\n            employee.setActive(response.getActive());\r\n        }\r\n    }"
         }
       ]
     },
@@ -1267,7 +1169,7 @@
           "calls": [],
           "startLine": 15,
           "endLine": 17,
-          "source": "public DataInitializer(EmployeeRepository employeeRepository) {\n        this.employeeRepository = employeeRepository;\n    }"
+          "source": "public DataInitializer(EmployeeRepository employeeRepository) {\r\n        this.employeeRepository = employeeRepository;\r\n    }"
         },
         {
           "name": "run",
@@ -1298,7 +1200,7 @@
           ],
           "startLine": 19,
           "endLine": 25,
-          "source": "@Override\n    public void run(String... args) throws Exception {\n        // Only initialize if table is empty\n        if (employeeRepository.count() == 0) {\n            initializeSampleData();\n        }\n    }"
+          "source": "@Override\r\n    public void run(String... args) throws Exception {\r\n        // Only initialize if table is empty\r\n        if (employeeRepository.count() == 0) {\r\n            initializeSampleData();\r\n        }\r\n    }"
         },
         {
           "name": "initializeSampleData",
@@ -1334,7 +1236,7 @@
           ],
           "startLine": 27,
           "endLine": 73,
-          "source": "private void initializeSampleData() {\n        Employee emp1 = new Employee(\n                \"EMP001\",\n                \"John\",\n                \"Smith\",\n                \"john.smith@example.com\",\n                \"Technology\",\n                new BigDecimal(\"95000.00\"));\n\n        Employee emp2 = new Employee(\n                \"EMP002\",\n                \"Sarah\",\n                \"Johnson\",\n                \"sarah.johnson@example.com\",\n                \"Finance\",\n                new BigDecimal(\"85000.00\"));\n\n        Employee emp3 = new Employee(\n                \"EMP003\",\n                \"Michael\",\n                \"Brown\",\n                \"michael.brown@example.com\",\n                \"Technology\",\n                new BigDecimal(\"88000.00\"));\n\n        Employee emp4 = new Employee(\n                \"EMP004\",\n                \"Emily\",\n                \"Davis\",\n                \"emily.davis@example.com\",\n                \"Operations\",\n                new BigDecimal(\"72000.00\"));\n\n        Employee emp5 = new Employee(\n                \"EMP005\",\n                \"James\",\n                \"Wilson\",\n                \"james.wilson@example.com\",\n                \"HR\",\n                new BigDecimal(\"68000.00\"));\n\n        employeeRepository.save(emp1);\n        employeeRepository.save(emp2);\n        employeeRepository.save(emp3);\n        employeeRepository.save(emp4);\n        employeeRepository.save(emp5);\n    }"
+          "source": "private void initializeSampleData() {\r\n        Employee emp1 = new Employee(\r\n                \"EMP001\",\r\n                \"John\",\r\n                \"Smith\",\r\n                \"john.smith@example.com\",\r\n                \"Technology\",\r\n                new BigDecimal(\"95000.00\"));\r\n\r\n        Employee emp2 = new Employee(\r\n                \"EMP002\",\r\n                \"Sarah\",\r\n                \"Johnson\",\r\n                \"sarah.johnson@example.com\",\r\n                \"Finance\",\r\n                new BigDecimal(\"85000.00\"));\r\n\r\n        Employee emp3 = new Employee(\r\n                \"EMP003\",\r\n                \"Michael\",\r\n                \"Brown\",\r\n                \"michael.brown@example.com\",\r\n                \"Technology\",\r\n                new BigDecimal(\"88000.00\"));\r\n\r\n        Employee emp4 = new Employee(\r\n                \"EMP004\",\r\n                \"Emily\",\r\n                \"Davis\",\r\n                \"emily.davis@example.com\",\r\n                \"Operations\",\r\n                new BigDecimal(\"72000.00\"));\r\n\r\n        Employee emp5 = new Employee(\r\n                \"EMP005\",\r\n                \"James\",\r\n                \"Wilson\",\r\n                \"james.wilson@example.com\",\r\n                \"HR\",\r\n                new BigDecimal(\"68000.00\"));\r\n\r\n        employeeRepository.save(emp1);\r\n        employeeRepository.save(emp2);\r\n        employeeRepository.save(emp3);\r\n        employeeRepository.save(emp4);\r\n        employeeRepository.save(emp5);\r\n    }"
         }
       ]
     },
@@ -1380,7 +1282,7 @@
           "calls": [],
           "startLine": 14,
           "endLine": 16,
-          "source": "public DatabaseHealthIndicator(DataSource dataSource) {\n        this.dataSource = dataSource;\n    }"
+          "source": "public DatabaseHealthIndicator(DataSource dataSource) {\r\n        this.dataSource = dataSource;\r\n    }"
         },
         {
           "name": "health",
@@ -1466,7 +1368,7 @@
           ],
           "startLine": 18,
           "endLine": 34,
-          "source": "@Override\n    public Health health() {\n        try (Connection connection = dataSource.getConnection()) {\n            if (connection != null && !connection.isClosed()) {\n                return Health.up()\n                    .withDetail(\"database\", connection.getMetaData().getDatabaseProductName())\n                    .withDetail(\"status\", \"Connected\")\n                    .build();\n            }\n        } catch (Exception e) {\n            return Health.down()\n                    .withDetail(\"status\", \"Connection failed\")\n                    .withException(e)\n                    .build();\n        }\n        return Health.unknown().build();\n    }"
+          "source": "@Override\r\n    public Health health() {\r\n        try (Connection connection = dataSource.getConnection()) {\r\n            if (connection != null && !connection.isClosed()) {\r\n                return Health.up()\r\n                    .withDetail(\"database\", connection.getMetaData().getDatabaseProductName())\r\n                    .withDetail(\"status\", \"Connected\")\r\n                    .build();\r\n            }\r\n        } catch (Exception e) {\r\n            return Health.down()\r\n                    .withDetail(\"status\", \"Connection failed\")\r\n                    .withException(e)\r\n                    .build();\r\n        }\r\n        return Health.unknown().build();\r\n    }"
         }
       ]
     },
@@ -1536,7 +1438,7 @@
           ],
           "startLine": 21,
           "endLine": 31,
-          "source": "@ExceptionHandler(EmployeeNotFoundException.class)\n    public ResponseEntity<ErrorResponse> handleEmployeeNotFound(\n            EmployeeNotFoundException ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.NOT_FOUND.value(),\n                \"Not Found\",\n                ex.getMessage(),\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);\n    }"
+          "source": "@ExceptionHandler(EmployeeNotFoundException.class)\r\n    public ResponseEntity<ErrorResponse> handleEmployeeNotFound(\r\n            EmployeeNotFoundException ex, HttpServletRequest request) {\r\n        ErrorResponse errorResponse = new ErrorResponse(\r\n                LocalDateTime.now(),\r\n                HttpStatus.NOT_FOUND.value(),\r\n                \"Not Found\",\r\n                ex.getMessage(),\r\n                request.getRequestURI());\r\n        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);\r\n    }"
         },
         {
           "name": "handleDuplicateEmployee",
@@ -1583,7 +1485,7 @@
           ],
           "startLine": 33,
           "endLine": 43,
-          "source": "@ExceptionHandler(DuplicateEmployeeException.class)\n    public ResponseEntity<ErrorResponse> handleDuplicateEmployee(\n            DuplicateEmployeeException ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.CONFLICT.value(),\n                \"Conflict\",\n                ex.getMessage(),\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);\n    }"
+          "source": "@ExceptionHandler(DuplicateEmployeeException.class)\r\n    public ResponseEntity<ErrorResponse> handleDuplicateEmployee(\r\n            DuplicateEmployeeException ex, HttpServletRequest request) {\r\n        ErrorResponse errorResponse = new ErrorResponse(\r\n                LocalDateTime.now(),\r\n                HttpStatus.CONFLICT.value(),\r\n                \"Conflict\",\r\n                ex.getMessage(),\r\n                request.getRequestURI());\r\n        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);\r\n    }"
         },
         {
           "name": "handleMethodArgumentNotValid",
@@ -1681,7 +1583,7 @@
           ],
           "startLine": 45,
           "endLine": 66,
-          "source": "@Override\n    protected ResponseEntity<Object> handleMethodArgumentNotValid(\n            MethodArgumentNotValidException ex,\n            HttpHeaders headers,\n            HttpStatusCode status,\n            WebRequest request) {\n        String message = ex.getBindingResult().getFieldErrors()\n                .stream()\n                .map(error -> error.getField() + \": \" + error.getDefaultMessage())\n                .collect(Collectors.joining(\", \"));\n        String path = request instanceof ServletWebRequest servletWebRequest\n                ? servletWebRequest.getRequest().getRequestURI()\n                : \"\";\n\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.BAD_REQUEST.value(),\n                \"Bad Request\",\n                \"Validation failed: \" + message,\n                path);\n        return handleExceptionInternal(ex, errorResponse, headers, status, request);\n    }"
+          "source": "@Override\r\n    protected ResponseEntity<Object> handleMethodArgumentNotValid(\r\n            MethodArgumentNotValidException ex,\r\n            HttpHeaders headers,\r\n            HttpStatusCode status,\r\n            WebRequest request) {\r\n        String message = ex.getBindingResult().getFieldErrors()\r\n                .stream()\r\n                .map(error -> error.getField() + \": \" + error.getDefaultMessage())\r\n                .collect(Collectors.joining(\", \"));\r\n        String path = request instanceof ServletWebRequest servletWebRequest\r\n                ? servletWebRequest.getRequest().getRequestURI()\r\n                : \"\";\r\n\r\n        ErrorResponse errorResponse = new ErrorResponse(\r\n                LocalDateTime.now(),\r\n                HttpStatus.BAD_REQUEST.value(),\r\n                \"Bad Request\",\r\n                \"Validation failed: \" + message,\r\n                path);\r\n        return handleExceptionInternal(ex, errorResponse, headers, status, request);\r\n    }"
         },
         {
           "name": "handleGenericException",
@@ -1723,7 +1625,7 @@
           ],
           "startLine": 68,
           "endLine": 78,
-          "source": "@ExceptionHandler(Exception.class)\n    public ResponseEntity<ErrorResponse> handleGenericException(\n            Exception ex, HttpServletRequest request) {\n        ErrorResponse errorResponse = new ErrorResponse(\n                LocalDateTime.now(),\n                HttpStatus.INTERNAL_SERVER_ERROR.value(),\n                \"Internal Server Error\",\n                \"An unexpected error occurred\",\n                request.getRequestURI());\n        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);\n    }"
+          "source": "@ExceptionHandler(Exception.class)\r\n    public ResponseEntity<ErrorResponse> handleGenericException(\r\n            Exception ex, HttpServletRequest request) {\r\n        ErrorResponse errorResponse = new ErrorResponse(\r\n                LocalDateTime.now(),\r\n                HttpStatus.INTERNAL_SERVER_ERROR.value(),\r\n                \"Internal Server Error\",\r\n                \"An unexpected error occurred\",\r\n                request.getRequestURI());\r\n        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);\r\n    }"
         }
       ]
     },
@@ -1782,7 +1684,7 @@
           "calls": [],
           "startLine": 15,
           "endLine": 16,
-          "source": "public ErrorResponse() {\n    }"
+          "source": "public ErrorResponse() {\r\n    }"
         },
         {
           "name": "ErrorResponse",
@@ -1813,7 +1715,7 @@
           "calls": [],
           "startLine": 18,
           "endLine": 24,
-          "source": "public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path) {\n        this.timestamp = timestamp;\n        this.status = status;\n        this.error = error;\n        this.message = message;\n        this.path = path;\n    }"
+          "source": "public ErrorResponse(LocalDateTime timestamp, int status, String error, String message, String path) {\r\n        this.timestamp = timestamp;\r\n        this.status = status;\r\n        this.error = error;\r\n        this.message = message;\r\n        this.path = path;\r\n    }"
         },
         {
           "name": "getTimestamp",
@@ -1823,7 +1725,7 @@
           "calls": [],
           "startLine": 26,
           "endLine": 28,
-          "source": "public LocalDateTime getTimestamp() {\n        return timestamp;\n    }"
+          "source": "public LocalDateTime getTimestamp() {\r\n        return timestamp;\r\n    }"
         },
         {
           "name": "setTimestamp",
@@ -1838,7 +1740,7 @@
           "calls": [],
           "startLine": 30,
           "endLine": 32,
-          "source": "public void setTimestamp(LocalDateTime timestamp) {\n        this.timestamp = timestamp;\n    }"
+          "source": "public void setTimestamp(LocalDateTime timestamp) {\r\n        this.timestamp = timestamp;\r\n    }"
         },
         {
           "name": "getStatus",
@@ -1848,7 +1750,7 @@
           "calls": [],
           "startLine": 34,
           "endLine": 36,
-          "source": "public int getStatus() {\n        return status;\n    }"
+          "source": "public int getStatus() {\r\n        return status;\r\n    }"
         },
         {
           "name": "setStatus",
@@ -1863,7 +1765,7 @@
           "calls": [],
           "startLine": 38,
           "endLine": 40,
-          "source": "public void setStatus(int status) {\n        this.status = status;\n    }"
+          "source": "public void setStatus(int status) {\r\n        this.status = status;\r\n    }"
         },
         {
           "name": "getError",
@@ -1873,7 +1775,7 @@
           "calls": [],
           "startLine": 42,
           "endLine": 44,
-          "source": "public String getError() {\n        return error;\n    }"
+          "source": "public String getError() {\r\n        return error;\r\n    }"
         },
         {
           "name": "setError",
@@ -1888,7 +1790,7 @@
           "calls": [],
           "startLine": 46,
           "endLine": 48,
-          "source": "public void setError(String error) {\n        this.error = error;\n    }"
+          "source": "public void setError(String error) {\r\n        this.error = error;\r\n    }"
         },
         {
           "name": "getMessage",
@@ -1898,7 +1800,7 @@
           "calls": [],
           "startLine": 50,
           "endLine": 52,
-          "source": "public String getMessage() {\n        return message;\n    }"
+          "source": "public String getMessage() {\r\n        return message;\r\n    }"
         },
         {
           "name": "setMessage",
@@ -1913,7 +1815,7 @@
           "calls": [],
           "startLine": 54,
           "endLine": 56,
-          "source": "public void setMessage(String message) {\n        this.message = message;\n    }"
+          "source": "public void setMessage(String message) {\r\n        this.message = message;\r\n    }"
         },
         {
           "name": "getPath",
@@ -1923,7 +1825,7 @@
           "calls": [],
           "startLine": 58,
           "endLine": 60,
-          "source": "public String getPath() {\n        return path;\n    }"
+          "source": "public String getPath() {\r\n        return path;\r\n    }"
         },
         {
           "name": "setPath",
@@ -1938,7 +1840,7 @@
           "calls": [],
           "startLine": 62,
           "endLine": 64,
-          "source": "public void setPath(String path) {\n        this.path = path;\n    }"
+          "source": "public void setPath(String path) {\r\n        this.path = path;\r\n    }"
         }
       ]
     },
@@ -1971,7 +1873,7 @@
           "calls": [],
           "startLine": 5,
           "endLine": 7,
-          "source": "public EmployeeNotFoundException(Long id) {\n        super(\"Employee with id \" + id + \" was not found\");\n    }"
+          "source": "public EmployeeNotFoundException(Long id) {\r\n        super(\"Employee with id \" + id + \" was not found\");\r\n    }"
         },
         {
           "name": "EmployeeNotFoundException",
@@ -1986,7 +1888,7 @@
           "calls": [],
           "startLine": 9,
           "endLine": 11,
-          "source": "public EmployeeNotFoundException(String message) {\n        super(message);\n    }"
+          "source": "public EmployeeNotFoundException(String message) {\r\n        super(message);\r\n    }"
         }
       ]
     },
@@ -2023,7 +1925,7 @@
           "calls": [],
           "startLine": 5,
           "endLine": 7,
-          "source": "public DuplicateEmployeeException(String field, String value) {\n        super(\"Employee with \" + field + \" '\" + value + \"' already exists\");\n    }"
+          "source": "public DuplicateEmployeeException(String field, String value) {\r\n        super(\"Employee with \" + field + \" '\" + value + \"' already exists\");\r\n    }"
         },
         {
           "name": "DuplicateEmployeeException",
@@ -2038,7 +1940,105 @@
           "calls": [],
           "startLine": 9,
           "endLine": 11,
-          "source": "public DuplicateEmployeeException(String message) {\n        super(message);\n    }"
+          "source": "public DuplicateEmployeeException(String message) {\r\n        super(message);\r\n    }"
+        }
+      ]
+    },
+    {
+      "id": "com.example.migrationdemo.repository.EmployeeRepository",
+      "name": "EmployeeRepository",
+      "kind": "interface",
+      "module": "spring-boot-migration-demo",
+      "package": "com.example.migrationdemo.repository",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java",
+      "startLine": 13,
+      "endLine": 47,
+      "annotations": [
+        {
+          "name": "Repository",
+          "args": {}
+        }
+      ],
+      "extends": [],
+      "implements": [
+        "JpaRepository<Employee, Long>"
+      ],
+      "fields": [],
+      "methods": [
+        {
+          "name": "findByEmployeeNumber",
+          "returnType": "Optional<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "employeeNumber"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 16,
+          "endLine": 16,
+          "source": "Optional<Employee> findByEmployeeNumber(String employeeNumber);"
+        },
+        {
+          "name": "findByDepartmentIgnoreCase",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [],
+          "calls": [],
+          "startLine": 18,
+          "endLine": 18,
+          "source": "List<Employee> findByDepartmentIgnoreCase(String department);"
+        },
+        {
+          "name": "findActiveEmployeesByDepartment",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "String",
+              "name": "department"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Query",
+              "args": {
+                "value": "\"\"\r\n            select e\r\n            from Employee e\r\n            where lower(e.department) = lower(:department)\r\n            and e.active = true\r\n            \"\""
+              }
+            }
+          ],
+          "calls": [],
+          "startLine": 24,
+          "endLine": 31,
+          "source": "@Query(\"\"\"\r\n            select e\r\n            from Employee e\r\n            where lower(e.department) = lower(:department)\r\n            and e.active = true\r\n            \"\"\")\r\n    List<Employee> findActiveEmployeesByDepartment(\r\n            @Param(\"department\") String department);"
+        },
+        {
+          "name": "findHighEarners",
+          "returnType": "List<Employee>",
+          "params": [
+            {
+              "type": "BigDecimal",
+              "name": "salary"
+            }
+          ],
+          "annotations": [
+            {
+              "name": "Query",
+              "args": {
+                "value": "\"\"\r\n            select *\r\n            from employees\r\n            where salary > :salary\r\n            and active = true\r\n            order by salary desc\r\n            \"\"",
+                "nativeQuery": "true"
+              }
+            }
+          ],
+          "calls": [],
+          "startLine": 37,
+          "endLine": 45,
+          "source": "@Query(value = \"\"\"\r\n            select *\r\n            from employees\r\n            where salary > :salary\r\n            and active = true\r\n            order by salary desc\r\n            \"\"\", nativeQuery = true)\r\n    List<Employee> findHighEarners(\r\n            @Param(\"salary\") BigDecimal salary);"
         }
       ]
     },
@@ -2232,7 +2232,7 @@
           "calls": [],
           "startLine": 49,
           "endLine": 50,
-          "source": "public Employee() {\n    }"
+          "source": "public Employee() {\r\n    }"
         },
         {
           "name": "Employee",
@@ -2267,7 +2267,7 @@
           "calls": [],
           "startLine": 52,
           "endLine": 61,
-          "source": "public Employee(String employeeNumber, String firstName, String lastName, String email,\n                    String department, BigDecimal salary) {\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n        this.active = true;\n    }"
+          "source": "public Employee(String employeeNumber, String firstName, String lastName, String email,\r\n                    String department, BigDecimal salary) {\r\n        this.employeeNumber = employeeNumber;\r\n        this.firstName = firstName;\r\n        this.lastName = lastName;\r\n        this.email = email;\r\n        this.department = department;\r\n        this.salary = salary;\r\n        this.active = true;\r\n    }"
         },
         {
           "name": "onCreate",
@@ -2293,7 +2293,7 @@
           ],
           "startLine": 63,
           "endLine": 67,
-          "source": "@PrePersist\n    protected void onCreate() {\n        createdAt = LocalDateTime.now();\n        updatedAt = LocalDateTime.now();\n    }"
+          "source": "@PrePersist\r\n    protected void onCreate() {\r\n        createdAt = LocalDateTime.now();\r\n        updatedAt = LocalDateTime.now();\r\n    }"
         },
         {
           "name": "onUpdate",
@@ -2314,7 +2314,7 @@
           ],
           "startLine": 69,
           "endLine": 72,
-          "source": "@PreUpdate\n    protected void onUpdate() {\n        updatedAt = LocalDateTime.now();\n    }"
+          "source": "@PreUpdate\r\n    protected void onUpdate() {\r\n        updatedAt = LocalDateTime.now();\r\n    }"
         },
         {
           "name": "getId",
@@ -2324,7 +2324,7 @@
           "calls": [],
           "startLine": 75,
           "endLine": 77,
-          "source": "public Long getId() {\n        return id;\n    }"
+          "source": "public Long getId() {\r\n        return id;\r\n    }"
         },
         {
           "name": "setId",
@@ -2339,7 +2339,7 @@
           "calls": [],
           "startLine": 79,
           "endLine": 81,
-          "source": "public void setId(Long id) {\n        this.id = id;\n    }"
+          "source": "public void setId(Long id) {\r\n        this.id = id;\r\n    }"
         },
         {
           "name": "getEmployeeNumber",
@@ -2349,7 +2349,7 @@
           "calls": [],
           "startLine": 83,
           "endLine": 85,
-          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+          "source": "public String getEmployeeNumber() {\r\n        return employeeNumber;\r\n    }"
         },
         {
           "name": "setEmployeeNumber",
@@ -2364,7 +2364,7 @@
           "calls": [],
           "startLine": 87,
           "endLine": 89,
-          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+          "source": "public void setEmployeeNumber(String employeeNumber) {\r\n        this.employeeNumber = employeeNumber;\r\n    }"
         },
         {
           "name": "getFirstName",
@@ -2374,7 +2374,7 @@
           "calls": [],
           "startLine": 91,
           "endLine": 93,
-          "source": "public String getFirstName() {\n        return firstName;\n    }"
+          "source": "public String getFirstName() {\r\n        return firstName;\r\n    }"
         },
         {
           "name": "setFirstName",
@@ -2389,7 +2389,7 @@
           "calls": [],
           "startLine": 95,
           "endLine": 97,
-          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+          "source": "public void setFirstName(String firstName) {\r\n        this.firstName = firstName;\r\n    }"
         },
         {
           "name": "getLastName",
@@ -2399,7 +2399,7 @@
           "calls": [],
           "startLine": 99,
           "endLine": 101,
-          "source": "public String getLastName() {\n        return lastName;\n    }"
+          "source": "public String getLastName() {\r\n        return lastName;\r\n    }"
         },
         {
           "name": "setLastName",
@@ -2414,7 +2414,7 @@
           "calls": [],
           "startLine": 103,
           "endLine": 105,
-          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+          "source": "public void setLastName(String lastName) {\r\n        this.lastName = lastName;\r\n    }"
         },
         {
           "name": "getEmail",
@@ -2424,7 +2424,7 @@
           "calls": [],
           "startLine": 107,
           "endLine": 109,
-          "source": "public String getEmail() {\n        return email;\n    }"
+          "source": "public String getEmail() {\r\n        return email;\r\n    }"
         },
         {
           "name": "setEmail",
@@ -2439,7 +2439,7 @@
           "calls": [],
           "startLine": 111,
           "endLine": 113,
-          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+          "source": "public void setEmail(String email) {\r\n        this.email = email;\r\n    }"
         },
         {
           "name": "getDepartment",
@@ -2449,7 +2449,7 @@
           "calls": [],
           "startLine": 115,
           "endLine": 117,
-          "source": "public String getDepartment() {\n        return department;\n    }"
+          "source": "public String getDepartment() {\r\n        return department;\r\n    }"
         },
         {
           "name": "setDepartment",
@@ -2464,7 +2464,7 @@
           "calls": [],
           "startLine": 119,
           "endLine": 121,
-          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+          "source": "public void setDepartment(String department) {\r\n        this.department = department;\r\n    }"
         },
         {
           "name": "getSalary",
@@ -2474,7 +2474,7 @@
           "calls": [],
           "startLine": 123,
           "endLine": 125,
-          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+          "source": "public BigDecimal getSalary() {\r\n        return salary;\r\n    }"
         },
         {
           "name": "setSalary",
@@ -2489,7 +2489,7 @@
           "calls": [],
           "startLine": 127,
           "endLine": 129,
-          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+          "source": "public void setSalary(BigDecimal salary) {\r\n        this.salary = salary;\r\n    }"
         },
         {
           "name": "getActive",
@@ -2499,7 +2499,7 @@
           "calls": [],
           "startLine": 131,
           "endLine": 133,
-          "source": "public Boolean getActive() {\n        return active;\n    }"
+          "source": "public Boolean getActive() {\r\n        return active;\r\n    }"
         },
         {
           "name": "setActive",
@@ -2514,7 +2514,7 @@
           "calls": [],
           "startLine": 135,
           "endLine": 137,
-          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+          "source": "public void setActive(Boolean active) {\r\n        this.active = active;\r\n    }"
         },
         {
           "name": "getCreatedAt",
@@ -2524,7 +2524,7 @@
           "calls": [],
           "startLine": 139,
           "endLine": 141,
-          "source": "public LocalDateTime getCreatedAt() {\n        return createdAt;\n    }"
+          "source": "public LocalDateTime getCreatedAt() {\r\n        return createdAt;\r\n    }"
         },
         {
           "name": "setCreatedAt",
@@ -2539,7 +2539,7 @@
           "calls": [],
           "startLine": 143,
           "endLine": 145,
-          "source": "public void setCreatedAt(LocalDateTime createdAt) {\n        this.createdAt = createdAt;\n    }"
+          "source": "public void setCreatedAt(LocalDateTime createdAt) {\r\n        this.createdAt = createdAt;\r\n    }"
         },
         {
           "name": "getUpdatedAt",
@@ -2549,7 +2549,7 @@
           "calls": [],
           "startLine": 147,
           "endLine": 149,
-          "source": "public LocalDateTime getUpdatedAt() {\n        return updatedAt;\n    }"
+          "source": "public LocalDateTime getUpdatedAt() {\r\n        return updatedAt;\r\n    }"
         },
         {
           "name": "setUpdatedAt",
@@ -2564,7 +2564,7 @@
           "calls": [],
           "startLine": 151,
           "endLine": 153,
-          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\n        this.updatedAt = updatedAt;\n    }"
+          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\r\n        this.updatedAt = updatedAt;\r\n    }"
         }
       ]
     },
@@ -2635,7 +2635,7 @@
           "calls": [],
           "startLine": 22,
           "endLine": 23,
-          "source": "public EmployeeUpdateRequest() {\n    }"
+          "source": "public EmployeeUpdateRequest() {\r\n    }"
         },
         {
           "name": "getFirstName",
@@ -2645,7 +2645,7 @@
           "calls": [],
           "startLine": 25,
           "endLine": 27,
-          "source": "public String getFirstName() {\n        return firstName;\n    }"
+          "source": "public String getFirstName() {\r\n        return firstName;\r\n    }"
         },
         {
           "name": "setFirstName",
@@ -2660,7 +2660,7 @@
           "calls": [],
           "startLine": 29,
           "endLine": 31,
-          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+          "source": "public void setFirstName(String firstName) {\r\n        this.firstName = firstName;\r\n    }"
         },
         {
           "name": "getLastName",
@@ -2670,7 +2670,7 @@
           "calls": [],
           "startLine": 33,
           "endLine": 35,
-          "source": "public String getLastName() {\n        return lastName;\n    }"
+          "source": "public String getLastName() {\r\n        return lastName;\r\n    }"
         },
         {
           "name": "setLastName",
@@ -2685,7 +2685,7 @@
           "calls": [],
           "startLine": 37,
           "endLine": 39,
-          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+          "source": "public void setLastName(String lastName) {\r\n        this.lastName = lastName;\r\n    }"
         },
         {
           "name": "getEmail",
@@ -2695,7 +2695,7 @@
           "calls": [],
           "startLine": 41,
           "endLine": 43,
-          "source": "public String getEmail() {\n        return email;\n    }"
+          "source": "public String getEmail() {\r\n        return email;\r\n    }"
         },
         {
           "name": "setEmail",
@@ -2710,7 +2710,7 @@
           "calls": [],
           "startLine": 45,
           "endLine": 47,
-          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+          "source": "public void setEmail(String email) {\r\n        this.email = email;\r\n    }"
         },
         {
           "name": "getDepartment",
@@ -2720,7 +2720,7 @@
           "calls": [],
           "startLine": 49,
           "endLine": 51,
-          "source": "public String getDepartment() {\n        return department;\n    }"
+          "source": "public String getDepartment() {\r\n        return department;\r\n    }"
         },
         {
           "name": "setDepartment",
@@ -2735,7 +2735,7 @@
           "calls": [],
           "startLine": 53,
           "endLine": 55,
-          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+          "source": "public void setDepartment(String department) {\r\n        this.department = department;\r\n    }"
         },
         {
           "name": "getSalary",
@@ -2745,7 +2745,7 @@
           "calls": [],
           "startLine": 57,
           "endLine": 59,
-          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+          "source": "public BigDecimal getSalary() {\r\n        return salary;\r\n    }"
         },
         {
           "name": "setSalary",
@@ -2760,7 +2760,7 @@
           "calls": [],
           "startLine": 61,
           "endLine": 63,
-          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+          "source": "public void setSalary(BigDecimal salary) {\r\n        this.salary = salary;\r\n    }"
         },
         {
           "name": "getActive",
@@ -2770,7 +2770,7 @@
           "calls": [],
           "startLine": 65,
           "endLine": 67,
-          "source": "public Boolean getActive() {\n        return active;\n    }"
+          "source": "public Boolean getActive() {\r\n        return active;\r\n    }"
         },
         {
           "name": "setActive",
@@ -2785,7 +2785,7 @@
           "calls": [],
           "startLine": 69,
           "endLine": 71,
-          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+          "source": "public void setActive(Boolean active) {\r\n        this.active = active;\r\n    }"
         }
       ]
     },
@@ -2862,7 +2862,7 @@
           "calls": [],
           "startLine": 19,
           "endLine": 20,
-          "source": "public EmployeeResponse() {\n    }"
+          "source": "public EmployeeResponse() {\r\n    }"
         },
         {
           "name": "EmployeeResponse",
@@ -2913,7 +2913,7 @@
           "calls": [],
           "startLine": 22,
           "endLine": 35,
-          "source": "public EmployeeResponse(Long id, String employeeNumber, String firstName, String lastName,\n            String email, String department, BigDecimal salary, Boolean active,\n            LocalDateTime createdAt, LocalDateTime updatedAt) {\n        this.id = id;\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n        this.active = active;\n        this.createdAt = createdAt;\n        this.updatedAt = updatedAt;\n    }"
+          "source": "public EmployeeResponse(Long id, String employeeNumber, String firstName, String lastName,\r\n            String email, String department, BigDecimal salary, Boolean active,\r\n            LocalDateTime createdAt, LocalDateTime updatedAt) {\r\n        this.id = id;\r\n        this.employeeNumber = employeeNumber;\r\n        this.firstName = firstName;\r\n        this.lastName = lastName;\r\n        this.email = email;\r\n        this.department = department;\r\n        this.salary = salary;\r\n        this.active = active;\r\n        this.createdAt = createdAt;\r\n        this.updatedAt = updatedAt;\r\n    }"
         },
         {
           "name": "getId",
@@ -2923,7 +2923,7 @@
           "calls": [],
           "startLine": 37,
           "endLine": 39,
-          "source": "public Long getId() {\n        return id;\n    }"
+          "source": "public Long getId() {\r\n        return id;\r\n    }"
         },
         {
           "name": "setId",
@@ -2938,7 +2938,7 @@
           "calls": [],
           "startLine": 41,
           "endLine": 43,
-          "source": "public void setId(Long id) {\n        this.id = id;\n    }"
+          "source": "public void setId(Long id) {\r\n        this.id = id;\r\n    }"
         },
         {
           "name": "getEmployeeNumber",
@@ -2948,7 +2948,7 @@
           "calls": [],
           "startLine": 45,
           "endLine": 47,
-          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+          "source": "public String getEmployeeNumber() {\r\n        return employeeNumber;\r\n    }"
         },
         {
           "name": "setEmployeeNumber",
@@ -2963,7 +2963,7 @@
           "calls": [],
           "startLine": 49,
           "endLine": 51,
-          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+          "source": "public void setEmployeeNumber(String employeeNumber) {\r\n        this.employeeNumber = employeeNumber;\r\n    }"
         },
         {
           "name": "getFirstName",
@@ -2973,7 +2973,7 @@
           "calls": [],
           "startLine": 53,
           "endLine": 55,
-          "source": "public String getFirstName() {\n        return firstName;\n    }"
+          "source": "public String getFirstName() {\r\n        return firstName;\r\n    }"
         },
         {
           "name": "setFirstName",
@@ -2988,7 +2988,7 @@
           "calls": [],
           "startLine": 57,
           "endLine": 59,
-          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+          "source": "public void setFirstName(String firstName) {\r\n        this.firstName = firstName;\r\n    }"
         },
         {
           "name": "getLastName",
@@ -2998,7 +2998,7 @@
           "calls": [],
           "startLine": 61,
           "endLine": 63,
-          "source": "public String getLastName() {\n        return lastName;\n    }"
+          "source": "public String getLastName() {\r\n        return lastName;\r\n    }"
         },
         {
           "name": "setLastName",
@@ -3013,7 +3013,7 @@
           "calls": [],
           "startLine": 65,
           "endLine": 67,
-          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+          "source": "public void setLastName(String lastName) {\r\n        this.lastName = lastName;\r\n    }"
         },
         {
           "name": "getEmail",
@@ -3023,7 +3023,7 @@
           "calls": [],
           "startLine": 69,
           "endLine": 71,
-          "source": "public String getEmail() {\n        return email;\n    }"
+          "source": "public String getEmail() {\r\n        return email;\r\n    }"
         },
         {
           "name": "setEmail",
@@ -3038,7 +3038,7 @@
           "calls": [],
           "startLine": 73,
           "endLine": 75,
-          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+          "source": "public void setEmail(String email) {\r\n        this.email = email;\r\n    }"
         },
         {
           "name": "getDepartment",
@@ -3048,7 +3048,7 @@
           "calls": [],
           "startLine": 77,
           "endLine": 79,
-          "source": "public String getDepartment() {\n        return department;\n    }"
+          "source": "public String getDepartment() {\r\n        return department;\r\n    }"
         },
         {
           "name": "setDepartment",
@@ -3063,7 +3063,7 @@
           "calls": [],
           "startLine": 81,
           "endLine": 83,
-          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+          "source": "public void setDepartment(String department) {\r\n        this.department = department;\r\n    }"
         },
         {
           "name": "getSalary",
@@ -3073,7 +3073,7 @@
           "calls": [],
           "startLine": 85,
           "endLine": 87,
-          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+          "source": "public BigDecimal getSalary() {\r\n        return salary;\r\n    }"
         },
         {
           "name": "setSalary",
@@ -3088,7 +3088,7 @@
           "calls": [],
           "startLine": 89,
           "endLine": 91,
-          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+          "source": "public void setSalary(BigDecimal salary) {\r\n        this.salary = salary;\r\n    }"
         },
         {
           "name": "getActive",
@@ -3098,7 +3098,7 @@
           "calls": [],
           "startLine": 93,
           "endLine": 95,
-          "source": "public Boolean getActive() {\n        return active;\n    }"
+          "source": "public Boolean getActive() {\r\n        return active;\r\n    }"
         },
         {
           "name": "setActive",
@@ -3113,7 +3113,7 @@
           "calls": [],
           "startLine": 97,
           "endLine": 99,
-          "source": "public void setActive(Boolean active) {\n        this.active = active;\n    }"
+          "source": "public void setActive(Boolean active) {\r\n        this.active = active;\r\n    }"
         },
         {
           "name": "getCreatedAt",
@@ -3123,7 +3123,7 @@
           "calls": [],
           "startLine": 101,
           "endLine": 103,
-          "source": "public LocalDateTime getCreatedAt() {\n        return createdAt;\n    }"
+          "source": "public LocalDateTime getCreatedAt() {\r\n        return createdAt;\r\n    }"
         },
         {
           "name": "setCreatedAt",
@@ -3138,7 +3138,7 @@
           "calls": [],
           "startLine": 105,
           "endLine": 107,
-          "source": "public void setCreatedAt(LocalDateTime createdAt) {\n        this.createdAt = createdAt;\n    }"
+          "source": "public void setCreatedAt(LocalDateTime createdAt) {\r\n        this.createdAt = createdAt;\r\n    }"
         },
         {
           "name": "getUpdatedAt",
@@ -3148,7 +3148,7 @@
           "calls": [],
           "startLine": 109,
           "endLine": 111,
-          "source": "public LocalDateTime getUpdatedAt() {\n        return updatedAt;\n    }"
+          "source": "public LocalDateTime getUpdatedAt() {\r\n        return updatedAt;\r\n    }"
         },
         {
           "name": "setUpdatedAt",
@@ -3163,7 +3163,7 @@
           "calls": [],
           "startLine": 113,
           "endLine": 115,
-          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\n        this.updatedAt = updatedAt;\n    }"
+          "source": "public void setUpdatedAt(LocalDateTime updatedAt) {\r\n        this.updatedAt = updatedAt;\r\n    }"
         }
       ]
     },
@@ -3261,7 +3261,7 @@
           "calls": [],
           "startLine": 26,
           "endLine": 27,
-          "source": "public EmployeeCreateRequest() {\n    }"
+          "source": "public EmployeeCreateRequest() {\r\n    }"
         },
         {
           "name": "EmployeeCreateRequest",
@@ -3296,7 +3296,7 @@
           "calls": [],
           "startLine": 29,
           "endLine": 37,
-          "source": "public EmployeeCreateRequest(String employeeNumber, String firstName, String lastName,\n            String email, String department, BigDecimal salary) {\n        this.employeeNumber = employeeNumber;\n        this.firstName = firstName;\n        this.lastName = lastName;\n        this.email = email;\n        this.department = department;\n        this.salary = salary;\n    }"
+          "source": "public EmployeeCreateRequest(String employeeNumber, String firstName, String lastName,\r\n            String email, String department, BigDecimal salary) {\r\n        this.employeeNumber = employeeNumber;\r\n        this.firstName = firstName;\r\n        this.lastName = lastName;\r\n        this.email = email;\r\n        this.department = department;\r\n        this.salary = salary;\r\n    }"
         },
         {
           "name": "getEmployeeNumber",
@@ -3306,7 +3306,7 @@
           "calls": [],
           "startLine": 39,
           "endLine": 41,
-          "source": "public String getEmployeeNumber() {\n        return employeeNumber;\n    }"
+          "source": "public String getEmployeeNumber() {\r\n        return employeeNumber;\r\n    }"
         },
         {
           "name": "setEmployeeNumber",
@@ -3321,7 +3321,7 @@
           "calls": [],
           "startLine": 43,
           "endLine": 45,
-          "source": "public void setEmployeeNumber(String employeeNumber) {\n        this.employeeNumber = employeeNumber;\n    }"
+          "source": "public void setEmployeeNumber(String employeeNumber) {\r\n        this.employeeNumber = employeeNumber;\r\n    }"
         },
         {
           "name": "getFirstName",
@@ -3331,7 +3331,7 @@
           "calls": [],
           "startLine": 47,
           "endLine": 49,
-          "source": "public String getFirstName() {\n        return firstName;\n    }"
+          "source": "public String getFirstName() {\r\n        return firstName;\r\n    }"
         },
         {
           "name": "setFirstName",
@@ -3346,7 +3346,7 @@
           "calls": [],
           "startLine": 51,
           "endLine": 53,
-          "source": "public void setFirstName(String firstName) {\n        this.firstName = firstName;\n    }"
+          "source": "public void setFirstName(String firstName) {\r\n        this.firstName = firstName;\r\n    }"
         },
         {
           "name": "getLastName",
@@ -3356,7 +3356,7 @@
           "calls": [],
           "startLine": 55,
           "endLine": 57,
-          "source": "public String getLastName() {\n        return lastName;\n    }"
+          "source": "public String getLastName() {\r\n        return lastName;\r\n    }"
         },
         {
           "name": "setLastName",
@@ -3371,7 +3371,7 @@
           "calls": [],
           "startLine": 59,
           "endLine": 61,
-          "source": "public void setLastName(String lastName) {\n        this.lastName = lastName;\n    }"
+          "source": "public void setLastName(String lastName) {\r\n        this.lastName = lastName;\r\n    }"
         },
         {
           "name": "getEmail",
@@ -3381,7 +3381,7 @@
           "calls": [],
           "startLine": 63,
           "endLine": 65,
-          "source": "public String getEmail() {\n        return email;\n    }"
+          "source": "public String getEmail() {\r\n        return email;\r\n    }"
         },
         {
           "name": "setEmail",
@@ -3396,7 +3396,7 @@
           "calls": [],
           "startLine": 67,
           "endLine": 69,
-          "source": "public void setEmail(String email) {\n        this.email = email;\n    }"
+          "source": "public void setEmail(String email) {\r\n        this.email = email;\r\n    }"
         },
         {
           "name": "getDepartment",
@@ -3406,7 +3406,7 @@
           "calls": [],
           "startLine": 71,
           "endLine": 73,
-          "source": "public String getDepartment() {\n        return department;\n    }"
+          "source": "public String getDepartment() {\r\n        return department;\r\n    }"
         },
         {
           "name": "setDepartment",
@@ -3421,7 +3421,7 @@
           "calls": [],
           "startLine": 75,
           "endLine": 77,
-          "source": "public void setDepartment(String department) {\n        this.department = department;\n    }"
+          "source": "public void setDepartment(String department) {\r\n        this.department = department;\r\n    }"
         },
         {
           "name": "getSalary",
@@ -3431,7 +3431,7 @@
           "calls": [],
           "startLine": 79,
           "endLine": 81,
-          "source": "public BigDecimal getSalary() {\n        return salary;\n    }"
+          "source": "public BigDecimal getSalary() {\r\n        return salary;\r\n    }"
         },
         {
           "name": "setSalary",
@@ -3446,7 +3446,7 @@
           "calls": [],
           "startLine": 83,
           "endLine": 85,
-          "source": "public void setSalary(BigDecimal salary) {\n        this.salary = salary;\n    }"
+          "source": "public void setSalary(BigDecimal salary) {\r\n        this.salary = salary;\r\n    }"
         }
       ]
     },
@@ -3494,7 +3494,7 @@
           "calls": [],
           "startLine": 21,
           "endLine": 23,
-          "source": "public EmployeeController(EmployeeService employeeService) {\n        this.employeeService = employeeService;\n    }"
+          "source": "public EmployeeController(EmployeeService employeeService) {\r\n        this.employeeService = employeeService;\r\n    }"
         },
         {
           "name": "createEmployee",
@@ -3520,7 +3520,7 @@
           ],
           "startLine": 25,
           "endLine": 29,
-          "source": "@PostMapping\n    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {\n        EmployeeResponse response = employeeService.createEmployee(request);\n        return new ResponseEntity<>(response, HttpStatus.CREATED);\n    }"
+          "source": "@PostMapping\r\n    public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {\r\n        EmployeeResponse response = employeeService.createEmployee(request);\r\n        return new ResponseEntity<>(response, HttpStatus.CREATED);\r\n    }"
         },
         {
           "name": "getAllEmployees",
@@ -3546,7 +3546,7 @@
           ],
           "startLine": 31,
           "endLine": 35,
-          "source": "@GetMapping\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\n        return ResponseEntity.ok(employees);\n    }"
+          "source": "@GetMapping\r\n    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {\r\n        List<EmployeeResponse> employees = employeeService.getAllEmployees();\r\n        return ResponseEntity.ok(employees);\r\n    }"
         },
         {
           "name": "getEmployeeById",
@@ -3579,7 +3579,7 @@
           ],
           "startLine": 37,
           "endLine": 41,
-          "source": "@GetMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {\n        EmployeeResponse employee = employeeService.getEmployeeById(id);\n        return ResponseEntity.ok(employee);\n    }"
+          "source": "@GetMapping(\"/{id}\")\r\n    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {\r\n        EmployeeResponse employee = employeeService.getEmployeeById(id);\r\n        return ResponseEntity.ok(employee);\r\n    }"
         },
         {
           "name": "updateEmployee",
@@ -3616,7 +3616,7 @@
           ],
           "startLine": 43,
           "endLine": 49,
-          "source": "@PutMapping(\"/{id}\")\n    public ResponseEntity<EmployeeResponse> updateEmployee(\n            @PathVariable Long id,\n            @Valid @RequestBody EmployeeUpdateRequest request) {\n        EmployeeResponse response = employeeService.updateEmployee(id, request);\n        return ResponseEntity.ok(response);\n    }"
+          "source": "@PutMapping(\"/{id}\")\r\n    public ResponseEntity<EmployeeResponse> updateEmployee(\r\n            @PathVariable Long id,\r\n            @Valid @RequestBody EmployeeUpdateRequest request) {\r\n        EmployeeResponse response = employeeService.updateEmployee(id, request);\r\n        return ResponseEntity.ok(response);\r\n    }"
         },
         {
           "name": "deleteEmployee",
@@ -3654,7 +3654,7 @@
           ],
           "startLine": 51,
           "endLine": 55,
-          "source": "@DeleteMapping(\"/{id}\")\n    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {\n        employeeService.deleteEmployee(id);\n        return ResponseEntity.noContent().build();\n    }"
+          "source": "@DeleteMapping(\"/{id}\")\r\n    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {\r\n        employeeService.deleteEmployee(id);\r\n        return ResponseEntity.noContent().build();\r\n    }"
         },
         {
           "name": "searchByDepartment",
@@ -3687,7 +3687,7 @@
           ],
           "startLine": 57,
           "endLine": 62,
-          "source": "@GetMapping(\"/search\")\n    public ResponseEntity<List<EmployeeResponse>> searchByDepartment(\n            @RequestParam String department) {\n        List<EmployeeResponse> employees = employeeService.searchByDepartment(department);\n        return ResponseEntity.ok(employees);\n    }"
+          "source": "@GetMapping(\"/search\")\r\n    public ResponseEntity<List<EmployeeResponse>> searchByDepartment(\r\n            @RequestParam String department) {\r\n        List<EmployeeResponse> employees = employeeService.searchByDepartment(department);\r\n        return ResponseEntity.ok(employees);\r\n    }"
         },
         {
           "name": "getHighEarners",
@@ -3720,7 +3720,7 @@
           ],
           "startLine": 64,
           "endLine": 69,
-          "source": "@GetMapping(\"/high-earners\")\n    public ResponseEntity<List<EmployeeResponse>> getHighEarners(\n            @RequestParam BigDecimal salary) {\n        List<EmployeeResponse> employees = employeeService.findHighEarners(salary);\n        return ResponseEntity.ok(employees);\n    }"
+          "source": "@GetMapping(\"/high-earners\")\r\n    public ResponseEntity<List<EmployeeResponse>> getHighEarners(\r\n            @RequestParam BigDecimal salary) {\r\n        List<EmployeeResponse> employees = employeeService.findHighEarners(salary);\r\n        return ResponseEntity.ok(employees);\r\n    }"
         }
       ]
     },
@@ -3836,7 +3836,7 @@
           ],
           "startLine": 28,
           "endLine": 40,
-          "source": "@Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless REST API demo\n                .authorizeHttpRequests(auth -> auth\n                        .requestMatchers(\"/actuator/health\").permitAll()\n                        .requestMatchers(\"/actuator/info\").permitAll()\n                        .requestMatchers(\"/api/**\").authenticated()\n                        .anyRequest().permitAll())\n                .httpBasic(Customizer.withDefaults()); // Enable HTTP Basic authentication\n\n        return http.build();\n    }"
+          "source": "@Bean\r\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\r\n        http\r\n                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless REST API demo\r\n                .authorizeHttpRequests(auth -> auth\r\n                        .requestMatchers(\"/actuator/health\").permitAll()\r\n                        .requestMatchers(\"/actuator/info\").permitAll()\r\n                        .requestMatchers(\"/api/**\").authenticated()\r\n                        .anyRequest().permitAll())\r\n                .httpBasic(Customizer.withDefaults()); // Enable HTTP Basic authentication\r\n\r\n        return http.build();\r\n    }"
         },
         {
           "name": "userDetailsService",
@@ -3887,7 +3887,7 @@
           ],
           "startLine": 42,
           "endLine": 51,
-          "source": "@Bean\n    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {\n        UserDetails demoUser = User.builder()\n                .username(\"demo\")\n                .password(passwordEncoder.encode(\"demo123\"))\n                .roles(\"USER\")\n                .build();\n\n        return new InMemoryUserDetailsManager(demoUser);\n    }"
+          "source": "@Bean\r\n    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {\r\n        UserDetails demoUser = User.builder()\r\n                .username(\"demo\")\r\n                .password(passwordEncoder.encode(\"demo123\"))\r\n                .roles(\"USER\")\r\n                .build();\r\n\r\n        return new InMemoryUserDetailsManager(demoUser);\r\n    }"
         },
         {
           "name": "passwordEncoder",
@@ -3902,7 +3902,7 @@
           "calls": [],
           "startLine": 53,
           "endLine": 56,
-          "source": "@Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }"
+          "source": "@Bean\r\n    public PasswordEncoder passwordEncoder() {\r\n        return new BCryptPasswordEncoder();\r\n    }"
         }
       ]
     },
@@ -3959,7 +3959,7 @@
           ],
           "startLine": 21,
           "endLine": 39,
-          "source": "@Bean\n    public ObjectMapper objectMapper() {\n        ObjectMapper mapper = new ObjectMapper();\n\n        // Support LocalDateTime serialization\n        mapper.registerModule(new JavaTimeModule());\n\n        // Use ISO 8601 date/time formatting\n        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);\n\n        // Do not serialize null values\n        mapper.setDefaultPropertyInclusion(\n                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);\n\n        // Disable pretty printing for production\n        mapper.disable(SerializationFeature.INDENT_OUTPUT);\n\n        return mapper;\n    }"
+          "source": "@Bean\r\n    public ObjectMapper objectMapper() {\r\n        ObjectMapper mapper = new ObjectMapper();\r\n\r\n        // Support LocalDateTime serialization\r\n        mapper.registerModule(new JavaTimeModule());\r\n\r\n        // Use ISO 8601 date/time formatting\r\n        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);\r\n\r\n        // Do not serialize null values\r\n        mapper.setDefaultPropertyInclusion(\r\n                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);\r\n\r\n        // Disable pretty printing for production\r\n        mapper.disable(SerializationFeature.INDENT_OUTPUT);\r\n\r\n        return mapper;\r\n    }"
         }
       ]
     }

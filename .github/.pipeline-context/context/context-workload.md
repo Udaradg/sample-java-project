@@ -1,6 +1,6 @@
 # Context Weaver — Authoring Brief
 
-_Generated 2026-09-10T11:00:06.610Z from a scan taken 2026-09-10T11:00:06.470Z._
+_Generated 2026-09-22T03:57:52.504Z from a scan taken 2026-09-22T03:57:26.385Z._
 
 **0 node(s) need a description** — .
 Reusable from the previous run: 39. Selection thresholds: type ≥ 3, method ≥ 3.

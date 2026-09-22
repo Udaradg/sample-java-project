@@ -1,0 +1,2421 @@
+{
+  "generatedAt": "2026-09-22T03:59:38.208Z",
+  "id": "JIRA-002",
+  "title": "Fix duplicate-email validation checking the wrong field",
+  "storyFile": "docs/agent_output/00-jira-stories/jira-story-002.md",
+  "keywords": [
+    "employee",
+    "service",
+    "EmployeeService",
+    "EmployeeRepository",
+    "`data-integrity`",
+    "`validation`",
+    "`bug`"
+  ],
+  "artifactsAvailable": true,
+  "contextAvailable": true,
+  "relatedArtifacts": [
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.service.EmployeeService",
+      "name": "EmployeeService",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.EmployeeService",
+      "name": "EmployeeService.EmployeeService",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.createEmployee",
+      "name": "EmployeeService.createEmployee",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.getAllEmployees",
+      "name": "EmployeeService.getAllEmployees",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.getEmployeeById",
+      "name": "EmployeeService.getEmployeeById",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.updateEmployee",
+      "name": "EmployeeService.updateEmployee",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.deleteEmployee",
+      "name": "EmployeeService.deleteEmployee",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.searchByDepartment",
+      "name": "EmployeeService.searchByDepartment",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.findActiveEmployeesByDepartment",
+      "name": "EmployeeService.findActiveEmployeesByDepartment",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeService.findHighEarners",
+      "name": "EmployeeService.findHighEarners",
+      "file": "src/main/java/com/example/migrationdemo/service/EmployeeService.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.mapper.EmployeeMapper",
+      "name": "EmployeeMapper",
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeMapper.toEntity",
+      "name": "EmployeeMapper.toEntity",
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeMapper.toResponse",
+      "name": "EmployeeMapper.toResponse",
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeMapper.updateEntityFromRequest",
+      "name": "EmployeeMapper.updateEntityFromRequest",
+      "file": "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java"
+    },
+    {
+      "kind": "method",
+      "id": "GlobalExceptionHandler.handleEmployeeNotFound",
+      "name": "GlobalExceptionHandler.handleEmployeeNotFound",
+      "file": "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java"
+    },
+    {
+      "kind": "method",
+      "id": "GlobalExceptionHandler.handleDuplicateEmployee",
+      "name": "GlobalExceptionHandler.handleDuplicateEmployee",
+      "file": "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.exception.EmployeeNotFoundException",
+      "name": "EmployeeNotFoundException",
+      "file": "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeNotFoundException.EmployeeNotFoundException",
+      "name": "EmployeeNotFoundException.EmployeeNotFoundException",
+      "file": "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeNotFoundException.EmployeeNotFoundException",
+      "name": "EmployeeNotFoundException.EmployeeNotFoundException",
+      "file": "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.exception.DuplicateEmployeeException",
+      "name": "DuplicateEmployeeException",
+      "file": "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java"
+    },
+    {
+      "kind": "method",
+      "id": "DuplicateEmployeeException.DuplicateEmployeeException",
+      "name": "DuplicateEmployeeException.DuplicateEmployeeException",
+      "file": "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java"
+    },
+    {
+      "kind": "method",
+      "id": "DuplicateEmployeeException.DuplicateEmployeeException",
+      "name": "DuplicateEmployeeException.DuplicateEmployeeException",
+      "file": "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java"
+    },
+    {
+      "kind": "interface",
+      "id": "com.example.migrationdemo.repository.EmployeeRepository",
+      "name": "EmployeeRepository",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeRepository.findByEmployeeNumber",
+      "name": "EmployeeRepository.findByEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeRepository.findByDepartmentIgnoreCase",
+      "name": "EmployeeRepository.findByDepartmentIgnoreCase",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeRepository.findActiveEmployeesByDepartment",
+      "name": "EmployeeRepository.findActiveEmployeesByDepartment",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeRepository.findHighEarners",
+      "name": "EmployeeRepository.findHighEarners",
+      "file": "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.entity.Employee",
+      "name": "Employee",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.Employee",
+      "name": "Employee.Employee",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.Employee",
+      "name": "Employee.Employee",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.onCreate",
+      "name": "Employee.onCreate",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.onUpdate",
+      "name": "Employee.onUpdate",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getId",
+      "name": "Employee.getId",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setId",
+      "name": "Employee.setId",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getEmployeeNumber",
+      "name": "Employee.getEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setEmployeeNumber",
+      "name": "Employee.setEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getFirstName",
+      "name": "Employee.getFirstName",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setFirstName",
+      "name": "Employee.setFirstName",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getLastName",
+      "name": "Employee.getLastName",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setLastName",
+      "name": "Employee.setLastName",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getEmail",
+      "name": "Employee.getEmail",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setEmail",
+      "name": "Employee.setEmail",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getDepartment",
+      "name": "Employee.getDepartment",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setDepartment",
+      "name": "Employee.setDepartment",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getSalary",
+      "name": "Employee.getSalary",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setSalary",
+      "name": "Employee.setSalary",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getActive",
+      "name": "Employee.getActive",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setActive",
+      "name": "Employee.setActive",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getCreatedAt",
+      "name": "Employee.getCreatedAt",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setCreatedAt",
+      "name": "Employee.setCreatedAt",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.getUpdatedAt",
+      "name": "Employee.getUpdatedAt",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "method",
+      "id": "Employee.setUpdatedAt",
+      "name": "Employee.setUpdatedAt",
+      "file": "src/main/java/com/example/migrationdemo/entity/Employee.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.dto.EmployeeUpdateRequest",
+      "name": "EmployeeUpdateRequest",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.EmployeeUpdateRequest",
+      "name": "EmployeeUpdateRequest.EmployeeUpdateRequest",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getFirstName",
+      "name": "EmployeeUpdateRequest.getFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setFirstName",
+      "name": "EmployeeUpdateRequest.setFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getLastName",
+      "name": "EmployeeUpdateRequest.getLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setLastName",
+      "name": "EmployeeUpdateRequest.setLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getEmail",
+      "name": "EmployeeUpdateRequest.getEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setEmail",
+      "name": "EmployeeUpdateRequest.setEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getDepartment",
+      "name": "EmployeeUpdateRequest.getDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setDepartment",
+      "name": "EmployeeUpdateRequest.setDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getSalary",
+      "name": "EmployeeUpdateRequest.getSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setSalary",
+      "name": "EmployeeUpdateRequest.setSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.getActive",
+      "name": "EmployeeUpdateRequest.getActive",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeUpdateRequest.setActive",
+      "name": "EmployeeUpdateRequest.setActive",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.dto.EmployeeResponse",
+      "name": "EmployeeResponse",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.EmployeeResponse",
+      "name": "EmployeeResponse.EmployeeResponse",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.EmployeeResponse",
+      "name": "EmployeeResponse.EmployeeResponse",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getId",
+      "name": "EmployeeResponse.getId",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setId",
+      "name": "EmployeeResponse.setId",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getEmployeeNumber",
+      "name": "EmployeeResponse.getEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setEmployeeNumber",
+      "name": "EmployeeResponse.setEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getFirstName",
+      "name": "EmployeeResponse.getFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setFirstName",
+      "name": "EmployeeResponse.setFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getLastName",
+      "name": "EmployeeResponse.getLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setLastName",
+      "name": "EmployeeResponse.setLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getEmail",
+      "name": "EmployeeResponse.getEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setEmail",
+      "name": "EmployeeResponse.setEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getDepartment",
+      "name": "EmployeeResponse.getDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setDepartment",
+      "name": "EmployeeResponse.setDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getSalary",
+      "name": "EmployeeResponse.getSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setSalary",
+      "name": "EmployeeResponse.setSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getActive",
+      "name": "EmployeeResponse.getActive",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setActive",
+      "name": "EmployeeResponse.setActive",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getCreatedAt",
+      "name": "EmployeeResponse.getCreatedAt",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setCreatedAt",
+      "name": "EmployeeResponse.setCreatedAt",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.getUpdatedAt",
+      "name": "EmployeeResponse.getUpdatedAt",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeResponse.setUpdatedAt",
+      "name": "EmployeeResponse.setUpdatedAt",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeResponse.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.dto.EmployeeCreateRequest",
+      "name": "EmployeeCreateRequest",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.EmployeeCreateRequest",
+      "name": "EmployeeCreateRequest.EmployeeCreateRequest",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.EmployeeCreateRequest",
+      "name": "EmployeeCreateRequest.EmployeeCreateRequest",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getEmployeeNumber",
+      "name": "EmployeeCreateRequest.getEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setEmployeeNumber",
+      "name": "EmployeeCreateRequest.setEmployeeNumber",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getFirstName",
+      "name": "EmployeeCreateRequest.getFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setFirstName",
+      "name": "EmployeeCreateRequest.setFirstName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getLastName",
+      "name": "EmployeeCreateRequest.getLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setLastName",
+      "name": "EmployeeCreateRequest.setLastName",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getEmail",
+      "name": "EmployeeCreateRequest.getEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setEmail",
+      "name": "EmployeeCreateRequest.setEmail",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getDepartment",
+      "name": "EmployeeCreateRequest.getDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setDepartment",
+      "name": "EmployeeCreateRequest.setDepartment",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.getSalary",
+      "name": "EmployeeCreateRequest.getSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeCreateRequest.setSalary",
+      "name": "EmployeeCreateRequest.setSalary",
+      "file": "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java"
+    },
+    {
+      "kind": "class",
+      "id": "com.example.migrationdemo.controller.EmployeeController",
+      "name": "EmployeeController",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "method",
+      "id": "EmployeeController.EmployeeController",
+      "name": "EmployeeController.EmployeeController",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.createEmployee",
+      "name": "PostMapping EmployeeController.createEmployee",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.getAllEmployees",
+      "name": "GetMapping EmployeeController.getAllEmployees",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.getEmployeeById",
+      "name": "GetMapping EmployeeController.getEmployeeById",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.updateEmployee",
+      "name": "PutMapping EmployeeController.updateEmployee",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.deleteEmployee",
+      "name": "DeleteMapping EmployeeController.deleteEmployee",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.searchByDepartment",
+      "name": "GetMapping EmployeeController.searchByDepartment",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "endpoint",
+      "id": "EmployeeController.getHighEarners",
+      "name": "GetMapping EmployeeController.getHighEarners",
+      "file": "src/main/java/com/example/migrationdemo/controller/EmployeeController.java"
+    },
+    {
+      "kind": "method",
+      "id": "SecurityConfig.userDetailsService",
+      "name": "SecurityConfig.userDetailsService",
+      "file": "src/main/java/com/example/migrationdemo/config/SecurityConfig.java"
+    }
+  ],
+  "relatedContext": [
+    [
+      {
+        "kind": "Module",
+        "id": "spring-boot-migration-demo",
+        "fingerprint": "68d150519a574990",
+        "summary": "The single deployable in this workspace: a Spring Boot 3.5 employee-roster REST service backed by one relational database. It owns the entire employees table and is the only writer of it; there are no sibling services, no discovery layer and no inter-service HTTP calls, so every dependency it has is either the database or an in-process Spring bean. Its stated purpose is to be a controlled subject for a Spring Boot 3 to 4 migration exercise, which is why several classes carry deliberate MIGRATION-DEMO markers.",
+        "role": "deployable",
+        "responsibilities": [
+          "Expose CRUD plus two query endpoints for employee records under /api/v1/employees",
+          "Own the employees table schema, generated by Hibernate ddl-auto=update rather than by migration scripts",
+          "Seed five sample employees on first boot when the table is empty",
+          "Publish actuator health/info/metrics, including a custom database health check"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: employees table (insert/update/delete)",
+          "writes: local filesystem ./data/ when running on the default H2 file datasource",
+          "seeds five employee rows on first boot"
+        ],
+        "invariants": [
+          "employeeNumber and email are both unique at the database level (Employee.java:16, Employee.java:28); the service layer is expected to reject duplicates before the constraint fires",
+          "Only this application writes the employees table -- there is no second writer to reconcile with",
+          "Requests under /api/** are authenticated; /actuator/health and /actuator/info are not (SecurityConfig.java:33-36)"
+        ],
+        "failureModes": [
+          "The datasource defaults to a file-backed H2 database at ./data/employee_db (application.yml:6), so a deployment that forgets to set DB_URL silently runs on local disk instead of PostgreSQL and still reports healthy while holding no shared data",
+          "ddl-auto=update (application.yml:14) applies schema drift implicitly at boot; a removed column is not dropped and an incompatible type change can fail startup with a Hibernate schema error",
+          "findHighEarners is a native PostgreSQL query (EmployeeRepository.java:37-43); on the default H2 datasource it is executing SQL written for a different engine"
+        ],
+        "dataTouched": [
+          "writes: employees table",
+          "reads: DB_URL / DB_USERNAME / DB_PASSWORD environment variables"
+        ],
+        "upstream": [
+          "External HTTP clients calling /api/v1/employees with HTTP Basic credentials",
+          "Monitoring and orchestrator probes calling /actuator/health"
+        ],
+        "downstream": [
+          "Relational database (PostgreSQL in the intended deployment, H2 by default)"
+        ],
+        "testHints": [
+          "Integration tests use Testcontainers PostgreSQL (AbstractIntegrationTest); prefer that over the H2 default when asserting anything query-shaped",
+          "Every /api/** request needs HTTP Basic demo/demo123 or it is rejected with 401 before reaching the controller"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "pom.xml:9-27",
+          "src/main/resources/application.yml:1-48",
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:15-17"
+        ],
+        "openQuestions": [
+          "Whether production is expected to override DB_URL to PostgreSQL -- nothing in the repo pins this, only the driver dependency and the native query imply it"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "DELETE /api/v1/employees/{id}",
+        "fingerprint": "65df6d82c2baa60e",
+        "summary": "Permanently removes an employee row and returns 204 with no body. This is a hard delete, not a soft one -- notably, the entity carries an `active` flag that would support deactivation, but this endpoint does not use it, so the record and its history are gone.",
+        "role": "controller",
+        "responsibilities": [
+          "Load the employee or 404, then delete the row"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: permanently deletes one row from the employees table"
+        ],
+        "invariants": [
+          "Returns 204 with an empty body on success"
+        ],
+        "failureModes": [
+          "Not idempotent: deleting the same id twice returns 204 then 404, because the service loads the entity first specifically to raise EmployeeNotFoundException. A client retrying after a timeout sees a spurious failure",
+          "Hard delete with no soft-delete alternative and no audit trail -- the data is unrecoverable through the API. The active flag exists on the entity but nothing in the REST surface exposes deactivation",
+          "If a deleted employee was one of the five seeded ones, restarting an emptied table re-creates it (DataInitializer)"
+        ],
+        "dataTouched": [
+          "writes: employees table (delete)"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.deleteEmployee"
+        ],
+        "testHints": [
+          "Delete twice and assert 204 then 404 -- documents the non-idempotent behaviour",
+          "Confirm the row is really gone rather than deactivated by re-reading it"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:51-55",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:97-102",
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:40-41"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "GET /api/v1/employees",
+        "fingerprint": "f4e486b7a09cefe1",
+        "summary": "Returns every employee in the table as a flat JSON array. There is no paging, filtering or sorting of any kind -- the handler calls findAll and maps the whole result -- so the response size grows without bound with the table.",
+        "role": "controller",
+        "responsibilities": [
+          "List all employees as EmployeeResponse objects"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Always 200 with an array; an empty table yields [] rather than 404",
+          "Includes inactive employees -- nothing filters on active here"
+        ],
+        "failureModes": [
+          "Unbounded result set: findAll loads every row into memory and maps each one, so this degrades linearly and will eventually exhaust heap or time out on a large table. There is no pagination parameter to mitigate it",
+          "Returns inactive employees mixed with active ones, which callers expecting only current staff may not anticipate"
+        ],
+        "dataTouched": [
+          "reads: employees table (full scan)"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.getAllEmployees",
+          "EmployeeRepository.findAll (inherited)"
+        ],
+        "testHints": [
+          "Assert an empty table returns 200 with [] and not 404",
+          "Seed an inactive employee and confirm it appears -- documenting the no-filter behaviour"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:31-35",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:46-52"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "GET /api/v1/employees/{id}",
+        "fingerprint": "593990be3d274f27",
+        "summary": "Fetches one employee by surrogate database id -- not by employeeNumber, which is the business key a caller is more likely to hold. There is no lookup-by-employeeNumber endpoint anywhere in this API.",
+        "role": "controller",
+        "responsibilities": [
+          "Return a single employee by primary key or 404"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "An unknown id is 404 via EmployeeNotFoundException, never 200 with a null body"
+        ],
+        "failureModes": [
+          "A non-numeric id is a framework type-mismatch handled by the inherited ResponseEntityExceptionHandler, so the error body shape differs from the ErrorResponse a 404 produces",
+          "The 404 message embeds the requested id verbatim"
+        ],
+        "dataTouched": [
+          "reads: employees table by primary key"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.getEmployeeById"
+        ],
+        "testHints": [
+          "Assert 404 and the ErrorResponse shape for an unknown id",
+          "Assert the response shape differs for a non-numeric id such as /api/v1/employees/abc"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:37-41",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:54-59"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "GET /api/v1/employees/high-earners",
+        "fingerprint": "02d82bffec5e4cc7",
+        "summary": "Lists active employees earning strictly more than a required `salary` threshold, sorted highest first. It is the only endpoint backed by a native SQL query rather than JPA, and the only read path that filters on active, which makes its results inconsistent with the /search endpoint by design.",
+        "role": "controller",
+        "responsibilities": [
+          "Return active employees above a salary threshold, ordered by salary descending"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "The comparison is strictly greater-than, so an employee earning exactly the threshold is excluded",
+          "Only active employees are returned",
+          "Ordering is salary descending, and it is the only endpoint that guarantees an order"
+        ],
+        "failureModes": [
+          "Backed by nativeQuery = true PostgreSQL SQL against the literal `employees` table (EmployeeRepository.java:37-43). On the default H2 datasource this is engine-mismatched SQL, and any behavioural difference shows up only when this endpoint is called, not at startup",
+          "The salary parameter is required and typed BigDecimal, so omitting it is a 400 and a non-numeric value is a framework type-mismatch error with a different body shape than ErrorResponse",
+          "Salary is exposed in full to any authenticated caller -- there is no role check distinguishing who may see compensation data, since SecurityConfig only requires authentication",
+          "No upper bound or paging; a threshold of 0 returns every active employee"
+        ],
+        "dataTouched": [
+          "reads: employees table columns salary and active"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.findHighEarners",
+          "EmployeeRepository.findHighEarners (native SQL)"
+        ],
+        "testHints": [
+          "Must be tested against PostgreSQL via Testcontainers, not H2 -- it is native SQL",
+          "Seed an employee earning exactly the threshold and assert exclusion (strict >)",
+          "Seed an inactive high earner and assert exclusion",
+          "Assert the returned order is descending by salary"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:64-69",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:37-45",
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:35"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "GET /api/v1/employees/search",
+        "fingerprint": "5246ffeb4dab115e",
+        "summary": "Finds employees by department name, case-insensitively, via a required `department` query parameter. Despite the generic /search path it searches exactly one field, and unlike the repository's other department query it does not filter out inactive employees.",
+        "role": "controller",
+        "responsibilities": [
+          "Match employees whose department equals the given value ignoring case"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Matching is exact-but-case-insensitive, not partial -- 'Tech' does not match 'Technology'"
+        ],
+        "failureModes": [
+          "The department parameter is required with no default, so GET /api/v1/employees/search with no query string is a framework 400, not an empty result",
+          "Returns inactive employees, unlike EmployeeRepository.findActiveEmployeesByDepartment which does filter them; the endpoint that would apply that filter is not exposed anywhere in the API",
+          "An unknown department returns 200 with [], indistinguishable from a department that exists but is currently empty",
+          "The literal /search path is declared after /{id} in the controller; Spring resolves the literal first, but a future /{code} style route could shadow it"
+        ],
+        "dataTouched": [
+          "reads: employees table filtered by department"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.searchByDepartment",
+          "EmployeeRepository.findByDepartmentIgnoreCase"
+        ],
+        "testHints": [
+          "Assert 'technology' and 'TECHNOLOGY' both match rows stored as 'Technology'",
+          "Assert a partial value like 'Tech' returns [] -- pins the exact-match semantics",
+          "Omit the parameter entirely and assert 400"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:57-62",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:18",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:30-31"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "POST /api/v1/employees",
+        "fingerprint": "d52e0c549c51f35e",
+        "summary": "Creates an employee from a fully specified payload and returns 201 with the persisted record, including the server-assigned id and audit timestamps. This is the only way a new employee enters the system through the API, and the only endpoint that enforces both uniqueness rules.",
+        "role": "controller",
+        "responsibilities": [
+          "Validate the create payload",
+          "Reject business-key conflicts",
+          "Persist and return the created employee with 201"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: one row into the employees table"
+        ],
+        "invariants": [
+          "Responds 201 (not 200) on success",
+          "The response always carries an id, active=true and both timestamps, none of which the client supplies"
+        ],
+        "failureModes": [
+          "A duplicate employeeNumber returns 409 as intended",
+          "A duplicate EMAIL does not return 409. The service-level check queries the wrong column, so the insert proceeds, the database unique constraint on email rejects it, and the caller receives 500 'An unexpected error occurred' (EmployeeService.java:36-39)",
+          "A payload missing employeeNumber, either name or email returns 400 with a comma-joined field-error message",
+          "401 before any of the above if HTTP Basic credentials are absent"
+        ],
+        "dataTouched": [
+          "writes: employees table"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.createEmployee",
+          "EmployeeRepository",
+          "EmployeeMapper"
+        ],
+        "testHints": [
+          "The regression case worth pinning: create employee A with email x@y.com, then create employee B with a different employeeNumber and the same email. Expected 409, actual 500",
+          "Assert the 201 status specifically and that the response id is non-null"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:25-29",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:29-44"
+        ]
+      },
+      {
+        "kind": "Endpoint",
+        "id": "PUT /api/v1/employees/{id}",
+        "fingerprint": "aa8a3efe5ff486b4",
+        "summary": "Updates an existing employee. Despite being a PUT it behaves as a partial update: every field on EmployeeUpdateRequest is optional and a null one is skipped, so the request body does not have to be a complete representation. employeeNumber cannot be changed through it at all.",
+        "role": "controller",
+        "responsibilities": [
+          "Load the employee or 404",
+          "Reject an email that conflicts with another employee",
+          "Merge the non-null submitted fields and persist"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: updates one row in the employees table",
+          "updates the entity's updatedAt timestamp via @PreUpdate"
+        ],
+        "invariants": [
+          "PUT semantics are merge, not replace: omitted fields keep their existing values",
+          "employeeNumber is immutable through this endpoint -- the DTO has no such field",
+          "active can only be changed here; the create endpoint cannot set it"
+        ],
+        "failureModes": [
+          "The email conflict check is ineffective for the same reason as on create: it calls findByEmployeeNumber with the email value (EmployeeService.java:68), so updating an employee to another employee's email is not caught as 409 and instead fails at the database constraint and surfaces as 500",
+          "A caller cannot clear an optional field: sending null for department or salary is indistinguishable from omitting it and the old value is kept, while the response returns 200 suggesting the update was applied as sent",
+          "An unknown id is 404 before any field is touched"
+        ],
+        "dataTouched": [
+          "writes: employees table",
+          "reads: employees table"
+        ],
+        "upstream": [
+          "External HTTP clients"
+        ],
+        "downstream": [
+          "EmployeeService.updateEmployee",
+          "EmployeeRepository",
+          "EmployeeMapper.toResponse"
+        ],
+        "testHints": [
+          "Change only firstName and assert every other field is unchanged in the response",
+          "Update employee B's email to employee A's email and assert the status -- expected 409, actual 500",
+          "Assert updatedAt advances while createdAt does not"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:43-49",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:61-95"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.repository.EmployeeRepository",
+        "fingerprint": "6666ae5eca8f030c",
+        "summary": "The data-access contract for the employees table. It declares four finders on top of the CRUD Spring Data generates from JpaRepository, and the four are deliberately different in kind: two derived-name queries, one JPQL query and one native PostgreSQL query. There is no findByEmail, which is why the service's email duplicate check has nothing correct to call.",
+        "role": "repository",
+        "responsibilities": [
+          "Look up an employee by business key (employeeNumber)",
+          "Filter employees by department, case-insensitively",
+          "Filter to active employees in a department via JPQL",
+          "Select high earners via native PostgreSQL SQL"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "reads: employees table",
+          "writes: employees table via the inherited save/delete it exposes to callers"
+        ],
+        "invariants": [
+          "findByEmployeeNumber matches the employeeNumber column only -- passing any other kind of value is a caller error the type system cannot catch, since both are String",
+          "findHighEarners and findActiveEmployeesByDepartment both filter active = true; findByDepartmentIgnoreCase does not, so the two department queries return different row sets by design"
+        ],
+        "failureModes": [
+          "findHighEarners is nativeQuery = true against a table literally named employees; it bypasses JPA's dialect translation, so on the default H2 datasource it is PostgreSQL SQL running on a different engine and any dialect-specific construct fails at query time rather than at startup",
+          "The JPQL in findActiveEmployeesByDepartment is only parsed when the context builds, so a typo there is a startup failure, not a request failure -- a different symptom to triage than the native query",
+          "Both @Query methods bind by @Param name; renaming a parameter without updating the annotation breaks binding at runtime"
+        ],
+        "dataTouched": [
+          "reads: employees table (columns employee_number, department, active, salary)"
+        ],
+        "upstream": [
+          "EmployeeService",
+          "DataInitializer"
+        ],
+        "downstream": [
+          "Relational database"
+        ],
+        "testHints": [
+          "findHighEarners must be tested against PostgreSQL (Testcontainers), not H2 -- it is native SQL and H2 will not reproduce PostgreSQL behaviour faithfully",
+          "Seed one inactive high earner and assert it is excluded; the active = true filter is the part most easily lost in a rewrite"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:16-45",
+          "src/main/resources/application.yml:6"
+        ],
+        "openQuestions": [
+          "Why findHighEarners is native rather than JPQL -- the query has no PostgreSQL-specific syntax that would require it, and the comment only says it exists to be validated during migration"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.controller.EmployeeController",
+        "fingerprint": "1102c9bf50df6b06",
+        "summary": "The entire external HTTP surface of this service: seven endpoints under /api/v1/employees covering create, list, read, update, delete and two searches. It is a thin adapter -- every handler delegates to EmployeeService and does nothing but choose the status code, so no business rule lives here and any behavioural defect observed through the API originates one layer down.",
+        "role": "controller",
+        "responsibilities": [
+          "Bind HTTP requests to EmployeeService calls",
+          "Choose response status: 201 on create, 204 on delete, 200 elsewhere",
+          "Trigger Bean Validation via @Valid on the two body-carrying handlers"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "delegates writes to EmployeeService; performs no I/O of its own"
+        ],
+        "invariants": [
+          "The controller never catches exceptions -- everything thrown below it reaches GlobalExceptionHandler, which is the only place status mapping for errors happens",
+          "All seven paths sit behind requestMatchers('/api/**').authenticated(), so no handler here is reachable anonymously (SecurityConfig.java:35)"
+        ],
+        "failureModes": [
+          "The literal paths /search and /high-earners are declared after the /{id} template; Spring MVC prefers a literal segment over a path variable so they resolve correctly, but adding a further /{something} template could shadow them",
+          "Neither @RequestParam on searchByDepartment nor on getHighEarners declares required=false or a default, so omitting the parameter is a 400 from the framework before the handler body runs",
+          "getHighEarners takes a BigDecimal from a query string, so a non-numeric salary value is a framework type-mismatch error, not a domain error, and is rendered by an inherited handler rather than as ErrorResponse"
+        ],
+        "dataTouched": [
+          "reads/writes: employees table indirectly through EmployeeService"
+        ],
+        "upstream": [
+          "External HTTP clients authenticated with HTTP Basic"
+        ],
+        "downstream": [
+          "EmployeeService"
+        ],
+        "testHints": [
+          "@WebMvcTest with a mocked EmployeeService covers this class fully -- there is no logic requiring a database",
+          "Include HTTP Basic demo/demo123 or configure @WithMockUser; without it the security filter chain returns 401 before the handler is reached",
+          "Assert 201 for POST and 204 for DELETE specifically -- those are the only two non-200 success codes and the only real decisions this class makes"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:15-69",
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:35"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.init.DataInitializer",
+        "fingerprint": "412074422130d4a6",
+        "summary": "Seeds five fixed sample employees on startup when the table is empty. It runs automatically as a CommandLineRunner on every boot with no profile guard, so it is active in every environment including production, and it is the reason a freshly deployed instance is never truly empty.",
+        "role": "bootstrap",
+        "responsibilities": [
+          "Check whether the employees table has any rows",
+          "Insert five hard-coded employees across four departments when it does not"
+        ],
+        "criticality": "medium",
+        "sideEffects": [
+          "writes: five rows into the employees table on first boot"
+        ],
+        "invariants": [
+          "Seeding is guarded by count() == 0 (line 22), so it is idempotent across restarts as long as at least one row survives",
+          "The five seeded employees have distinct employeeNumbers EMP001-EMP005 and distinct emails, so they do not trip the unique constraints"
+        ],
+        "failureModes": [
+          "There is no @Profile or conditional property guard, so this executes in production; deleting every employee via the API and then restarting silently repopulates the table with demo data",
+          "The five saves at lines 68-72 are not inside a transaction and each is a separate commit, so a failure partway through leaves some seed rows persisted and the table non-empty -- which then permanently suppresses seeding on the next boot because count() is no longer 0",
+          "Any exception escaping run() is fatal to application startup (CommandLineRunner contract), so a seeding problem takes the whole service down rather than degrading it"
+        ],
+        "dataTouched": [
+          "writes: employees table",
+          "reads: employees table row count"
+        ],
+        "upstream": [
+          "Spring Boot startup, via CommandLineRunner"
+        ],
+        "downstream": [
+          "EmployeeRepository"
+        ],
+        "testHints": [
+          "Any integration test asserting a row count must account for these five seeded rows, or disable the bean -- this is the most common source of surprising counts in tests here",
+          "Assert that a second run with a non-empty table inserts nothing"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/init/DataInitializer.java:19-25",
+          "src/main/java/com/example/migrationdemo/init/DataInitializer.java:68-72"
+        ]
+      },
+      {
+        "kind": "ExternalType",
+        "id": "RuntimeException",
+        "fingerprint": "ee8b5f8dab67486b",
+        "summary": "The JDK unchecked-exception base. Both domain exceptions extend it directly rather than a shared project superclass, which is why there is no common in-repo ancestor for cross-cutting error handling to hang off -- GlobalExceptionHandler has to enumerate each domain type by hand.",
+        "role": "framework-base",
+        "responsibilities": [
+          "Make EmployeeNotFoundException and DuplicateEmployeeException unchecked, so service methods need no throws clause"
+        ],
+        "criticality": "low",
+        "sideEffects": [],
+        "invariants": [
+          "Being unchecked, these exceptions propagate out of @Transactional service methods and trigger Spring's default rollback"
+        ],
+        "failureModes": [
+          "Adding a third domain exception without also adding an @ExceptionHandler for it means it falls through to the generic 500 handler unnoticed -- there is no shared base type to catch"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java:3",
+          "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java:3"
+        ]
+      },
+      {
+        "kind": "Package",
+        "id": "com.example.migrationdemo.config",
+        "fingerprint": "569b430cac187874",
+        "summary": "Holds the two beans that override Spring Boot auto-configuration for this service: the HTTP security filter chain and a hand-built Jackson ObjectMapper. Both are places where Boot's defaults have been deliberately replaced, so runtime behaviour here diverges from what a reader assuming stock Boot would expect.",
+        "role": "configuration",
+        "responsibilities": [
+          "Define authentication and authorization rules for all HTTP traffic",
+          "Replace the auto-configured ObjectMapper with an explicitly constructed one"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "registers beans that replace Spring Boot auto-configuration"
+        ],
+        "invariants": [
+          "Both beans are singletons applied process-wide; there is no per-request or per-profile variation of either"
+        ],
+        "failureModes": [
+          "Both classes carry MIGRATION-DEMO comments marking them as expected breakage points for Spring Security 7 and Jackson 3, so this package is the most likely source of migration-time behavioural change"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:16-26",
+          "src/main/java/com/example/migrationdemo/config/JacksonConfig.java:9-19"
+        ]
+      },
+      {
+        "kind": "Package",
+        "id": "com.example.migrationdemo.dto",
+        "fingerprint": "ed9a704972260925",
+        "summary": "The wire contract for the REST surface: separate request shapes for create and update, and one response shape. The split is meaningful -- EmployeeCreateRequest makes employeeNumber, names and email mandatory, EmployeeUpdateRequest makes every field optional so a partial update is expressible and it alone carries active, and EmployeeResponse is the only one exposing id, createdAt and updatedAt.",
+        "role": "dto",
+        "responsibilities": [
+          "Carry validated inbound JSON into the service layer",
+          "Shape outbound JSON, including server-owned fields the client cannot set"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "employeeNumber cannot be changed after creation -- EmployeeUpdateRequest has no employeeNumber field, so the update path cannot reach it",
+          "A null field in EmployeeUpdateRequest means leave unchanged, not set to null (EmployeeService.java:74-91)"
+        ],
+        "failureModes": [
+          "Because absent and explicit-null are indistinguishable in EmployeeUpdateRequest, a client cannot clear an optional field such as department or salary; the request is accepted with 200 and the old value silently persists",
+          "Bean Validation on these DTOs only fires where @Valid is present on the handler parameter, so the search and high-earners query parameters are not covered by it"
+        ],
+        "dataTouched": [
+          "reads/writes: employee JSON payloads"
+        ],
+        "testHints": [
+          "Assert that a PUT with an omitted field leaves that field unchanged, and that a PUT with an explicit JSON null also leaves it unchanged -- both take the same code path"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/dto/EmployeeCreateRequest.java:8-25",
+          "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java:8-20",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:74-91"
+        ]
+      },
+      {
+        "kind": "Package",
+        "id": "com.example.migrationdemo.exception",
+        "fingerprint": "b098166f846b058f",
+        "summary": "The error-translation layer: two domain exceptions, the JSON error body they render into, and the @RestControllerAdvice that maps them to status codes. This package alone decides what an API client sees when something goes wrong, so a gap here turns a well-understood domain error into an opaque 500.",
+        "role": "exception",
+        "responsibilities": [
+          "Define the domain error vocabulary (not found, duplicate)",
+          "Map domain and framework exceptions to HTTP status codes and a consistent ErrorResponse body"
+        ],
+        "criticality": "high",
+        "sideEffects": [],
+        "invariants": [
+          "Every error response built in-repo carries timestamp, status, error, message and path (ErrorResponse.java:18)"
+        ],
+        "failureModes": [
+          "The catch-all @ExceptionHandler(Exception.class) flattens any exception without a more specific handler -- including database constraint violations -- to 500 with the fixed text 'An unexpected error occurred', discarding the real cause from the response",
+          "Both domain exceptions extend RuntimeException directly with no shared project superclass, so a newly added domain exception silently falls through to the generic 500 handler unless someone remembers to add an @ExceptionHandler for it"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:68-78",
+          "src/main/java/com/example/migrationdemo/exception/ErrorResponse.java:18",
+          "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java:3"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.exception.GlobalExceptionHandler",
+        "fingerprint": "6c205adcde23ffc9",
+        "summary": "The single @RestControllerAdvice for the service and the only place HTTP error status is decided. It maps the two domain exceptions to 404 and 409, reshapes validation failures into a readable field-by-field message, and catches everything else as 500. Because it extends ResponseEntityExceptionHandler, it also inherits handling for standard Spring MVC exceptions that never appear in this graph.",
+        "role": "exception",
+        "responsibilities": [
+          "Map EmployeeNotFoundException to 404 and DuplicateEmployeeException to 409, both as ErrorResponse",
+          "Flatten MethodArgumentNotValidException field errors into one comma-joined message",
+          "Provide a last-resort 500 handler that hides internal detail from the client"
+        ],
+        "criticality": "high",
+        "sideEffects": [],
+        "invariants": [
+          "The client never sees an internal exception message: handleGenericException substitutes the fixed string 'An unexpected error occurred' (line 75)",
+          "Every in-repo handler stamps the request URI into the response path field"
+        ],
+        "failureModes": [
+          "There is no handler for DataIntegrityViolationException, so a unique-constraint breach on email -- the exact failure the broken service-level email check lets through -- is caught by handleGenericException and returned as 500 with no indication that it was a duplicate. This is the mechanism that converts a should-be-409 into an opaque 500",
+          "handleGenericException swallows the cause entirely: nothing in this class logs the exception before replacing its message, so the only record of what actually failed is whatever Spring logs by default",
+          "The two @ExceptionHandler methods take HttpServletRequest while the overridden handleMethodArgumentNotValid takes WebRequest and must defensively unwrap it (line 55) -- the two styles produce the path field by different routes, and the WebRequest branch yields an empty path if the request is not a ServletWebRequest"
+        ],
+        "dataTouched": [
+          "reads: request URI"
+        ],
+        "upstream": [
+          "Every handler in EmployeeController, via Spring MVC exception resolution"
+        ],
+        "downstream": [
+          "ErrorResponse"
+        ],
+        "testHints": [
+          "Request a non-existent id and assert 404 with the ErrorResponse shape; POST a duplicate employeeNumber and assert 409",
+          "POST a duplicate EMAIL and assert the status -- currently 500, and this class is where that verdict is produced",
+          "POST an invalid body and assert the 400 message lists each failing field as 'field: message'"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:18-19",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:51-57",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:68-78"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.health.DatabaseHealthIndicator",
+        "fingerprint": "45707f08cb69a672",
+        "summary": "A custom actuator health contributor, registered under the bean name 'database', that reports on datasource reachability by opening a real connection on every poll and reading the JDBC product name. It is what makes /actuator/health meaningful for this service -- and, because health details are always shown and that endpoint is unauthenticated, it is also what makes database information externally visible.",
+        "role": "configuration",
+        "responsibilities": [
+          "Open a connection from the pool per health poll and report UP with the database product name when it succeeds",
+          "Report DOWN with the exception attached when the connection attempt throws"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "acquires and releases a JDBC connection on every /actuator/health request"
+        ],
+        "invariants": [
+          "The connection is opened in try-with-resources (line 20) and therefore always returned to the pool, including on the DOWN path"
+        ],
+        "failureModes": [
+          "The fall-through at line 33 returns Health.unknown() when the connection is non-null but reports itself closed. UNKNOWN is not DOWN, so the aggregate status does not go down and a probe watching for DOWN will not fire -- a genuinely unusable datasource can present as a non-failing health check",
+          "withException(e) (line 30) puts the exception into the health detail, and because management.endpoint.health.show-details is 'always' (application.yml:36-37) while /actuator/health is permitAll (SecurityConfig.java:33), that exception detail is served to unauthenticated callers -- typically including the JDBC URL, driver and failure reason",
+          "Even on the healthy path the response discloses the database product name to anonymous callers",
+          "Every poll takes a pooled connection; under pool exhaustion the health check blocks waiting for one, so the probe times out at the moment the service is most stressed"
+        ],
+        "dataTouched": [
+          "reads: JDBC connection metadata (database product name)"
+        ],
+        "upstream": [
+          "Actuator /actuator/health -- unauthenticated per SecurityConfig.java:33"
+        ],
+        "downstream": [
+          "DataSource / relational database"
+        ],
+        "testHints": [
+          "Stub a DataSource whose getConnection throws and assert status DOWN plus the presence of the exception detail",
+          "Stub a connection that returns isClosed() == true and assert the result -- this is the UNKNOWN branch and the one most likely to be wrong",
+          "Call GET /actuator/health with no credentials and inspect exactly what is disclosed in the body"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java:19-34",
+          "src/main/resources/application.yml:35-37",
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:33"
+        ]
+      },
+      {
+        "kind": "ExternalType",
+        "id": "CommandLineRunner",
+        "fingerprint": "496fe22805229d64",
+        "summary": "Spring Boot's post-startup callback interface. DataInitializer implements it, so DataInitializer.run executes automatically once the application context is ready. There is no in-repo caller, so the call graph shows run() as unreachable when in fact it fires on every boot.",
+        "role": "framework-base",
+        "responsibilities": [
+          "Trigger DataInitializer.run after context refresh on every application start"
+        ],
+        "criticality": "medium",
+        "sideEffects": [
+          "invokes DataInitializer.run on every application start"
+        ],
+        "invariants": [
+          "Runs after the datasource and JPA layer are initialized, so repository calls inside it are safe"
+        ],
+        "failureModes": [
+          "An exception thrown from run() aborts application startup -- Spring Boot treats a failing CommandLineRunner as a fatal boot error, so a seeding failure means the service never comes up at all"
+        ],
+        "upstream": [
+          "Spring Boot application startup"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/init/DataInitializer.java:11",
+          "src/main/java/com/example/migrationdemo/init/DataInitializer.java:19-25"
+        ]
+      },
+      {
+        "kind": "ExternalType",
+        "id": "HealthIndicator",
+        "fingerprint": "fa1be2dd89061e86",
+        "summary": "Spring Boot Actuator's health-contributor interface. DatabaseHealthIndicator implements it, so health() is called by the actuator infrastructure on every /actuator/health poll and never by in-repo code. The bean name ('database') becomes the key under which its result appears in the health JSON.",
+        "role": "framework-base",
+        "responsibilities": [
+          "Invoke DatabaseHealthIndicator.health on each /actuator/health request and fold the result into the aggregate application status"
+        ],
+        "criticality": "medium",
+        "sideEffects": [
+          "opens a database connection per health poll"
+        ],
+        "invariants": [
+          "A DOWN result from any contributor makes the aggregate /actuator/health status DOWN and the endpoint respond 503"
+        ],
+        "failureModes": [
+          "health() sits on the request path of every liveness/readiness poll, so anything slow inside it -- such as waiting for a database connection from an exhausted pool -- becomes probe latency and can get a healthy instance killed",
+          "Whatever detail the indicator returns is exposed verbatim because management.endpoint.health.show-details is 'always' (application.yml:36-37)"
+        ],
+        "upstream": [
+          "Actuator /actuator/health, typically monitoring and orchestrator probes"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java:10",
+          "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java:18-19",
+          "src/main/resources/application.yml:29-37"
+        ]
+      },
+      {
+        "kind": "ExternalType",
+        "id": "JpaRepository",
+        "fingerprint": "d130f73dbefc6060",
+        "summary": "Spring Data JPA's base repository interface. EmployeeRepository extends it, which is why calls such as findById, findAll, save, delete and count resolve to nothing in this graph -- those methods are generated by Spring Data at runtime and were never parsed from source. Treat any call edge that dead-ends at EmployeeRepository as reaching the database.",
+        "role": "framework-base",
+        "responsibilities": [
+          "Supply generated CRUD, count and paging operations to EmployeeRepository at runtime"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: employees table via inherited save/delete",
+          "reads: employees table via inherited findById/findAll/count"
+        ],
+        "invariants": [
+          "save() on an entity already managed inside a @Transactional method is an update, not an insert -- EmployeeService.updateEmployee depends on this (EmployeeService.java:93)"
+        ],
+        "failureModes": [
+          "Inherited methods invisible to this graph still perform real database round-trips: findById, findAll, save, delete and count",
+          "save() surfaces unique-constraint breaches as DataIntegrityViolationException, which no handler in this repo maps, so it lands on the generic 500 handler"
+        ],
+        "dataTouched": [
+          "employees table"
+        ],
+        "upstream": [
+          "EmployeeService",
+          "DataInitializer"
+        ],
+        "testHints": [
+          "When stubbing EmployeeRepository in a unit test, remember findById/save/count are inherited -- they must be mocked explicitly, they are not covered by stubbing the four declared methods"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:14",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:42",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:93"
+        ]
+      },
+      {
+        "kind": "ExternalType",
+        "id": "ResponseEntityExceptionHandler",
+        "fingerprint": "2bc4ec5ed9ddc9b6",
+        "summary": "Spring MVC's base class for @ControllerAdvice error handling. GlobalExceptionHandler extends it and inherits handlers for the standard MVC exceptions -- unsupported method, unreadable body, missing request parameter, type mismatch, validation failure -- none of which appear as methods in this graph. Only handleMethodArgumentNotValid is overridden in-repo.",
+        "role": "framework-base",
+        "responsibilities": [
+          "Provide inherited @ExceptionHandler coverage for standard Spring MVC exceptions raised before a handler method runs"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Inherited handlers declare specific exception types, so Spring's most-specific-match rule should select them ahead of the in-repo @ExceptionHandler(Exception.class)"
+        ],
+        "failureModes": [
+          "Responses from the inherited handlers do not use this project's ErrorResponse shape, so a malformed-JSON or wrong-method request returns a differently-shaped error body than a not-found or duplicate does -- a client parsing one format breaks on the other",
+          "handleExceptionInternal is what actually writes the body, so the overridden handleMethodArgumentNotValid (GlobalExceptionHandler.java:65) hands its ErrorResponse to base-class logic and the final body shape depends on that, not on the ErrorResponse construction alone"
+        ],
+        "testHints": [
+          "Send a request with a wrong HTTP method and one with malformed JSON, and assert the actual body shape rather than assuming ErrorResponse"
+        ],
+        "confidence": "medium",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:19",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:45-66"
+        ],
+        "openQuestions": [
+          "Which of the inherited handlers versus the in-repo @ExceptionHandler(Exception.class) wins for each specific MVC exception type was reasoned from Spring's resolution rules, not verified at runtime here"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#createEmployee(EmployeeCreateRequest)",
+        "fingerprint": "31b40f34bc5aebc2",
+        "summary": "Handler for POST /api/v1/employees. Delegates straight to EmployeeService.createEmployee and wraps the result in a 201 -- the explicit ResponseEntity construction with HttpStatus.CREATED is the only decision it makes, since every other handler in this class returns 200 or 204.",
+        "role": "controller",
+        "responsibilities": [
+          "Trigger @Valid validation of the create payload",
+          "Return 201 with the created employee"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: one employee row, indirectly via EmployeeService"
+        ],
+        "invariants": [
+          "Status is 201, not 200 -- clients keying on status must expect CREATED here"
+        ],
+        "failureModes": [
+          "Adds no error handling; every failure below it, including the mis-detected duplicate email that becomes a 500, passes through unchanged to GlobalExceptionHandler"
+        ],
+        "upstream": [
+          "POST /api/v1/employees"
+        ],
+        "downstream": [
+          "EmployeeService.createEmployee"
+        ],
+        "testHints": [
+          "@WebMvcTest with a mocked EmployeeService; assert status 201 and that the service is called exactly once with the deserialized request"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:25-29"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#deleteEmployee(Long)",
+        "fingerprint": "949917688695aa1e",
+        "summary": "Handler for DELETE /api/v1/employees/{id}. Returns 204 with no body via ResponseEntity.noContent(). It discards nothing of interest because the service returns void -- the entire outcome is carried by the status code.",
+        "role": "controller",
+        "responsibilities": [
+          "Delete the employee and return 204"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: permanently removes one employee row, indirectly"
+        ],
+        "invariants": [
+          "Success is signalled only by 204; there is no response body to inspect"
+        ],
+        "failureModes": [
+          "Not idempotent -- a repeat delete surfaces as 404 from the service, so a client retry after a network timeout reports failure for work that succeeded"
+        ],
+        "upstream": [
+          "DELETE /api/v1/employees/{id}"
+        ],
+        "downstream": [
+          "EmployeeService.deleteEmployee"
+        ],
+        "testHints": [
+          "Assert 204 and an empty body; then assert the second call yields 404"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:51-55"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#getAllEmployees()",
+        "fingerprint": "40ce8692ffbfe02a",
+        "summary": "Handler for GET /api/v1/employees. Returns the unfiltered, unpaged list from EmployeeService with 200. Takes no parameters at all, which is the clearest signal that no filtering or paging option exists on this endpoint.",
+        "role": "controller",
+        "responsibilities": [
+          "Return the full employee list with 200"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Always 200, even for an empty list"
+        ],
+        "failureModes": [
+          "Response size is unbounded because the method exposes no paging parameter to constrain it"
+        ],
+        "upstream": [
+          "GET /api/v1/employees"
+        ],
+        "downstream": [
+          "EmployeeService.getAllEmployees"
+        ],
+        "testHints": [
+          "Assert 200 with [] for an empty repository stub"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:31-35"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#getEmployeeById(Long)",
+        "fingerprint": "246f9412fdbe29ca",
+        "summary": "Handler for GET /api/v1/employees/{id}. Binds the path variable to a Long and delegates; it never checks for null because the service throws EmployeeNotFoundException instead of returning one.",
+        "role": "controller",
+        "responsibilities": [
+          "Return one employee with 200"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Returns 200 with a body or propagates an exception -- it never returns 200 with an empty body"
+        ],
+        "failureModes": [
+          "A non-numeric {id} fails Long conversion in the framework before this method is entered, producing a differently-shaped error body than the domain 404"
+        ],
+        "upstream": [
+          "GET /api/v1/employees/{id}"
+        ],
+        "downstream": [
+          "EmployeeService.getEmployeeById"
+        ],
+        "testHints": [
+          "Stub the service to throw EmployeeNotFoundException and assert the 404 mapping end to end"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:37-41"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#getHighEarners(BigDecimal)",
+        "fingerprint": "93a2e67ab0ef1575",
+        "summary": "Handler for GET /api/v1/employees/high-earners. Binds a required BigDecimal salary query parameter -- the only endpoint in this controller that converts a query string to a numeric type, and therefore the only one where a malformed parameter is a conversion failure rather than a domain error.",
+        "role": "controller",
+        "responsibilities": [
+          "Bind the salary threshold and return matching high earners with 200"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "salary is mandatory and must parse as a BigDecimal"
+        ],
+        "failureModes": [
+          "A non-numeric salary (for example ?salary=abc) fails BigDecimal conversion in the framework, producing an error body shaped by the inherited ResponseEntityExceptionHandler rather than ErrorResponse",
+          "A negative or zero salary is accepted -- nothing validates the range, so ?salary=0 returns every active employee and their compensation in one response",
+          "Delegates to the only native-SQL query in the codebase, so failures here can be database-dialect failures rather than application logic failures"
+        ],
+        "upstream": [
+          "GET /api/v1/employees/high-earners"
+        ],
+        "downstream": [
+          "EmployeeService.findHighEarners"
+        ],
+        "testHints": [
+          "Assert the error shape for ?salary=abc differs from a domain 404 body",
+          "Assert ?salary=0 returns all active employees -- confirms the missing lower bound"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:64-69",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:37-45"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#searchByDepartment(String)",
+        "fingerprint": "ce17f51ae0e081f1",
+        "summary": "Handler for GET /api/v1/employees/search. Binds a bare @RequestParam String department with no required=false and no defaultValue, which makes the parameter mandatory and turns an omitted query string into a framework-level 400.",
+        "role": "controller",
+        "responsibilities": [
+          "Bind the department query parameter and return matching employees with 200"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "department is mandatory"
+        ],
+        "failureModes": [
+          "Omitting the parameter is a 400 from Spring's missing-parameter handling, not an empty list",
+          "An empty-string department is accepted and returns [], which is a different outcome from omitting it entirely",
+          "No validation constrains the value, so any string reaches the repository query"
+        ],
+        "upstream": [
+          "GET /api/v1/employees/search"
+        ],
+        "downstream": [
+          "EmployeeService.searchByDepartment"
+        ],
+        "testHints": [
+          "Assert 400 when department is omitted and 200 with [] when it is present but empty -- the two are easily conflated"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:57-62"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.controller.EmployeeController#updateEmployee(Long,EmployeeUpdateRequest)",
+        "fingerprint": "b5a14cc95005555e",
+        "summary": "Handler for PUT /api/v1/employees/{id}. Combines a path variable with a @Valid body and returns 200. The validation it triggers is weak by construction -- EmployeeUpdateRequest marks nothing as required -- so @Valid here only checks the email format and salary sign of whatever fields were actually sent.",
+        "role": "controller",
+        "responsibilities": [
+          "Bind id and body, trigger validation, return the updated employee with 200"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "writes: updates one employee row, indirectly"
+        ],
+        "invariants": [
+          "Returns the full updated record, not just the changed fields"
+        ],
+        "failureModes": [
+          "@Valid gives a false sense of coverage: an entirely empty JSON body {} passes validation and results in a 200 that changed nothing",
+          "Propagates the 500-instead-of-409 email conflict behaviour from the service unchanged"
+        ],
+        "upstream": [
+          "PUT /api/v1/employees/{id}"
+        ],
+        "downstream": [
+          "EmployeeService.updateEmployee"
+        ],
+        "testHints": [
+          "PUT an empty JSON object and assert 200 with an unchanged record -- documents the weak-validation behaviour"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:43-49",
+          "src/main/java/com/example/migrationdemo/dto/EmployeeUpdateRequest.java:8-20"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.service.EmployeeService",
+        "fingerprint": "52dee53932b9d69b",
+        "summary": "The only place employee business rules live: uniqueness checks, the not-found decision, partial-update field merging, and entity-to-DTO conversion boundaries. It is the sole writer of the employees table on the request path and the sole owner of transaction boundaries, so it is where correctness for the whole service is decided.",
+        "role": "service",
+        "responsibilities": [
+          "Reject duplicate employees before insert",
+          "Translate a missing row into EmployeeNotFoundException so it becomes a 404 rather than a null",
+          "Apply partial updates field by field, treating null as leave-unchanged",
+          "Define transaction scope: writes under @Transactional, reads under @Transactional(readOnly = true)"
+        ],
+        "criticality": "critical",
+        "sideEffects": [
+          "writes: employees table via save (createEmployee, updateEmployee) and delete (deleteEmployee)",
+          "reads: employees table on every method"
+        ],
+        "invariants": [
+          "No employee is persisted with an employeeNumber or email that already exists -- the database enforces both with unique constraints (Employee.java:16, Employee.java:28) and this class is supposed to catch the violation first",
+          "Every read path returns a mapped EmployeeResponse, never a raw Employee entity, so the JPA entity does not escape the transaction",
+          "updateEmployee mutates an entity loaded inside the same transaction, so the change would persist through dirty checking even without the explicit save at line 93"
+        ],
+        "failureModes": [
+          "The duplicate-EMAIL check is wrong in both write paths: createEmployee line 37 and updateEmployee line 68 both call findByEmployeeNumber(request.getEmail()), querying the employeeNumber column with an email value. It will effectively never match, so the intended 409 Conflict is not raised; the duplicate reaches the database, the unique constraint on email fires as DataIntegrityViolationException, and with no handler for that type the caller sees 500 'An unexpected error occurred' instead of 409",
+          "findActiveEmployeesByDepartment is not wired to any endpoint -- EmployeeController exposes no route for it, so the active-only filter is unreachable through the API and only exercised by tests",
+          "searchByDepartment and findHighEarners return an empty list rather than 404 for an unknown department or a salary above every row, so a caller cannot distinguish 'no matches' from 'wrong parameter'",
+          "deleteEmployee loads the entity first purely to raise EmployeeNotFoundException, so deleting a missing id is a 404 rather than an idempotent 204 -- a retried delete fails the second time"
+        ],
+        "dataTouched": [
+          "writes: employees table",
+          "reads: employees table"
+        ],
+        "upstream": [
+          "EmployeeController (all seven endpoints)"
+        ],
+        "downstream": [
+          "EmployeeRepository",
+          "EmployeeMapper"
+        ],
+        "testHints": [
+          "The highest-value regression test: POST two employees with different employeeNumbers but the same email and assert the status. Current behaviour is 500, intended behaviour is 409 -- this single case pins the duplicate-check defect",
+          "Mock EmployeeRepository and verify which finder is called with which argument; the defect is visible as findByEmployeeNumber being invoked with an email string",
+          "Assert that a PUT changing only firstName leaves email, department, salary and active untouched"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:36-39",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:66-71",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:97-102",
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:28",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:68-78"
+        ],
+        "openQuestions": [
+          "Whether the email duplicate check was meant to call a findByEmail finder that was never added to EmployeeRepository, or whether the checks were intended to be dropped in favour of catching the constraint violation -- the repository has no findByEmail method at all"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.config.JacksonConfig",
+        "fingerprint": "43cd2b9a3b690b6a",
+        "summary": "Declares an ObjectMapper bean built by hand rather than letting Spring Boot auto-configure one. That distinction matters: defining this bean replaces Boot's configured mapper, so the settings applied here are the complete set and Boot's usual defaults are not layered underneath. It is flagged in its own comment as a Jackson 2 construct that will need rework when Boot 4 brings Jackson 3.",
+        "role": "configuration",
+        "responsibilities": [
+          "Register JavaTimeModule so LocalDateTime on EmployeeResponse serializes at all",
+          "Emit ISO-8601 timestamps instead of numeric epochs",
+          "Omit null-valued properties from responses",
+          "Disable pretty printing"
+        ],
+        "criticality": "medium",
+        "sideEffects": [
+          "replaces the Spring Boot auto-configured ObjectMapper for the whole application"
+        ],
+        "invariants": [
+          "createdAt and updatedAt render as ISO-8601 strings, not numbers -- any client parsing them depends on WRITE_DATES_AS_TIMESTAMPS staying disabled",
+          "A null field never appears in a response body; it is absent rather than explicitly null"
+        ],
+        "failureModes": [
+          "Because this bean replaces the auto-configured mapper, Boot's own spring.jackson.* properties are not guaranteed to apply -- application.yml:25-27 sets default-property-inclusion: non_null, duplicating in configuration what line 32 already does in code, and the two could drift apart with only one of them taking effect",
+          "NON_NULL inclusion means a client cannot distinguish 'field absent because null' from 'field not part of this response' -- a null salary simply vanishes from the JSON",
+          "setDefaultPropertyInclusion and the Jackson 2 ObjectMapper API used here are removed or reshaped in Jackson 3, so this class will not compile unchanged after a Boot 4 upgrade"
+        ],
+        "dataTouched": [
+          "affects: every JSON request and response body"
+        ],
+        "upstream": [
+          "Spring MVC message conversion for all endpoints"
+        ],
+        "downstream": [],
+        "testHints": [
+          "Serialize an EmployeeResponse with a null salary and assert the key is absent, not null",
+          "Assert createdAt is an ISO-8601 string in the response body -- the JavaTimeModule registration is what makes that work and its absence is a runtime serialization failure, not a compile error"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/config/JacksonConfig.java:9-39",
+          "src/main/resources/application.yml:25-27"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.config.SecurityConfig",
+        "fingerprint": "955a8cdb0a897953",
+        "summary": "Defines the whole authentication and authorization posture: HTTP Basic against a single hard-coded in-memory user, CSRF disabled, /api/** authenticated, the two named actuator endpoints public, and everything else permitted. This is demo-grade configuration by intent -- the file's own comment frames it as a Spring Security 6 sample to be re-validated under Security 7 -- but as written it is the only gate in front of the data.",
+        "role": "configuration",
+        "responsibilities": [
+          "Build the SecurityFilterChain: CSRF off, path rules, HTTP Basic entry point",
+          "Provide the single demo user via InMemoryUserDetailsManager",
+          "Supply a BCryptPasswordEncoder bean"
+        ],
+        "criticality": "critical",
+        "sideEffects": [
+          "registers the servlet security filter chain applied to every inbound request",
+          "creates an in-memory user store at startup"
+        ],
+        "invariants": [
+          "/api/** requires an authenticated principal; there is no role check beyond authentication, so the USER role is never actually asserted",
+          "Credentials are the literal demo/demo123 (line 45-46) -- there is no external identity source, so the credential set cannot vary by environment"
+        ],
+        "failureModes": [
+          "anyRequest().permitAll() (line 36) is the catch-all, so every path not under /api/** is anonymous. With spring.h2.console.enabled: true and path /h2-console (application.yml:20-23), the H2 console falls into that bucket and is not authentication-gated by this chain",
+          "CSRF is disabled globally (line 31), not just for /api/**, so it is also off for anything else the application serves",
+          "The password is a hard-coded literal in source; rotating it requires a rebuild, and it is committed to the repository",
+          "This is the class most likely to break on a Spring Security 7 upgrade -- the lambda DSL, Customizer.withDefaults and the requestMatchers overloads are exactly the APIs that changed across recent major versions"
+        ],
+        "dataTouched": [
+          "reads: hard-coded demo credentials"
+        ],
+        "upstream": [
+          "Every inbound HTTP request"
+        ],
+        "downstream": [],
+        "testHints": [
+          "Assert 401 for an unauthenticated GET /api/v1/employees and 200 with demo/demo123 -- this is the boundary every other API test depends on",
+          "Assert /actuator/health is reachable without credentials, since it is explicitly permitted and exposes database details"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:28-56",
+          "src/main/resources/application.yml:20-23"
+        ],
+        "openQuestions": [
+          "Whether the H2 console being reachable under anyRequest().permitAll() is intended for local development only -- nothing profile-gates either the console or this rule"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.entity.Employee",
+        "fingerprint": "4c9f042ba1f13de9",
+        "summary": "The single persisted aggregate of this service, mapped to the employees table. It carries two independent business keys -- employeeNumber and email, both database-unique -- and manages its own audit timestamps through JPA lifecycle callbacks rather than through Spring Data auditing. active defaults to true at both field and constructor level.",
+        "role": "entity",
+        "responsibilities": [
+          "Define the employees table schema, since ddl-auto=update generates DDL from this class",
+          "Enforce column-level constraints: uniqueness on employeeNumber and email, non-null on names and timestamps, precision 10 scale 2 on salary",
+          "Set createdAt/updatedAt via @PrePersist and @PreUpdate"
+        ],
+        "criticality": "high",
+        "sideEffects": [
+          "mutates createdAt/updatedAt on persist and update"
+        ],
+        "invariants": [
+          "employeeNumber and email are unique across the table (lines 16, 28)",
+          "createdAt is never updatable once set (line 43); updatedAt is refreshed on every persist-time modification",
+          "active is non-null and defaults true, so a newly created employee is always active -- the six-argument constructor sets it explicitly and the create DTO cannot override it"
+        ],
+        "failureModes": [
+          "The unique constraints are the last line of defence and the only working one for email, since the service-level email check is broken; a violation surfaces as DataIntegrityViolationException from save() and reaches the caller as a 500",
+          "Because ddl-auto=update never drops or narrows, a change to a length or precision here may not be applied to an existing table, so the entity and the real schema can silently diverge",
+          "The Bean Validation annotations on the fields (@NotBlank, @Email, @PositiveOrZero) are not what validates inbound requests -- the DTOs carry their own; these only fire if Hibernate's validation integration runs at flush time"
+        ],
+        "dataTouched": [
+          "writes: employees table (all columns)"
+        ],
+        "upstream": [
+          "EmployeeMapper",
+          "EmployeeService",
+          "DataInitializer"
+        ],
+        "downstream": [
+          "Relational database"
+        ],
+        "testHints": [
+          "Assert createdAt stays fixed and updatedAt moves across an update -- the two callbacks are easy to break and produce no error when they are",
+          "Insert two employees with the same email to confirm the database constraint is the thing that fires, since no service check catches it"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:8-47",
+          "src/main/resources/application.yml:13-14"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.exception.DuplicateEmployeeException",
+        "fingerprint": "f10ee8a9677a5726",
+        "summary": "Signals that an employee already exists with a conflicting business key, and names which field conflicted. It is the intended path to a 409 Conflict, but only one of its two intended triggers actually works: the employeeNumber check fires correctly, while the email check that would raise it never matches because of the wrong finder used in EmployeeService.",
+        "role": "exception",
+        "responsibilities": [
+          "Name the conflicting field and value in the message",
+          "Trigger the 409 branch in GlobalExceptionHandler"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Mapped to exactly HTTP 409 by GlobalExceptionHandler.handleDuplicateEmployee"
+        ],
+        "failureModes": [
+          "In practice this is only ever thrown for employeeNumber. Both email call sites (EmployeeService.java:38 and :69) are guarded by findByEmployeeNumber(email), a condition that will not be true for realistic data, so an email conflict never becomes a 409 -- it becomes a database constraint violation and then a 500",
+          "The two-argument constructor echoes the submitted value back in the message, so a conflicting email address appears in the error body"
+        ],
+        "upstream": [
+          "EmployeeService.createEmployee (employeeNumber path works, email path unreachable)",
+          "EmployeeService.updateEmployee (email path unreachable)"
+        ],
+        "downstream": [
+          "GlobalExceptionHandler.handleDuplicateEmployee"
+        ],
+        "testHints": [
+          "POST a duplicate employeeNumber and assert 409 -- this is the working path and is the control case",
+          "POST a duplicate email with a fresh employeeNumber and compare: it should be 409 too but currently is not"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/DuplicateEmployeeException.java:3-24",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:32-39",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:67-71"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.exception.EmployeeNotFoundException",
+        "fingerprint": "ccf073f3fd2d33a5",
+        "summary": "Signals that a requested employee id does not exist. It is the mechanism that turns an empty Optional from the repository into a 404 instead of a null pointer downstream, and it is raised from four places in EmployeeService: getEmployeeById, updateEmployee, deleteEmployee and the update path's initial load.",
+        "role": "exception",
+        "responsibilities": [
+          "Carry the missing id into a human-readable message",
+          "Trigger the 404 branch in GlobalExceptionHandler"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "Mapped to exactly HTTP 404 by GlobalExceptionHandler.handleEmployeeNotFound; nothing else raises 404 in this service"
+        ],
+        "failureModes": [
+          "The Long-id constructor bakes the id into the message ('Employee with id 42 was not found'), so the id is exposed to the client in the error body -- fine for an internal service, worth noting if the API becomes public",
+          "Because it is unchecked and thrown inside @Transactional methods, it rolls back the surrounding transaction -- correct for delete and update, but it means no partial work survives the throw"
+        ],
+        "upstream": [
+          "EmployeeService.getEmployeeById, updateEmployee, deleteEmployee"
+        ],
+        "downstream": [
+          "GlobalExceptionHandler.handleEmployeeNotFound"
+        ],
+        "testHints": [
+          "Assert 404 and the message text for GET, PUT and DELETE against an unknown id -- all three go through this exception"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/EmployeeNotFoundException.java:3-11",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:57",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:21-31"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.mapper.EmployeeMapper",
+        "fingerprint": "de88b56459f0d768",
+        "summary": "Hand-written conversion between the Employee entity and the DTOs, registered as a @Component so it can be injected rather than called statically. Two of its three methods are live; the third is dead and mis-typed.",
+        "role": "mapper",
+        "responsibilities": [
+          "Build a new Employee from EmployeeCreateRequest, deliberately omitting id, active and the audit timestamps so the entity and database own them",
+          "Flatten an Employee into EmployeeResponse, which is the only path by which employee data leaves this service"
+        ],
+        "criticality": "medium",
+        "sideEffects": [],
+        "invariants": [
+          "toEntity never sets id, createdAt, updatedAt or active -- those are assigned by the database and by @PrePersist, so a mapper that started setting them would break the audit contract",
+          "toResponse is total: every EmployeeResponse field is populated from the entity, with no conditional omission"
+        ],
+        "failureModes": [
+          "updateEntityFromRequest (line 35) is dead code and has the wrong parameter type -- it takes EmployeeResponse, an outbound DTO, where an EmployeeUpdateRequest would be expected. Nothing in src/ calls it; EmployeeService.updateEmployee inlines the same field-by-field merge instead. It is a live trap: a future change made here will have no effect, and wiring it up as-is would require callers to construct a response object to perform an update",
+          "toResponse passes salary and the timestamps straight through, so a null salary or null timestamp on the entity becomes a null in the JSON -- which the Jackson NON_NULL setting then omits from the payload entirely rather than sending null"
+        ],
+        "dataTouched": [
+          "reads: Employee entity fields",
+          "writes: EmployeeResponse / Employee field values in memory"
+        ],
+        "upstream": [
+          "EmployeeService (createEmployee, getAllEmployees, getEmployeeById, updateEmployee, searchByDepartment, findActiveEmployeesByDepartment, findHighEarners)"
+        ],
+        "downstream": [],
+        "testHints": [
+          "Round-trip a fully populated Employee through toResponse and assert all ten fields, including createdAt/updatedAt -- a dropped field here silently disappears from every API response",
+          "Assert that a null salary is omitted from the serialized JSON rather than rendered as null, since JacksonConfig sets NON_NULL inclusion"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java:11-54",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:74-91",
+          "src/main/java/com/example/migrationdemo/config/JacksonConfig.java:32-33"
+        ],
+        "openQuestions": [
+          "Whether updateEntityFromRequest is leftover from an earlier design or an unfinished refactor intended to replace the inline merge in EmployeeService.updateEmployee"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.mapper.EmployeeMapper#toResponse(Employee)",
+        "fingerprint": "18d1cdd2a6df2774",
+        "summary": "The single chokepoint through which every employee record leaves this service. All seven read and write endpoints ultimately render their payload here, so this ten-argument constructor call defines the public JSON shape of an employee -- a field omitted here is invisible across the entire API.",
+        "role": "mapper",
+        "responsibilities": [
+          "Copy all ten Employee fields into a new EmployeeResponse"
+        ],
+        "criticality": "high",
+        "sideEffects": [],
+        "invariants": [
+          "Total mapping: every EmployeeResponse field is populated unconditionally, with no branching",
+          "It reads only getters and mutates nothing, so it is safe to call outside a transaction as long as the entity is already loaded"
+        ],
+        "failureModes": [
+          "A field added to Employee and EmployeeResponse but not wired in here is silently null in every API response, with no compile error if the constructor is positional and the types happen to line up",
+          "The positional ten-argument constructor is the real hazard: firstName/lastName/email/department are all String and adjacent, so a transposition compiles cleanly and swaps values in every response",
+          "If called on a lazily-loaded detached entity outside the transaction it would raise LazyInitializationException -- not currently possible since Employee has no associations and open-in-view is false, but it constrains where this may be called from"
+        ],
+        "dataTouched": [
+          "reads: Employee entity fields"
+        ],
+        "upstream": [
+          "EmployeeService.createEmployee, getAllEmployees, getEmployeeById, updateEmployee, searchByDepartment, findActiveEmployeesByDepartment, findHighEarners"
+        ],
+        "downstream": [
+          "EmployeeResponse"
+        ],
+        "testHints": [
+          "Map a fully populated Employee with distinct recognisable values in each String field and assert each one lands in the right EmployeeResponse field -- this is the test that catches a positional transposition",
+          "Assert id, createdAt and updatedAt are carried through, since they are server-owned and have no other source"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java:21-33",
+          "src/main/resources/application.yml:15"
+        ]
+      },
+      {
+        "kind": "Type",
+        "id": "com.example.migrationdemo.MigrationDemoApplication",
+        "fingerprint": "0ff55f045871eae5",
+        "summary": "The Spring Boot entry point. Its @SpringBootApplication annotation sets the component-scan root at com.example.migrationdemo, which is why every @Component, @Service, @Repository and @Configuration in this codebase is discovered without explicit registration. It contains no logic of its own.",
+        "role": "bootstrap",
+        "responsibilities": [
+          "Start the Spring application context",
+          "Define the component-scan and auto-configuration root package"
+        ],
+        "criticality": "medium",
+        "sideEffects": [
+          "starts the embedded web server on port 8080 (application.yml:40)",
+          "triggers all CommandLineRunner beans, i.e. DataInitializer"
+        ],
+        "invariants": [
+          "Every bean in this service lives under com.example.migrationdemo; a class placed outside that package would not be picked up"
+        ],
+        "failureModes": [
+          "Startup fails as a whole if any bean fails to construct -- including a failing DataInitializer, an unreachable datasource, or a duplicate bean definition; the process exits rather than serving degraded"
+        ],
+        "upstream": [
+          "Process launch / container entrypoint"
+        ],
+        "downstream": [
+          "Entire Spring context, datasource, embedded Tomcat"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/MigrationDemoApplication.java:6",
+          "src/main/resources/application.yml:39-42"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.repository.EmployeeRepository#findByEmployeeNumber(String)",
+        "fingerprint": "87f2a560c5f44998",
+        "summary": "A Spring Data derived-query finder that looks up an employee by the employeeNumber column, returning an Optional. Its name is the query -- Spring Data parses the method name to build the WHERE clause -- which is precisely why calling it with an email value silently searches the wrong column instead of failing.",
+        "role": "repository",
+        "responsibilities": [
+          "Resolve an employee by business key employeeNumber"
+        ],
+        "criticality": "high",
+        "sideEffects": [],
+        "invariants": [
+          "Queries the employeeNumber column and nothing else; the column is unique, so at most one row is ever returned",
+          "Returns Optional.empty rather than null for no match"
+        ],
+        "failureModes": [
+          "Both parameters and column are String-typed, so the compiler cannot catch a caller passing an email. Two of its four call sites do exactly that (EmployeeService.java:37 and :68), and the resulting empty Optional reads as 'no duplicate' -- the query works perfectly while the caller's intent is wrong. This method is not defective; it is the silent participant in the duplicate-email defect",
+          "There is no findByEmail counterpart on this interface, so no correct call was available to those two call sites"
+        ],
+        "dataTouched": [
+          "reads: employees table, employee_number column"
+        ],
+        "upstream": [
+          "EmployeeService.createEmployee (correctly for employeeNumber, incorrectly for email)",
+          "EmployeeService.updateEmployee (incorrectly, for email)"
+        ],
+        "downstream": [
+          "Relational database"
+        ],
+        "testHints": [
+          "Assert it returns empty for a value that exists as an email but not as an employeeNumber -- that assertion documents exactly why the duplicate-email check fails",
+          "Adding a findByEmail finder is the natural fix; a test asserting a duplicate email is detected would be the guard for it"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:16",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:37",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:68"
+        ]
+      },
+      {
+        "kind": "Method",
+        "id": "com.example.migrationdemo.service.EmployeeService#updateEmployee(Long,EmployeeUpdateRequest)",
+        "fingerprint": "228147bb9958716d",
+        "summary": "The partial-update routine: load or 404, check the new email for conflict, then copy across only the non-null submitted fields and save. It is the longest method in the service and the one where the null-means-unchanged convention is actually implemented, six explicit if-blocks deep.",
+        "role": "service",
+        "responsibilities": [
+          "Resolve the employee by id or raise EmployeeNotFoundException",
+          "Guard against reassigning an email another employee already holds",
+          "Apply each supplied field individually, leaving unsupplied ones untouched",
+          "Persist and return the mapped result"
+        ],
+        "criticality": "critical",
+        "sideEffects": [
+          "writes: updates one row in the employees table",
+          "mutates the managed Employee entity in place",
+          "refreshes updatedAt through the @PreUpdate callback"
+        ],
+        "invariants": [
+          "A null field in the request leaves the stored value untouched (lines 74-91)",
+          "The email conflict check is skipped when the submitted email equals the current one (line 67), so re-sending an unchanged email is not treated as a self-conflict",
+          "employeeNumber cannot be modified -- the request type has no such field",
+          "Runs inside @Transactional, so the entity is managed and the explicit save at line 93 is belt-and-braces on top of dirty checking"
+        ],
+        "failureModes": [
+          "Line 68 is the defect: the guard calls employeeRepository.findByEmployeeNumber(request.getEmail()), matching an email value against the employeeNumber column. It will not find the employee who actually holds that email, so the DuplicateEmployeeException at line 69 is effectively unreachable. The update proceeds, the database unique constraint on email rejects the save, DataIntegrityViolationException has no handler, and the caller receives 500 instead of 409",
+          "The same guard would produce a FALSE positive if an employeeNumber and an email string ever coincided -- a legitimate update would then be rejected as a duplicate email",
+          "A caller cannot null out department or salary; the request is accepted with 200 while the old value survives, so the API reports success for a change it did not make",
+          "An empty request body is a valid no-op update that still bumps updatedAt via @PreUpdate and still writes to the database"
+        ],
+        "dataTouched": [
+          "reads: employees table by id and by employeeNumber",
+          "writes: employees table"
+        ],
+        "upstream": [
+          "EmployeeController.updateEmployee, i.e. PUT /api/v1/employees/{id}"
+        ],
+        "downstream": [
+          "EmployeeRepository.findById (inherited)",
+          "EmployeeRepository.findByEmployeeNumber",
+          "EmployeeRepository.save (inherited)",
+          "EmployeeMapper.toResponse"
+        ],
+        "testHints": [
+          "Mock EmployeeRepository and assert findByEmployeeNumber is invoked with an EMAIL string -- that single assertion captures the defect precisely",
+          "Integration test: create two employees, PUT the second one's email to the first one's address, assert the status. Expected 409, actual 500",
+          "Assert that updating only firstName leaves the other five mutable fields byte-identical",
+          "Assert that PUT with an unchanged email does not raise a conflict (the line 67 self-comparison guard)"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:61-95",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:16",
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:28",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:68-78"
+        ],
+        "openQuestions": [
+          "Whether a findByEmail finder was intended on EmployeeRepository and never written -- no such method exists, so the check could never have worked as written"
+        ]
+      }
+    ],
+    [
+      {
+        "id": "single-writer-employees-table",
+        "topic": "shared-datastore",
+        "text": "This service is the sole owner and sole writer of the employees table; there is no second application, batch job or migration tool writing it. Any inconsistency in employee data therefore originates in EmployeeService or DataInitializer, which narrows root-cause search considerably.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.entity.Employee",
+          "com.example.migrationdemo.repository.EmployeeRepository",
+          "com.example.migrationdemo.service.EmployeeService",
+          "com.example.migrationdemo.init.DataInitializer"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:14",
+          "src/main/resources/application.yml:5-8"
+        ]
+      },
+      {
+        "id": "duplicate-email-check-uses-wrong-finder",
+        "topic": "known-risk",
+        "text": "Both write paths check for a duplicate email by calling EmployeeRepository.findByEmployeeNumber(request.getEmail()) — an email value matched against the employeeNumber column (EmployeeService.java:37 and :68). The check therefore never fires, the database unique constraint on Employee.email becomes the only enforcement, and because no handler maps DataIntegrityViolationException the client sees 500 rather than the intended 409 Conflict. The repository has no findByEmail method at all, so no correct call was available.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.service.EmployeeService",
+          "com.example.migrationdemo.repository.EmployeeRepository",
+          "com.example.migrationdemo.exception.GlobalExceptionHandler",
+          "com.example.migrationdemo.entity.Employee"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:36-39",
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:66-71",
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:28",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:68-78"
+        ]
+      },
+      {
+        "id": "unauthenticated-actuator-health-detail",
+        "topic": "config-coupling",
+        "text": "Three settings combine into one externally visible behaviour that no single node shows: SecurityConfig permits /actuator/health anonymously, application.yml sets management.endpoint.health.show-details to always, and DatabaseHealthIndicator attaches the raw exception via withException(e) on failure. An unauthenticated caller therefore receives database product details when healthy and exception detail when not.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.config.SecurityConfig",
+          "com.example.migrationdemo.health.DatabaseHealthIndicator"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:33-34",
+          "src/main/resources/application.yml:35-37",
+          "src/main/java/com/example/migrationdemo/health/DatabaseHealthIndicator.java:28-31"
+        ]
+      },
+      {
+        "id": "h2-console-under-permit-all",
+        "topic": "config-coupling",
+        "text": "spring.h2.console.enabled is true with path /h2-console, and SecurityConfig ends its rule chain with anyRequest().permitAll() while disabling CSRF globally. /h2-console is not under /api/**, so it falls into the permit-all bucket. Neither setting is profile-gated, so this applies wherever the application runs on H2 — which is the default when DB_URL is unset.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.config.SecurityConfig"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/resources/application.yml:20-23",
+          "src/main/resources/application.yml:6",
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:31-36"
+        ]
+      },
+      {
+        "id": "default-datasource-is-local-h2-file",
+        "topic": "config-coupling",
+        "text": "The datasource URL defaults to jdbc:h2:file:./data/employee_db when DB_URL is unset, yet the PostgreSQL driver is a dependency and EmployeeRepository.findHighEarners is native PostgreSQL SQL. An environment that forgets DB_URL starts cleanly, reports healthy, and serves from a local file — while the one native query is running engine-mismatched SQL. Nothing fails loudly.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.repository.EmployeeRepository",
+          "com.example.migrationdemo.health.DatabaseHealthIndicator"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/resources/application.yml:5-8",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:37-43",
+          "pom.xml:60-70"
+        ]
+      },
+      {
+        "id": "schema-owned-by-hibernate-ddl-auto",
+        "topic": "deployment-order",
+        "text": "There is no Flyway or Liquibase in this project; the employees schema is generated from the Employee entity by hibernate.ddl-auto=update at every boot. Schema change is therefore a side effect of deploying code, it never drops or narrows columns, and there is no versioned migration history to roll back to.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.entity.Employee"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/resources/application.yml:13-14",
+          "src/main/java/com/example/migrationdemo/entity/Employee.java:8-47",
+          "pom.xml:29-40"
+        ]
+      },
+      {
+        "id": "seed-data-runs-in-every-environment",
+        "topic": "known-risk",
+        "text": "DataInitializer is an unconditional @Component CommandLineRunner with no @Profile or property guard, so the five demo employees are seeded in any environment where the employees table is empty at startup — including production. Emptying the table via the API and restarting silently repopulates it.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.init.DataInitializer"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/init/DataInitializer.java:10-25"
+        ]
+      },
+      {
+        "id": "migration-demo-markers-are-intentional",
+        "topic": "known-risk",
+        "text": "SecurityConfig, JacksonConfig and both @Query methods on EmployeeRepository carry explicit MIGRATION-DEMO comments identifying them as planted Spring Boot 3 to 4 breakage points (Spring Security 6 to 7, Jackson 2 to 3, Hibernate query parsing). Treat findings in these four places as deliberate exercise material rather than accidental defects — unlike the duplicate-email defect, which carries no such marker.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.config.SecurityConfig",
+          "com.example.migrationdemo.config.JacksonConfig",
+          "com.example.migrationdemo.repository.EmployeeRepository"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/config/SecurityConfig.java:16-23",
+          "src/main/java/com/example/migrationdemo/config/JacksonConfig.java:9-17",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:20-23",
+          "src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java:33-36"
+        ]
+      },
+      {
+        "id": "unreachable-code-paths",
+        "topic": "known-risk",
+        "text": "Two code paths exist but cannot be reached through the REST surface: EmployeeService.findActiveEmployeesByDepartment (and the JPQL finder behind it) has no controller route, and EmployeeMapper.updateEntityFromRequest has no caller anywhere in src/ and takes an outbound EmployeeResponse where an EmployeeUpdateRequest would be expected. Both are covered only by tests or not at all, so a change to either produces no observable API effect.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.service.EmployeeService",
+          "com.example.migrationdemo.mapper.EmployeeMapper",
+          "com.example.migrationdemo.repository.EmployeeRepository"
+        ],
+        "confidence": "high",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/service/EmployeeService.java:112-118",
+          "src/main/java/com/example/migrationdemo/mapper/EmployeeMapper.java:35-54",
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:15-69"
+        ]
+      },
+      {
+        "id": "error-body-shape-is-not-uniform",
+        "topic": "known-risk",
+        "text": "Domain errors (404, 409) and the catch-all 500 render the project ErrorResponse shape, but framework-raised errors — wrong HTTP method, malformed JSON, missing @RequestParam, a non-numeric path variable or query parameter — are rendered by the inherited ResponseEntityExceptionHandler and do not use that shape. A client that parses one format will fail on the other, and the split does not follow status-code lines.",
+        "modules": [
+          "spring-boot-migration-demo"
+        ],
+        "types": [
+          "com.example.migrationdemo.exception.GlobalExceptionHandler",
+          "com.example.migrationdemo.exception.ErrorResponse",
+          "com.example.migrationdemo.controller.EmployeeController"
+        ],
+        "confidence": "medium",
+        "evidence": [
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:19",
+          "src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java:45-66",
+          "src/main/java/com/example/migrationdemo/controller/EmployeeController.java:57-69"
+        ]
+      }
+    ]
+  ],
+  "acceptanceCriteria": [
+    "`EmployeeRepository` exposes a `findByEmail(String email)` method (`Optional<Employee>`), analogous to the existing `findByEmployeeNumber`.",
+    "`EmployeeService.createEmployee(...)` checks the new `findByEmail(...)` — not `findByEmployeeNumber(...)` — when validating the email, and still throws `DuplicateEmployeeException(\"email\", ...)` on a match, resulting in the existing `409 Conflict` response.",
+    "`EmployeeService.updateEmployee(...)` uses the same `findByEmail(...)` check when the request changes the email to one already used by a **different** employee, and does **not** false-positive when a caller submits the employee's own current email unchanged.",
+    "The existing employee-number duplicate check is untouched and keeps working as it does today.",
+    "Creating or updating an employee with a genuinely unique email still succeeds exactly as before (no regression).",
+    "A duplicate-email attempt is rejected with `409 Conflict` and the existing `ErrorResponse` body — it must never reach the database as a raw `DataIntegrityViolationException`."
+  ],
+  "outOfScope": [
+    "Case-insensitive email matching (email uniqueness stays case-sensitive, matching the current `@Email`/database column behavior).",
+    "Adding a similar check anywhere outside `createEmployee`/`updateEmployee`."
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "story_id": "JIRA-001",
+  "test_file": "src/test/java/com/example/migrationdemo/service/EmployeeServicePaginationTest.java",
+  "what_it_proves": "EmployeeService.getAllEmployees(Pageable, String, Boolean) maps a mocked repository Page<Employee> into the new PageResponse envelope (content/page/size/totalElements/totalPages), and builds a no-op filter Specification (CriteriaBuilder.and() called with zero predicates, no equal() calls) when department and active are both absent. Fails on the pre-change code (no such method exists on EmployeeService), passes on the patched code.",
+  "mocking_strategy": "Mockito-mocks EmployeeRepository.findAll(Specification, Pageable) to return a PageImpl built from a plain Employee list; captures the Specification passed to the mock and invokes its toPredicate(...) against mocked Root/CriteriaQuery/CriteriaBuilder to assert no equal() predicates are added when both filters are absent.",
+  "requires_live_dependency": false
+}

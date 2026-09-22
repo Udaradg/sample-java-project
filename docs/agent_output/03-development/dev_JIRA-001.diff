@@ -1,0 +1,255 @@
+diff --git a/src/main/java/com/example/migrationdemo/controller/EmployeeController.java b/src/main/java/com/example/migrationdemo/controller/EmployeeController.java
+index 5431e8a..1740952 100644
+--- a/src/main/java/com/example/migrationdemo/controller/EmployeeController.java
++++ b/src/main/java/com/example/migrationdemo/controller/EmployeeController.java
+@@ -3,19 +3,28 @@ package com.example.migrationdemo.controller;
+ import com.example.migrationdemo.dto.EmployeeCreateRequest;
+ import com.example.migrationdemo.dto.EmployeeResponse;
+ import com.example.migrationdemo.dto.EmployeeUpdateRequest;
++import com.example.migrationdemo.dto.PageResponse;
+ import com.example.migrationdemo.service.EmployeeService;
+ import jakarta.validation.Valid;
++import org.springframework.data.domain.PageRequest;
++import org.springframework.data.domain.Pageable;
++import org.springframework.data.domain.Sort;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.*;
+ 
+ import java.math.BigDecimal;
+ import java.util.List;
++import java.util.Set;
+ 
+ @RestController
+ @RequestMapping("/api/v1/employees")
+ public class EmployeeController {
+ 
++    private static final int MAX_PAGE_SIZE = 100;
++    private static final Set<String> SORTABLE_FIELDS = Set.of(
++            "firstName", "lastName", "email", "department", "salary", "createdAt");
++
+     private final EmployeeService employeeService;
+ 
+     public EmployeeController(EmployeeService employeeService) {
+@@ -29,11 +38,43 @@ public class EmployeeController {
+     }
+ 
+     @GetMapping
+-    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
+-        List<EmployeeResponse> employees = employeeService.getAllEmployees();
++    public ResponseEntity<PageResponse<EmployeeResponse>> getAllEmployees(
++            @RequestParam(defaultValue = "0") int page,
++            @RequestParam(defaultValue = "20") int size,
++            @RequestParam(required = false) String sort,
++            @RequestParam(required = false) String department,
++            @RequestParam(required = false) Boolean active) {
++        Pageable pageable = buildPageable(page, size, sort);
++        PageResponse<EmployeeResponse> employees = employeeService.getAllEmployees(pageable, department, active);
+         return ResponseEntity.ok(employees);
+     }
+ 
++    private Pageable buildPageable(int page, int size, String sort) {
++        int clampedSize = Math.min(size, MAX_PAGE_SIZE);
++        if (sort == null || sort.isBlank()) {
++            return PageRequest.of(page, clampedSize);
++        }
++
++        String[] parts = sort.split(",");
++        if (parts.length != 2) {
++            throw new IllegalArgumentException("Invalid sort parameter: " + sort);
++        }
++        String field = parts[0].trim();
++        String direction = parts[1].trim();
++        if (!SORTABLE_FIELDS.contains(field)) {
++            throw new IllegalArgumentException("Invalid sort field: " + field);
++        }
++
++        Sort.Direction sortDirection;
++        try {
++            sortDirection = Sort.Direction.fromString(direction);
++        } catch (IllegalArgumentException ex) {
++            throw new IllegalArgumentException("Invalid sort direction: " + direction);
++        }
++
++        return PageRequest.of(page, clampedSize, Sort.by(sortDirection, field));
++    }
++
+     @GetMapping("/{id}")
+     public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {
+         EmployeeResponse employee = employeeService.getEmployeeById(id);
+diff --git a/src/main/java/com/example/migrationdemo/dto/PageResponse.java b/src/main/java/com/example/migrationdemo/dto/PageResponse.java
+new file mode 100644
+index 0000000..d3f05ed
+--- /dev/null
++++ b/src/main/java/com/example/migrationdemo/dto/PageResponse.java
+@@ -0,0 +1,64 @@
++package com.example.migrationdemo.dto;
++
++import java.util.List;
++
++public class PageResponse<T> {
++
++    private List<T> content;
++    private int page;
++    private int size;
++    private long totalElements;
++    private int totalPages;
++
++    public PageResponse() {
++    }
++
++    public PageResponse(List<T> content, int page, int size, long totalElements, int totalPages) {
++        this.content = content;
++        this.page = page;
++        this.size = size;
++        this.totalElements = totalElements;
++        this.totalPages = totalPages;
++    }
++
++    public List<T> getContent() {
++        return content;
++    }
++
++    public void setContent(List<T> content) {
++        this.content = content;
++    }
++
++    public int getPage() {
++        return page;
++    }
++
++    public void setPage(int page) {
++        this.page = page;
++    }
++
++    public int getSize() {
++        return size;
++    }
++
++    public void setSize(int size) {
++        this.size = size;
++    }
++
++    public long getTotalElements() {
++        return totalElements;
++    }
++
++    public void setTotalElements(long totalElements) {
++        this.totalElements = totalElements;
++    }
++
++    public int getTotalPages() {
++        return totalPages;
++    }
++
++    public void setTotalPages(int totalPages) {
++        this.totalPages = totalPages;
++    }
++
++}
+diff --git a/src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java b/src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java
+index 1590ff0..ab0aa44 100644
+--- a/src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java
++++ b/src/main/java/com/example/migrationdemo/exception/GlobalExceptionHandler.java
+@@ -65,6 +65,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+         return handleExceptionInternal(ex, errorResponse, headers, status, request);
+     }
+ 
++    @ExceptionHandler(IllegalArgumentException.class)
++    public ResponseEntity<ErrorResponse> handleIllegalArgument(
++            IllegalArgumentException ex, HttpServletRequest request) {
++        ErrorResponse errorResponse = new ErrorResponse(
++                LocalDateTime.now(),
++                HttpStatus.BAD_REQUEST.value(),
++                "Bad Request",
++                ex.getMessage(),
++                request.getRequestURI());
++        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
++    }
++
+     @ExceptionHandler(Exception.class)
+     public ResponseEntity<ErrorResponse> handleGenericException(
+             Exception ex, HttpServletRequest request) {
+diff --git a/src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java b/src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java
+index 6b222a7..344230d 100644
+--- a/src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java
++++ b/src/main/java/com/example/migrationdemo/repository/EmployeeRepository.java
+@@ -2,6 +2,7 @@ package com.example.migrationdemo.repository;
+ 
+ import com.example.migrationdemo.entity.Employee;
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+ import org.springframework.data.jpa.repository.Query;
+ import org.springframework.data.repository.query.Param;
+ import org.springframework.stereotype.Repository;
+@@ -11,7 +12,7 @@ import java.util.List;
+ import java.util.Optional;
+ 
+ @Repository
+-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
++public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
+ 
+     Optional<Employee> findByEmployeeNumber(String employeeNumber);
+ 
+diff --git a/src/main/java/com/example/migrationdemo/service/EmployeeService.java b/src/main/java/com/example/migrationdemo/service/EmployeeService.java
+index d2f7538..fc56750 100644
+--- a/src/main/java/com/example/migrationdemo/service/EmployeeService.java
++++ b/src/main/java/com/example/migrationdemo/service/EmployeeService.java
+@@ -3,15 +3,21 @@ package com.example.migrationdemo.service;
+ import com.example.migrationdemo.dto.EmployeeCreateRequest;
+ import com.example.migrationdemo.dto.EmployeeResponse;
+ import com.example.migrationdemo.dto.EmployeeUpdateRequest;
++import com.example.migrationdemo.dto.PageResponse;
+ import com.example.migrationdemo.entity.Employee;
+ import com.example.migrationdemo.exception.DuplicateEmployeeException;
+ import com.example.migrationdemo.exception.EmployeeNotFoundException;
+ import com.example.migrationdemo.mapper.EmployeeMapper;
+ import com.example.migrationdemo.repository.EmployeeRepository;
++import jakarta.persistence.criteria.Predicate;
++import org.springframework.data.domain.Page;
++import org.springframework.data.domain.Pageable;
++import org.springframework.data.jpa.domain.Specification;
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+ 
+ import java.math.BigDecimal;
++import java.util.ArrayList;
+ import java.util.List;
+ import java.util.stream.Collectors;
+ 
+@@ -51,6 +57,35 @@ public class EmployeeService {
+                 .collect(Collectors.toList());
+     }
+ 
++    @Transactional(readOnly = true)
++    public PageResponse<EmployeeResponse> getAllEmployees(Pageable pageable, String department, Boolean active) {
++        Specification<Employee> specification = buildFilterSpecification(department, active);
++        Page<Employee> employeePage = employeeRepository.findAll(specification, pageable);
++        List<EmployeeResponse> content = employeePage.getContent()
++                .stream()
++                .map(employeeMapper::toResponse)
++                .collect(Collectors.toList());
++        return new PageResponse<>(
++                content,
++                employeePage.getNumber(),
++                employeePage.getSize(),
++                employeePage.getTotalElements(),
++                employeePage.getTotalPages());
++    }
++
++    private Specification<Employee> buildFilterSpecification(String department, Boolean active) {
++        return (root, query, criteriaBuilder) -> {
++            List<Predicate> predicates = new ArrayList<>();
++            if (department != null) {
++                predicates.add(criteriaBuilder.equal(root.get("department"), department));
++            }
++            if (active != null) {
++                predicates.add(criteriaBuilder.equal(root.get("active"), active));
++            }
++            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
++        };
++    }
++
+     @Transactional(readOnly = true)
+     public EmployeeResponse getEmployeeById(Long id) {
+         Employee employee = employeeRepository.findById(id)
